@@ -41,26 +41,30 @@ becomes the app's data owner (see the PRD's §8 note on this).
 
 ## 5. Connect the front-end
 
-1. Open `index.html` in a text editor.
-2. Near the top of the `<script>` section, find:
-   ```js
-   var WEB_APP_URL = "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
-   ```
-3. Replace the placeholder with the URL you copied in step 4.
-4. Save the file. The orange "not connected" banner at the top of the app disappears once this is set correctly.
+`WEB_APP_URL` is **not** hardcoded in `index.html` — this repo is public, and that URL grants unauthenticated write access to your Sheet/Drive, so it's kept out of git history entirely. Instead it's read from `window.WEB_APP_URL`, set by a `config.js` file that is gitignored.
 
-If you ever want to change the point target (currently 1,000), the deadline, or the polling frequency, they're the next few lines down (`TARGET_POINTS`, `DEADLINE_ISO`, `POLL_INTERVAL_MS`).
+**For local testing on your own machine:**
+1. Copy `.env.example`'s value.
+2. Create a `config.js` file next to `index.html` (it's gitignored, so this stays local):
+   ```js
+   window.WEB_APP_URL = "https://script.google.com/macros/s/.../exec";
+   ```
+3. Open `index.html` — the orange "not connected" banner disappears once this is set correctly.
+
+**For the hosted GitHub Pages build**, see step 6 below — the deploy workflow generates `config.js` at deploy time from a repository secret, so you never paste the URL into a tracked file.
+
+If you ever want to change the point target (currently 1,000), the deadline, or the polling frequency, edit `TARGET_POINTS`, `DEADLINE_ISO`, `POLL_INTERVAL_MS` directly in `index.html` — those aren't secrets, so they stay in source.
 
 ## 6. Host it so friends can open it
 
-`index.html` (plus `manifest.json`, `sw.js`, and the `icons/` folder) needs to live somewhere with a stable HTTPS link. The easiest free option:
+This repo ships a GitHub Actions workflow (`.github/workflows/deploy.yml`) that deploys to GitHub Pages and injects the backend URL from a repo secret at build time — so the URL never lands in the repo's source or git history (it does still end up in the page every visitor's browser loads, since a static client-side app has no other way to reach the backend — but it's not sitting in a searchable public repo).
 
-**GitHub Pages**
-1. Create a new GitHub repo, upload `index.html`, `manifest.json`, `sw.js`, and the `icons/` folder (keep the folder structure — `icons/icon-192.png` etc. must stay at that relative path).
-2. Repo **Settings > Pages > Deploy from a branch**, pick `main` and `/ (root)`.
-3. Your app will be live at `https://<your-username>.github.io/<repo-name>/`.
+1. **Settings > Secrets and variables > Actions > New repository secret**, name it `WEB_APP_URL`, paste the Apps Script Web App URL from step 4 as the value.
+2. **Settings > Pages > Build and deployment > Source**, choose **GitHub Actions**.
+3. Push to `master` (or run the workflow manually from the **Actions** tab) — it builds `index.html` + `manifest.json` + `sw.js` + `icons/` + a generated `config.js` into a `_site` folder and deploys that.
+4. Your app will be live at `https://<your-username>.github.io/<repo-name>/`.
 
-Any other static host (Netlify, Vercel, Cloudflare Pages) works the same way — just make sure all four items (`index.html`, `manifest.json`, `sw.js`, `icons/`) are uploaded together with their relative paths intact.
+Any other static host (Netlify, Vercel, Cloudflare Pages) works too — each has its own equivalent of a repo secret / environment variable for injecting `WEB_APP_URL` at build time without committing it.
 
 ## 7. Add to home screen
 

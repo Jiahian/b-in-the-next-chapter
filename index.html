@@ -501,14 +501,25 @@
 
 <div class="toast-stack" id="toastStack"></div>
 
+<!--
+  config.js sets window.WEB_APP_URL. It is gitignored (see .gitignore /
+  .env.example) so the deployed Apps Script URL never lands in the public
+  repo's source or git history. Locally, copy .env.example's value into a
+  config.js you create yourself: window.WEB_APP_URL = "https://...";
+  For the hosted GitHub Pages build, this file is generated at deploy time
+  from the WEB_APP_URL repository secret — see .github/workflows/deploy.yml.
+-->
+<script src="config.js"></script>
 <script>
 (function () {
   "use strict";
 
   // ===================================================================
-  // CONFIG — edit these two lines for your deployment
+  // CONFIG — WEB_APP_URL comes from config.js (see comment above), never
+  // hardcoded here. TARGET_POINTS/DEADLINE_ISO/POLL_INTERVAL_MS are plain
+  // config, not secrets, so they stay in source.
   // ===================================================================
-  var WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxJrKK2_Y2webMah7aZ-EdEwrOKgxeOjX9eSfY56-PmRKPFFi6patCPtwHdUg9RMiWl/exec";
+  var WEB_APP_URL = (typeof window.WEB_APP_URL === "string" && window.WEB_APP_URL) || "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
   var TARGET_POINTS = 1000;
   var DEADLINE_ISO = "2026-12-31T23:59:59+08:00"; // Asia/Singapore
   var POLL_INTERVAL_MS = 20000;

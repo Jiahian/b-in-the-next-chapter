@@ -1,0 +1,9 @@
+# Local secrets / config — the real Apps Script backend URL must never be
+# committed to this (public) repo. See .env.example and index.html's
+# config.js comment for how this is wired up instead.
+.env
+config.js
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
