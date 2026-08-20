@@ -1,0 +1,1138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+<title>B in the Next Chapter!</title>
+<meta name="description" content="Track our group's points toward the shared goal before 31 Dec 2026." />
+<meta name="theme-color" content="#2a78d6" />
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+<link rel="icon" href="icons/icon-192.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Next Chapter" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<style>
+  :root {
+    color-scheme: light;
+    --surface-1: #ffffff;
+    --surface-2: #ffffff;
+    --page: #f8fafc;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+    --gridline: #f1f5f9;
+    --baseline: #cbd5e1;
+    --border: #e2e8f0;
+    --series-spiritual: #8b5cf6;
+    --series-relationship: #ef4444;
+    --series-others: #3b82f6;
+    --seq-track: #f1f5f9;
+    --seq-fill: #4f46e5;
+    --accent: #4f46e5;
+    --accent-contrast: #ffffff;
+    --countdown-bg: #0f172a;
+    --countdown-accent: #eab308;
+    --good: #059669;
+    --good-bg: #d1fae5;
+    --critical: #dc2626;
+    --card-shadow: 0 4px 24px -4px rgba(15, 23, 42, 0.06);
+    --radius-lg: 20px;
+    --radius-md: 12px;
+    --radius-sm: 10px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --surface-1: #161b26;
+      --surface-2: #1c2331;
+      --page: #0b0e14;
+      --text-primary: #f1f5f9;
+      --text-secondary: #cbd5e1;
+      --text-muted: #8895a7;
+      --gridline: #232a38;
+      --baseline: #3a4252;
+      --border: rgba(255,255,255,0.10);
+      --series-spiritual: #a78bfa;
+      --series-relationship: #f87171;
+      --series-others: #60a5fa;
+      --seq-track: #232a38;
+      --seq-fill: #6366f1;
+      --accent: #6366f1;
+      --accent-contrast: #ffffff;
+      --countdown-bg: #05070c;
+      --countdown-accent: #facc15;
+      --good: #34d399;
+      --good-bg: rgba(52,211,153,0.16);
+      --critical: #f87171;
+      --card-shadow: 0 4px 24px -4px rgba(0, 0, 0, 0.3);
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--page);
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+    padding-bottom: calc(72px + env(safe-area-inset-bottom));
+  }
+  img, video { image-rendering: auto; }
+  .pixel { image-rendering: pixelated; }
+
+  header.app-header {
+    padding: max(16px, env(safe-area-inset-top)) 20px 14px;
+    background: var(--surface-1);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 20;
+  }
+  header.app-header h1 {
+    margin: 0 0 2px;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+  header.app-header p.sub {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+  }
+
+  .config-banner {
+    display: none;
+    margin: 12px 16px 0;
+    padding: 12px 14px;
+    border-radius: var(--radius-sm);
+    background: #fff4e5;
+    color: #6b4300;
+    font-size: 13px;
+    line-height: 1.45;
+    border: 1px solid rgba(180,120,0,0.25);
+  }
+  .config-banner.show { display: block; }
+  .config-banner code { background: rgba(0,0,0,0.08); padding: 1px 5px; border-radius: 4px; }
+  @media (prefers-color-scheme: dark) {
+    .config-banner { background: rgba(234,179,8,0.12); color: #fcd34d; border-color: rgba(234,179,8,0.3); }
+    .config-banner code { background: rgba(255,255,255,0.1); }
+  }
+
+  main { padding: 16px 16px 8px; max-width: 560px; margin: 0 auto; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .card {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--card-shadow);
+    padding: 18px;
+    margin-bottom: 14px;
+  }
+  .card h2 {
+    margin: 0 0 14px;
+    font-size: 12.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    font-weight: 700;
+  }
+
+  /* Countdown */
+  .countdown-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  .countdown-cell { text-align: center; }
+  .countdown-cell .num-box {
+    background: var(--countdown-bg);
+    border-radius: var(--radius-sm);
+    padding: 10px 2px;
+  }
+  .countdown-cell .num {
+    display: block;
+    font-size: 22px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+    color: #ffffff;
+  }
+  .countdown-cell.is-days .num { color: var(--countdown-accent); }
+  .countdown-cell .label {
+    font-size: 10.5px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    margin-top: 6px;
+  }
+  .countdown-ended { text-align: center; padding: 6px 0; font-weight: 700; color: var(--critical); }
+
+  /* Progress */
+  .progress-headline {
+    text-align: center;
+    margin-bottom: 14px;
+  }
+  .progress-headline .value { font-size: 44px; font-weight: 800; color: var(--accent); line-height: 1; letter-spacing: -0.02em; }
+  .progress-headline .target { display: block; margin-top: 4px; font-size: 13px; font-weight: 600; color: var(--text-muted); }
+  .meter-track {
+    height: 10px; border-radius: 999px; background: var(--seq-track);
+    position: relative;
+  }
+  .meter-fill {
+    height: 100%; background: var(--seq-fill); border-radius: 999px;
+    transition: width 0.4s ease; overflow: hidden;
+  }
+  .meter-flame {
+    position: absolute; left: -3px; top: 50%; transform: translateY(-50%);
+    font-size: 15px; line-height: 1; pointer-events: none;
+  }
+  .status-line { margin-top: 12px; font-size: 14px; font-weight: 500; color: var(--text-secondary); text-align: center; }
+
+  /* Pie / legend */
+  .pie-wrap { display: flex; align-items: center; gap: 18px; }
+  .pie-canvas-box { width: 128px; height: 128px; flex: none; position: relative; }
+  .legend-list { flex: 1; list-style: none; margin: 0; padding: 0; }
+  .legend-list li { display: flex; align-items: center; gap: 9px; padding: 6px 0; font-size: 13.5px; }
+  .legend-swatch { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+  .legend-label { color: var(--text-primary); font-weight: 700; flex: 1; }
+  .legend-value { color: var(--text-muted); font-weight: 500; font-variant-numeric: tabular-nums; }
+  .table-toggle {
+    background: none; border: none; padding: 0; margin-top: 12px;
+    color: var(--accent); font-size: 12.5px; font-weight: 600; cursor: pointer; text-decoration: underline;
+  }
+  table.data-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; display: none; }
+  table.data-table.show { display: table; }
+  table.data-table th, table.data-table td { text-align: left; padding: 6px 4px; border-bottom: 1px solid var(--gridline); }
+  table.data-table th { color: var(--text-muted); font-weight: 600; font-size: 11px; text-transform: uppercase; }
+
+  /* Form */
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-secondary); }
+  .field .hint { font-size: 11.5px; color: var(--text-muted); margin-top: 4px; }
+  input[type="text"], input[type="date"], input[type="number"], select {
+    width: 100%; padding: 11px 12px; font-size: 15px; border-radius: var(--radius-sm);
+    border: 1px solid var(--border); background: var(--surface-2); color: var(--text-primary);
+    font-family: inherit;
+  }
+  input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .unit-row { display: flex; gap: 10px; }
+  .unit-row input { flex: 1; }
+  .unit-row select { flex: 1; }
+  .file-drop {
+    border: 1.5px dashed var(--baseline); border-radius: var(--radius-md);
+    padding: 18px 12px; text-align: center; color: var(--text-secondary); font-size: 13.5px;
+    background: var(--surface-2); cursor: pointer;
+  }
+  .file-drop.has-file { border-style: solid; border-color: var(--good); color: var(--text-primary); }
+  .file-preview { margin-top: 10px; max-width: 100%; border-radius: var(--radius-sm); display: none; }
+  .file-preview.show { display: block; }
+  input[type="file"] { display: none; }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    width: 100%; padding: 13px; border-radius: var(--radius-md); border: none;
+    font-size: 15px; font-weight: 700; cursor: pointer;
+  }
+  .btn-primary { background: var(--accent); color: var(--accent-contrast); }
+  .btn-primary:disabled { opacity: 0.55; }
+  .btn-secondary { background: var(--surface-2); color: var(--text-primary); border: 1px solid var(--border); }
+  .btn-danger { background: var(--critical); color: #fff; }
+  .btn-row { display: flex; gap: 10px; margin-top: 4px; }
+  .btn-row .btn { width: auto; flex: 1; }
+
+  .field-error { color: var(--critical); font-size: 12px; margin-top: 4px; display: none; }
+  .field-error.show { display: block; }
+
+  /* Gallery */
+  .filter-row { display: flex; gap: 10px; margin-bottom: 14px; }
+  .filter-row select {
+    flex: 1; border-radius: 999px; font-size: 13px; font-weight: 600; padding: 9px 14px;
+  }
+  .gallery-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;
+  }
+  .gallery-item {
+    display: flex; flex-direction: column; border-radius: var(--radius-md); overflow: hidden;
+    background: var(--surface-2); border: 1px solid var(--border); box-shadow: var(--card-shadow);
+    cursor: pointer;
+  }
+  .gallery-item .thumb { position: relative; aspect-ratio: 4 / 3; background: var(--gridline); }
+  .gallery-item .thumb img, .gallery-item .thumb .video-fallback { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .gallery-item .thumb .video-fallback { display: flex; align-items: center; justify-content: center; font-size: 22px; background: var(--countdown-bg); color: #fff; }
+  .gallery-item .pts-pill {
+    position: absolute; right: 6px; bottom: 6px; background: var(--good-bg); color: var(--good);
+    font-size: 10.5px; font-weight: 700; padding: 3px 9px; border-radius: 999px;
+  }
+  .gallery-item .meta { padding: 8px 10px 10px; }
+  .gallery-item .meta-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 5px; }
+  .gallery-item .meta-date { font-size: 10.5px; font-weight: 700; color: var(--accent); }
+  .gallery-item .meta-cat {
+    font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+    padding: 2px 7px; border-radius: 999px; white-space: nowrap;
+  }
+  .gallery-item .meta-title {
+    font-size: 13px; font-weight: 700; color: var(--text-primary);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .gallery-item .meta-amount { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+  .empty-state { text-align: center; padding: 36px 16px; color: var(--text-muted); font-size: 14px; }
+
+  /* Bottom nav */
+  nav.bottom-nav {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+    display: flex; background: var(--surface-1); border-top: 1px solid var(--border);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  nav.bottom-nav button {
+    flex: 1; background: none; border: none; padding: 10px 4px 8px; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    color: var(--text-muted); font-size: 11px; font-family: inherit; font-weight: 600;
+  }
+  nav.bottom-nav button .icon { font-size: 20px; line-height: 1; }
+  nav.bottom-nav button.active { color: var(--accent); }
+
+  /* Modal */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 50;
+    align-items: flex-end; justify-content: center;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal-sheet {
+    background: var(--surface-1); width: 100%; max-width: 560px; border-radius: 20px 20px 0 0;
+    padding: 20px 20px calc(20px + env(safe-area-inset-bottom)); max-height: 88vh; overflow-y: auto;
+    box-shadow: var(--card-shadow);
+  }
+  .modal-sheet.center { border-radius: var(--radius-lg); margin-bottom: 10vh; text-align: center; }
+  .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .modal-header h3 { margin: 0; font-size: 17px; font-weight: 800; }
+  .modal-close { background: none; border: none; font-size: 20px; color: var(--text-muted); cursor: pointer; padding: 4px; }
+  .lightbox-media { width: 100%; border-radius: var(--radius-md); margin-bottom: 14px; background: #000; }
+  .lightbox-media img, .lightbox-media iframe { width: 100%; display: block; border: none; border-radius: var(--radius-md); }
+  .lightbox-media iframe { aspect-ratio: 16/9; }
+  .detail-row { display: flex; justify-content: space-between; font-size: 13.5px; padding: 7px 0; border-bottom: 1px solid var(--gridline); }
+  .detail-row span:first-child { color: var(--text-muted); font-weight: 500; }
+  .detail-row span:last-child { color: var(--text-primary); font-weight: 700; }
+
+  .toast-stack { position: fixed; top: max(12px, env(safe-area-inset-top)); left: 0; right: 0; z-index: 60; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; }
+  .toast { background: var(--countdown-bg); color: #ffffff; padding: 10px 16px; border-radius: 999px; font-size: 13px; font-weight: 600; box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
+
+  .confetti-emoji { font-size: 46px; margin-bottom: 6px; }
+  .spinner { width: 16px; height: 16px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <h1>B in the Next Chapter!</h1>
+  <p class="sub">Target: <strong id="targetLabel">1,000</strong> pts &middot; 31 Dec 2026</p>
+</header>
+
+<div id="configBanner" class="config-banner">
+  ⚠️ This app isn't connected to your backend yet. Open <code>index.html</code>, find <code>WEB_APP_URL</code> near the top of the script, and paste in your deployed Apps Script Web App URL. See SETUP_GUIDE.md.
+</div>
+
+<main>
+
+  <!-- DASHBOARD -->
+  <section id="panel-dashboard" class="panel active">
+    <div class="card">
+      <h2>Time remaining</h2>
+      <div id="countdownBody"></div>
+    </div>
+
+    <div class="card">
+      <h2>Group progress</h2>
+      <div class="progress-headline">
+        <span class="value"><span id="totalPoints">0</span></span>
+        <span class="target">of <span id="targetPoints">1,000</span> pts</span>
+      </div>
+      <div class="meter-track" role="progressbar" id="meterTrack" aria-valuemin="0" aria-valuemax="1000" aria-valuenow="0">
+        <span class="meter-flame" aria-hidden="true">🔥</span>
+        <div class="meter-fill" id="meterFill" style="width:0%"></div>
+      </div>
+      <p class="status-line" id="statusLine">Just getting started — log your first activity!</p>
+    </div>
+
+    <div class="card">
+      <h2>Points by category</h2>
+      <div class="pie-wrap">
+        <div class="pie-canvas-box"><canvas id="pieCanvas" width="128" height="128"></canvas></div>
+        <ul class="legend-list" id="legendList"></ul>
+      </div>
+      <button class="table-toggle" id="tableToggle" type="button">View as table</button>
+      <table class="data-table" id="dataTable">
+        <thead><tr><th>Category</th><th>Points</th><th>Share</th></tr></thead>
+        <tbody id="dataTableBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- LOG -->
+  <section id="panel-log" class="panel">
+    <div class="card">
+      <h2 id="formHeading">Log an activity</h2>
+      <form id="entryForm" novalidate>
+        <div class="field">
+          <label for="fName">Your name</label>
+          <input type="text" id="fName" maxlength="60" required autocomplete="name" />
+          <div class="field-error" data-for="fName">Please enter your name.</div>
+        </div>
+        <div class="field">
+          <label for="fCategory">Category</label>
+          <select id="fCategory" required>
+            <option value="" disabled selected>Select a category</option>
+            <option value="Spiritual">Spiritual</option>
+            <option value="Relationship">Relationship</option>
+            <option value="Others">Others</option>
+          </select>
+          <div class="field-error" data-for="fCategory">Please choose a category.</div>
+        </div>
+        <div class="field">
+          <label for="fActivity">Activity name</label>
+          <input type="text" id="fActivity" maxlength="200" placeholder="e.g. Morning devotion" required />
+          <div class="field-error" data-for="fActivity">Please describe the activity.</div>
+        </div>
+        <div class="field">
+          <label for="fDate">Date</label>
+          <input type="date" id="fDate" required />
+          <div class="field-error" data-for="fDate">Date can't be in the future.</div>
+        </div>
+        <div class="field">
+          <label for="fAmount">Amount &amp; units</label>
+          <div class="unit-row">
+            <input type="number" id="fAmount" step="0.1" min="0.1" placeholder="e.g. 5.0" required />
+            <select id="fUnits" required>
+              <option value="" disabled selected>Units</option>
+              <option value="km">km</option>
+              <option value="hours">hours</option>
+            </select>
+          </div>
+          <div class="field-error" data-for="fAmount">Enter an amount greater than 0 (max 1 decimal place).</div>
+        </div>
+        <div class="field">
+          <label for="fMedia">Photo or video <span style="font-weight:400;color:var(--text-muted);">(required)</span></label>
+          <div class="file-drop" id="fileDrop">📷 Tap to add a photo or video</div>
+          <input type="file" id="fMedia" accept="image/*,video/*" />
+          <img class="file-preview" id="filePreviewImg" alt="Preview" />
+          <video class="file-preview" id="filePreviewVideo" controls muted></video>
+          <div class="field-error" data-for="fMedia">A photo or video is required.</div>
+          <div class="hint">Keep videos short (under ~30 sec) — large files may fail to upload.</div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="submitBtn">Log it</button>
+        <div class="btn-row" id="cancelEditRow" style="display:none;">
+          <button type="button" class="btn btn-secondary" id="cancelEditBtn">Cancel edit</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- GALLERY -->
+  <section id="panel-gallery" class="panel">
+    <div class="card">
+      <h2>Filter</h2>
+      <div class="filter-row">
+        <select id="filterMonth"><option value="">All months</option></select>
+        <select id="filterCategory">
+          <option value="">All categories</option>
+          <option value="Spiritual">Spiritual</option>
+          <option value="Relationship">Relationship</option>
+          <option value="Others">Others</option>
+        </select>
+      </div>
+      <div class="gallery-grid" id="galleryGrid"></div>
+      <div class="empty-state" id="galleryEmpty" style="display:none;">No entries match these filters yet.</div>
+    </div>
+  </section>
+
+</main>
+
+<nav class="bottom-nav">
+  <button data-panel="dashboard" class="active"><span class="icon">🏠</span>Dashboard</button>
+  <button data-panel="log"><span class="icon">➕</span>Log</button>
+  <button data-panel="gallery"><span class="icon">🖼️</span>Gallery</button>
+</nav>
+
+<!-- Lightbox modal -->
+<div class="modal-overlay" id="lightboxOverlay">
+  <div class="modal-sheet">
+    <div class="modal-header">
+      <h3 id="lightboxTitle">Entry</h3>
+      <button class="modal-close" id="lightboxClose" aria-label="Close">✕</button>
+    </div>
+    <div class="lightbox-media" id="lightboxMedia"></div>
+    <div id="lightboxDetails"></div>
+    <div class="btn-row" style="margin-top:14px;">
+      <button class="btn btn-secondary" id="lightboxEditBtn">Edit</button>
+      <button class="btn btn-danger" id="lightboxDeleteBtn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete confirm modal -->
+<div class="modal-overlay" id="deleteConfirmOverlay">
+  <div class="modal-sheet center">
+    <div class="confetti-emoji">🗑️</div>
+    <h3 style="margin:0 0 8px;">Delete this entry?</h3>
+    <p style="color:var(--text-secondary);font-size:13.5px;margin:0 0 16px;">This removes it from the group total and deletes the uploaded photo/video. This can't be undone.</p>
+    <div class="btn-row">
+      <button class="btn btn-secondary" id="deleteCancelBtn">Cancel</button>
+      <button class="btn btn-danger" id="deleteConfirmBtn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Celebration modal -->
+<div class="modal-overlay" id="celebrateOverlay">
+  <div class="modal-sheet center">
+    <div class="confetti-emoji">🎉</div>
+    <h3 style="margin:0 0 8px;">Goal reached!</h3>
+    <p style="color:var(--text-secondary);font-size:14px;margin:0 0 16px;">The group just hit <strong id="celebrateTarget">1,000</strong> points. Amazing work, everyone!</p>
+    <button class="btn btn-primary" id="celebrateCloseBtn">Keep going 🎊</button>
+  </div>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ===================================================================
+  // CONFIG — edit these two lines for your deployment
+  // ===================================================================
+  var WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxJrKK2_Y2webMah7aZ-EdEwrOKgxeOjX9eSfY56-PmRKPFFi6patCPtwHdUg9RMiWl/exec";
+  var TARGET_POINTS = 1000;
+  var DEADLINE_ISO = "2026-12-31T23:59:59+08:00"; // Asia/Singapore
+  var POLL_INTERVAL_MS = 20000;
+
+  var CATEGORIES = ["Spiritual", "Relationship", "Others"];
+  var CATEGORY_COLORS = {
+    Spiritual: getCss_("--series-spiritual"),
+    Relationship: getCss_("--series-relationship"),
+    Others: getCss_("--series-others")
+  };
+  function getCss_(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+  // Tints a category's swatch color for pill backgrounds (e.g. "#8b5cf6" -> "rgba(139,92,246,0.14)").
+  function tint_(hex, alpha) {
+    var h = hex.replace("#", "");
+    if (h.length === 3) h = h.split("").map(function (c) { return c + c; }).join("");
+    var r = parseInt(h.substring(0, 2), 16), g = parseInt(h.substring(2, 4), 16), b = parseInt(h.substring(4, 6), 16);
+    if (isNaN(r) || isNaN(g) || isNaN(b)) return hex;
+    return "rgba(" + r + "," + g + "," + b + "," + alpha + ")";
+  }
+
+  var isConfigured = WEB_APP_URL.indexOf("PASTE_YOUR") === -1 && WEB_APP_URL.length > 10;
+
+  // ===================================================================
+  // State
+  // ===================================================================
+  var state = {
+    entries: [],
+    loaded: false,
+    editingId: null,
+    pendingMedia: null, // {data, filename, mimeType}
+    lightboxEntry: null,
+    celebrated: false, // becomes true once we've shown the modal this session
+    prevTotal: null
+  };
+
+  var pieChart = null;
+
+  // ===================================================================
+  // Utilities
+  // ===================================================================
+  function todayISO() {
+    var d = new Date();
+    var tzOffsetMs = d.getTimezoneOffset() * 60000;
+    var local = new Date(d.getTime() - tzOffsetMs);
+    return local.toISOString().slice(0, 10);
+  }
+
+  function formatNum_(n) {
+    return Number(n).toLocaleString(undefined, { maximumFractionDigits: 1 });
+  }
+
+  function driveImageUrl(fileId) {
+    return "https://drive.google.com/thumbnail?id=" + encodeURIComponent(fileId) + "&sz=w800";
+  }
+  function driveVideoEmbedUrl(fileId) {
+    return "https://drive.google.com/file/d/" + encodeURIComponent(fileId) + "/preview";
+  }
+
+  function showToast(msg, isError) {
+    var stack = document.getElementById("toastStack");
+    var el = document.createElement("div");
+    el.className = "toast";
+    if (isError) el.style.background = "#d03b3b";
+    el.textContent = msg;
+    stack.appendChild(el);
+    setTimeout(function () {
+      el.style.opacity = "0";
+      el.style.transition = "opacity 0.3s";
+      setTimeout(function () { stack.removeChild(el); }, 320);
+    }, 2600);
+  }
+
+  // ===================================================================
+  // API
+  // ===================================================================
+  function apiList() {
+    return fetch(WEB_APP_URL + "?action=list", { method: "GET" })
+      .then(function (r) { return r.json(); });
+  }
+  function apiWrite(payload) {
+    return fetch(WEB_APP_URL, {
+      method: "POST",
+      // text/plain avoids a CORS preflight that Apps Script doesn't handle.
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload)
+    }).then(function (r) { return r.json(); });
+  }
+
+  function readFileAsBase64(file) {
+    return new Promise(function (resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function () {
+        var result = reader.result; // data:<mime>;base64,XXXX
+        var base64 = result.substring(result.indexOf(",") + 1);
+        resolve(base64);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // Downscale/recompress large images client-side to keep uploads fast and
+  // within the Apps Script payload ceiling. Videos are left as-is (only
+  // size-warned) since re-encoding video in-browser isn't practical here.
+  function prepareImageFile(file) {
+    return new Promise(function (resolve) {
+      var MAX_DIM = 1600;
+      var img = new Image();
+      var url = URL.createObjectURL(file);
+      img.onload = function () {
+        URL.revokeObjectURL(url);
+        var w = img.width, h = img.height;
+        if (w <= MAX_DIM && h <= MAX_DIM && file.size < 2 * 1024 * 1024) {
+          resolve(file);
+          return;
+        }
+        var scale = Math.min(1, MAX_DIM / Math.max(w, h));
+        var canvas = document.createElement("canvas");
+        canvas.width = Math.round(w * scale);
+        canvas.height = Math.round(h * scale);
+        var ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(function (blob) {
+          resolve(blob || file);
+        }, "image/jpeg", 0.82);
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); resolve(file); };
+      img.src = url;
+    });
+  }
+
+  // ===================================================================
+  // Countdown
+  // ===================================================================
+  function renderCountdown() {
+    var deadline = new Date(DEADLINE_ISO).getTime();
+    var now = Date.now();
+    var diff = deadline - now;
+    var body = document.getElementById("countdownBody");
+    if (diff <= 0) {
+      body.innerHTML = '<div class="countdown-ended">🏁 Challenge ended</div>';
+      return;
+    }
+    var s = Math.floor(diff / 1000);
+    var days = Math.floor(s / 86400); s -= days * 86400;
+    var hours = Math.floor(s / 3600); s -= hours * 3600;
+    var mins = Math.floor(s / 60); s -= mins * 60;
+    var secs = s;
+    body.innerHTML =
+      '<div class="countdown-grid">' +
+      cell_(days, "Days", true) + cell_(hours, "Hrs") + cell_(mins, "Min") + cell_(secs, "Sec") +
+      '</div>';
+  }
+  function cell_(n, label, isDays) {
+    return '<div class="countdown-cell' + (isDays ? " is-days" : "") + '">' +
+      '<div class="num-box"><span class="num">' + String(n).padStart(2, "0") + '</span></div>' +
+      '<div class="label">' + label + '</div></div>';
+  }
+
+  // ===================================================================
+  // Progress + pie
+  // ===================================================================
+  function computeTotals(entries) {
+    var total = 0;
+    var byCategory = {};
+    CATEGORIES.forEach(function (c) { byCategory[c] = 0; });
+    entries.forEach(function (e) {
+      total += e.amount;
+      if (byCategory.hasOwnProperty(e.category)) byCategory[e.category] += e.amount;
+    });
+    return { total: total, byCategory: byCategory };
+  }
+
+  function statusLineFor(total) {
+    var pct = total / TARGET_POINTS;
+    if (total <= 0) return "Just getting started — log your first activity!";
+    if (pct < 0.25) return "Off to a good start 🌱";
+    if (pct < 0.5) return "Building momentum 💪";
+    if (pct < 0.85) return "🔥 Almost there!";
+    if (pct < 1) return "So close — final push! 🚀";
+    return "🎉 Goal reached — amazing work, everyone!";
+  }
+
+  function renderProgress(totals, opts) {
+    var suppressCelebration = !!(opts && opts.suppressCelebration);
+    document.getElementById("totalPoints").textContent = formatNum_(totals.total);
+    document.getElementById("targetPoints").textContent = formatNum_(TARGET_POINTS);
+    document.getElementById("targetLabel").textContent = formatNum_(TARGET_POINTS);
+    var pct = Math.max(0, Math.min(100, (totals.total / TARGET_POINTS) * 100));
+    document.getElementById("meterFill").style.width = pct + "%";
+    var track = document.getElementById("meterTrack");
+    track.setAttribute("aria-valuenow", String(totals.total));
+    track.setAttribute("aria-valuemax", String(TARGET_POINTS));
+    document.getElementById("statusLine").textContent = statusLineFor(totals.total);
+
+    // Only celebrate on a crossing observed WITHIN this session (prevTotal
+    // came from a real backend load, not the synthetic zero-state render
+    // before the first fetch resolves) — otherwise anyone opening the app
+    // after the group already hit goal would see the modal every single time.
+    if (!suppressCelebration && state.prevTotal !== null && state.prevTotal < TARGET_POINTS && totals.total >= TARGET_POINTS && !state.celebrated) {
+      state.celebrated = true;
+      document.getElementById("celebrateTarget").textContent = formatNum_(TARGET_POINTS);
+      document.getElementById("celebrateOverlay").classList.add("show");
+    }
+    if (totals.total >= TARGET_POINTS) state.celebrated = true;
+    state.prevTotal = totals.total;
+  }
+
+  function renderPie(totals) {
+    var labels = CATEGORIES;
+    var values = CATEGORIES.map(function (c) { return totals.byCategory[c]; });
+    var colors = CATEGORIES.map(function (c) { return CATEGORY_COLORS[c]; });
+    var hasData = totals.total > 0;
+
+    // Chart.js loads from a CDN — if it's blocked/offline, degrade to the
+    // legend + table below rather than letting the whole init sequence die.
+    if (typeof Chart === "undefined") {
+      var box = document.querySelector(".pie-canvas-box");
+      if (box) box.innerHTML = '<div style="font-size:11px;color:var(--text-muted);text-align:center;padding-top:44px;">Chart unavailable offline</div>';
+    } else {
+      try {
+        var ctx = document.getElementById("pieCanvas").getContext("2d");
+        if (pieChart) pieChart.destroy();
+        pieChart = new Chart(ctx, {
+          type: "doughnut",
+          data: {
+            labels: labels,
+            datasets: [{
+              data: hasData ? values : [1],
+              backgroundColor: hasData ? colors : [getCss_("--gridline")],
+              borderColor: getCss_("--surface-1"),
+              borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: "62%",
+            plugins: { legend: { display: false }, tooltip: { enabled: hasData } }
+          }
+        });
+      } catch (err) {
+        // Never let a chart-rendering failure take down the rest of the app.
+      }
+    }
+
+    var legendList = document.getElementById("legendList");
+    legendList.innerHTML = "";
+    var tableBody = document.getElementById("dataTableBody");
+    tableBody.innerHTML = "";
+    CATEGORIES.forEach(function (c) {
+      var v = totals.byCategory[c];
+      var pct = totals.total > 0 ? Math.round((v / totals.total) * 100) : 0;
+      var li = document.createElement("li");
+      li.innerHTML = '<span class="legend-swatch" style="background:' + CATEGORY_COLORS[c] + '"></span>' +
+        '<span class="legend-label">' + c + '</span>' +
+        '<span class="legend-value">' + formatNum_(v) + ' pts</span>';
+      legendList.appendChild(li);
+
+      var tr = document.createElement("tr");
+      tr.innerHTML = "<td>" + c + "</td><td>" + formatNum_(v) + "</td><td>" + pct + "%</td>";
+      tableBody.appendChild(tr);
+    });
+  }
+
+  // ===================================================================
+  // Gallery
+  // ===================================================================
+  function monthKey(dateStr) { return dateStr.slice(0, 7); }
+  function monthLabel(key) {
+    var parts = key.split("-");
+    var d = new Date(Number(parts[0]), Number(parts[1]) - 1, 1);
+    return d.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+  }
+
+  function populateMonthFilter(entries) {
+    var select = document.getElementById("filterMonth");
+    var current = select.value;
+    var months = Array.from(new Set(entries.map(function (e) { return monthKey(e.date); }))).sort().reverse();
+    select.innerHTML = '<option value="">All months</option>' +
+      months.map(function (m) { return '<option value="' + m + '">' + monthLabel(m) + "</option>"; }).join("");
+    if (months.indexOf(current) !== -1) select.value = current;
+  }
+
+  function renderGallery() {
+    var monthFilter = document.getElementById("filterMonth").value;
+    var catFilter = document.getElementById("filterCategory").value;
+    var filtered = state.entries.filter(function (e) {
+      if (monthFilter && monthKey(e.date) !== monthFilter) return false;
+      if (catFilter && e.category !== catFilter) return false;
+      return true;
+    }).sort(function (a, b) { return b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt); });
+
+    var grid = document.getElementById("galleryGrid");
+    grid.innerHTML = "";
+    document.getElementById("galleryEmpty").style.display = filtered.length ? "none" : "block";
+
+    filtered.forEach(function (entry) {
+      var item = document.createElement("div");
+      item.className = "gallery-item";
+      var mediaHtml = entry.mediaType === "video"
+        ? '<div class="video-fallback">▶️</div>'
+        : '<img loading="lazy" src="' + driveImageUrl(entry.driveFileId) + '" alt="' + escapeHtml_(entry.activity) + '" onerror="this.onerror=null;this.outerHTML=\'<div class=&quot;video-fallback&quot;>🖼️</div>\';" />';
+      var catColor = CATEGORY_COLORS[entry.category] || getCss_("--text-muted");
+      item.innerHTML =
+        '<div class="thumb">' + mediaHtml + '<span class="pts-pill">+' + formatNum_(entry.amount) + ' pts</span></div>' +
+        '<div class="meta">' +
+          '<div class="meta-row">' +
+            '<span class="meta-date">' + formatDateShort_(entry.date) + '</span>' +
+            '<span class="meta-cat" style="background:' + tint_(catColor, 0.14) + ';color:' + catColor + '">' + escapeHtml_(entry.category) + '</span>' +
+          '</div>' +
+          '<div class="meta-title">' + escapeHtml_(entry.activity) + '</div>' +
+          '<div class="meta-amount">' + formatNum_(entry.amount) + ' ' + escapeHtml_(entry.units) + '</div>' +
+        '</div>';
+      item.addEventListener("click", function () { openLightbox(entry); });
+      grid.appendChild(item);
+    });
+  }
+
+  function formatDateShort_(dateStr) {
+    var parts = dateStr.split("-");
+    var d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+    return d.toLocaleDateString(undefined, { day: "2-digit", month: "short", year: "numeric" }).toUpperCase();
+  }
+
+  function escapeHtml_(s) {
+    var div = document.createElement("div");
+    div.textContent = s;
+    return div.innerHTML;
+  }
+
+  // ===================================================================
+  // Lightbox
+  // ===================================================================
+  function openLightbox(entry) {
+    state.lightboxEntry = entry;
+    document.getElementById("lightboxTitle").textContent = entry.activity;
+    var mediaBox = document.getElementById("lightboxMedia");
+    mediaBox.innerHTML = entry.mediaType === "video"
+      ? '<iframe src="' + driveVideoEmbedUrl(entry.driveFileId) + '" allow="autoplay"></iframe>'
+      : '<img src="' + driveImageUrl(entry.driveFileId) + '" alt="' + escapeHtml_(entry.activity) + '" onerror="this.onerror=null;this.outerHTML=\'<div style=&quot;padding:40px 0;text-align:center;color:var(--text-muted);&quot;>🖼️ Image unavailable</div>\';" />';
+    document.getElementById("lightboxDetails").innerHTML =
+      detailRow_("Logged by", entry.name) +
+      detailRow_("Category", entry.category) +
+      detailRow_("Date", entry.date) +
+      detailRow_("Amount", formatNum_(entry.amount) + " " + entry.units);
+    document.getElementById("lightboxOverlay").classList.add("show");
+  }
+  function detailRow_(label, value) {
+    return '<div class="detail-row"><span>' + label + '</span><span>' + escapeHtml_(String(value)) + '</span></div>';
+  }
+  function closeLightbox() {
+    document.getElementById("lightboxOverlay").classList.remove("show");
+    document.getElementById("lightboxMedia").innerHTML = "";
+    state.lightboxEntry = null;
+  }
+
+  // ===================================================================
+  // Form (create / edit)
+  // ===================================================================
+  var els = {}; // filled on DOMContentLoaded
+
+  function resetForm(toCreateMode) {
+    document.getElementById("entryForm").reset();
+    document.getElementById("fDate").value = todayISO();
+    document.getElementById("fDate").max = todayISO();
+    state.pendingMedia = null;
+    document.getElementById("filePreviewImg").classList.remove("show");
+    document.getElementById("filePreviewVideo").classList.remove("show");
+    document.getElementById("fileDrop").classList.remove("has-file");
+    document.getElementById("fileDrop").textContent = "📷 Tap to add a photo or video";
+    clearErrors_();
+    if (toCreateMode) {
+      state.editingId = null;
+      document.getElementById("formHeading").textContent = "Log an activity";
+      document.getElementById("submitBtn").textContent = "Log it";
+      document.getElementById("cancelEditRow").style.display = "none";
+    }
+  }
+
+  function clearErrors_() {
+    document.querySelectorAll(".field-error").forEach(function (el) { el.classList.remove("show"); });
+  }
+  function showError_(fieldId) {
+    var el = document.querySelector('.field-error[data-for="' + fieldId + '"]');
+    if (el) el.classList.add("show");
+  }
+
+  function populateFormForEdit(entry) {
+    state.editingId = entry.entryId;
+    document.getElementById("fName").value = entry.name;
+    document.getElementById("fCategory").value = entry.category;
+    document.getElementById("fActivity").value = entry.activity;
+    document.getElementById("fDate").value = entry.date;
+    document.getElementById("fDate").max = todayISO();
+    document.getElementById("fAmount").value = entry.amount;
+    document.getElementById("fUnits").value = entry.units;
+    document.getElementById("formHeading").textContent = "Edit activity";
+    document.getElementById("submitBtn").textContent = "Save changes";
+    document.getElementById("cancelEditRow").style.display = "block";
+    document.getElementById("fileDrop").textContent = "📷 Replace photo/video (optional)";
+    switchPanel("log");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function handleFileChosen(file) {
+    if (!file) return;
+    var isVideo = file.type.indexOf("video") === 0;
+    var LIMIT = isVideo ? 45 * 1024 * 1024 : 15 * 1024 * 1024;
+    if (file.size > LIMIT) {
+      showToast("That file is quite large and may fail to upload — try a shorter/smaller one.", true);
+    }
+    var prep = isVideo ? Promise.resolve(file) : prepareImageFile(file);
+    prep.then(function (finalBlob) {
+      return readFileAsBase64(finalBlob).then(function (base64) {
+        state.pendingMedia = { data: base64, filename: file.name || "upload", mimeType: file.type || (isVideo ? "video/mp4" : "image/jpeg") };
+        document.getElementById("fileDrop").classList.add("has-file");
+        document.getElementById("fileDrop").textContent = "✅ " + (file.name || "File selected");
+        var imgPrev = document.getElementById("filePreviewImg");
+        var vidPrev = document.getElementById("filePreviewVideo");
+        var url = URL.createObjectURL(finalBlob);
+        if (isVideo) {
+          vidPrev.src = url; vidPrev.classList.add("show");
+          imgPrev.classList.remove("show");
+        } else {
+          imgPrev.src = url; imgPrev.classList.add("show");
+          vidPrev.classList.remove("show");
+        }
+      });
+    });
+  }
+
+  function submitForm(e) {
+    e.preventDefault();
+    if (!isConfigured) { showToast("Backend not configured yet — see SETUP_GUIDE.md.", true); return; }
+    clearErrors_();
+
+    var name = document.getElementById("fName").value.trim();
+    var category = document.getElementById("fCategory").value;
+    var activity = document.getElementById("fActivity").value.trim();
+    var date = document.getElementById("fDate").value;
+    var amountRaw = document.getElementById("fAmount").value;
+    var amount = Math.round(parseFloat(amountRaw) * 10) / 10;
+    var units = document.getElementById("fUnits").value;
+
+    var valid = true;
+    if (!name) { showError_("fName"); valid = false; }
+    if (!category) { showError_("fCategory"); valid = false; }
+    if (!activity) { showError_("fActivity"); valid = false; }
+    if (!date || date > todayISO()) { showError_("fDate"); valid = false; }
+    if (!(amount > 0) || isNaN(amount)) { showError_("fAmount"); valid = false; }
+    if (!units) { showError_("fAmount"); valid = false; }
+    if (!state.editingId && !state.pendingMedia) { showError_("fMedia"); valid = false; }
+    if (!valid) return;
+
+    var payload = {
+      action: state.editingId ? "update" : "create",
+      name: name, category: category, activity: activity, date: date, amount: amount, units: units
+    };
+    if (state.pendingMedia) payload.media = state.pendingMedia;
+    if (state.editingId) payload.entryId = state.editingId;
+
+    var btn = document.getElementById("submitBtn");
+    btn.disabled = true;
+    var originalLabel = btn.textContent;
+    btn.innerHTML = '<span class="spinner"></span> Saving…';
+
+    apiWrite(payload).then(function (res) {
+      btn.disabled = false;
+      btn.textContent = originalLabel;
+      if (!res.ok) { showToast(res.error || "Something went wrong.", true); return; }
+      showToast(state.editingId ? "Entry updated." : "Logged! 🎉");
+      resetForm(true);
+      switchPanel("dashboard");
+      loadEntries();
+    }).catch(function () {
+      btn.disabled = false;
+      btn.textContent = originalLabel;
+      showToast("Network error — check your connection and try again.", true);
+    });
+  }
+
+  // ===================================================================
+  // Delete
+  // ===================================================================
+  var pendingDeleteId = null;
+  function confirmDelete(entryId) {
+    pendingDeleteId = entryId;
+    document.getElementById("deleteConfirmOverlay").classList.add("show");
+  }
+  function doDelete() {
+    if (!pendingDeleteId) return;
+    apiWrite({ action: "delete", entryId: pendingDeleteId }).then(function (res) {
+      document.getElementById("deleteConfirmOverlay").classList.remove("show");
+      if (!res.ok) { showToast(res.error || "Couldn't delete that entry.", true); return; }
+      showToast("Entry deleted.");
+      closeLightbox();
+      pendingDeleteId = null;
+      loadEntries();
+    });
+  }
+
+  // ===================================================================
+  // Tabs
+  // ===================================================================
+  function switchPanel(name) {
+    document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+    document.getElementById("panel-" + name).classList.add("active");
+    document.querySelectorAll(".bottom-nav button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.panel === name);
+    });
+  }
+
+  // ===================================================================
+  // Load loop
+  // ===================================================================
+  function loadEntries() {
+    if (!isConfigured) return;
+    var isFirstLoad = !state.loaded;
+    apiList().then(function (res) {
+      if (!res.ok) { showToast(res.error || "Couldn't load entries.", true); return; }
+      state.entries = res.entries || [];
+      state.loaded = true;
+      var totals = computeTotals(state.entries);
+      renderProgress(totals, { suppressCelebration: isFirstLoad });
+      renderPie(totals);
+      populateMonthFilter(state.entries);
+      renderGallery();
+    }).catch(function () {
+      // Silent on background polls; loud on first load.
+      if (!state.loaded) showToast("Couldn't reach the backend — check WEB_APP_URL.", true);
+    });
+  }
+
+  // ===================================================================
+  // Init
+  // ===================================================================
+  document.addEventListener("DOMContentLoaded", function () {
+    // Wire up every interactive control FIRST, before any rendering that
+    // touches external libraries (Chart.js) or the network — so a slow/
+    // blocked CDN or an unconfigured backend can never leave the app
+    // half-wired (buttons that silently do nothing).
+    bindEventListeners_();
+
+    if (!isConfigured) document.getElementById("configBanner").classList.add("show");
+    document.getElementById("targetPoints").textContent = formatNum_(TARGET_POINTS);
+    document.getElementById("meterTrack").setAttribute("aria-valuemax", String(TARGET_POINTS));
+    resetForm(true);
+
+    renderCountdown();
+    setInterval(renderCountdown, 1000);
+
+    try {
+      var totals0 = computeTotals([]);
+      renderProgress(totals0);
+      renderPie(totals0);
+    } catch (err) {
+      console.error("Initial render failed:", err);
+    }
+
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("sw.js").catch(function () {});
+    }
+
+    loadEntries();
+    setInterval(loadEntries, POLL_INTERVAL_MS);
+  });
+
+  function bindEventListeners_() {
+    document.querySelectorAll(".bottom-nav button").forEach(function (btn) {
+      btn.addEventListener("click", function () { switchPanel(btn.dataset.panel); });
+    });
+
+    document.getElementById("fileDrop").addEventListener("click", function () {
+      document.getElementById("fMedia").click();
+    });
+    document.getElementById("fMedia").addEventListener("change", function (e) {
+      handleFileChosen(e.target.files[0]);
+    });
+
+    document.getElementById("entryForm").addEventListener("submit", submitForm);
+    document.getElementById("cancelEditBtn").addEventListener("click", function () {
+      resetForm(true);
+      switchPanel("dashboard");
+    });
+
+    document.getElementById("tableToggle").addEventListener("click", function () {
+      var t = document.getElementById("dataTable");
+      t.classList.toggle("show");
+      this.textContent = t.classList.contains("show") ? "Hide table" : "View as table";
+    });
+
+    document.getElementById("filterMonth").addEventListener("change", renderGallery);
+    document.getElementById("filterCategory").addEventListener("change", renderGallery);
+
+    document.getElementById("lightboxClose").addEventListener("click", closeLightbox);
+    document.getElementById("lightboxOverlay").addEventListener("click", function (e) {
+      if (e.target === this) closeLightbox();
+    });
+    document.getElementById("lightboxEditBtn").addEventListener("click", function () {
+      if (state.lightboxEntry) populateFormForEdit(state.lightboxEntry);
+      closeLightbox();
+    });
+    document.getElementById("lightboxDeleteBtn").addEventListener("click", function () {
+      if (state.lightboxEntry) confirmDelete(state.lightboxEntry.entryId);
+    });
+
+    document.getElementById("deleteCancelBtn").addEventListener("click", function () {
+      document.getElementById("deleteConfirmOverlay").classList.remove("show");
+      pendingDeleteId = null;
+    });
+    document.getElementById("deleteConfirmBtn").addEventListener("click", doDelete);
+
+    document.getElementById("celebrateCloseBtn").addEventListener("click", function () {
+      document.getElementById("celebrateOverlay").classList.remove("show");
+    });
+
+    document.addEventListener("visibilitychange", function () {
+      if (document.visibilityState === "visible") loadEntries();
+    });
+  }
+})();
+</script>
+</body>
+</html>
