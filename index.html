@@ -365,8 +365,8 @@
 <header class="app-header">
   <div class="header-inner">
     <div class="header-titles">
-      <h1>B in the Next Chapter!</h1>
-      <p class="sub">Target: <strong id="targetLabel">1,000</strong> pts &middot; 31 Dec 2026</p>
+  <h1>B in the Next Chapter!</h1>
+  <p class="sub">Target: <strong id="targetLabel">1,000</strong> pts &middot; 31 Dec 2026</p>
     </div>
     <button class="header-log-btn" id="headerLogBtn" type="button"><span class="icon">➕</span>Log</button>
   </div>
@@ -386,11 +386,7 @@
     </div>
 
     <div class="card">
-      <h2>Group progress</h2>
-      <div class="progress-headline">
-        <span class="value"><span id="totalPoints">0</span></span>
-        <span class="target">of <span id="targetPoints">1,000</span> pts</span>
-      </div>
+      <h2>Points Accumulated</h2>
       <div class="meter-track" role="progressbar" id="meterTrack" aria-valuemin="0" aria-valuemax="1000" aria-valuenow="0">
         <span class="meter-flame" aria-hidden="true">🔥</span>
         <div class="meter-fill" id="meterFill" style="width:0%"></div>
@@ -399,7 +395,7 @@
     </div>
 
     <div class="card">
-      <h2>Points by category</h2>
+      <h2>Points clocked in:</h2>
       <ul class="legend-list" id="legendList"></ul>
     </div>
 
@@ -423,7 +419,7 @@
   <section id="panel-log" class="panel">
     <button type="button" class="log-close-btn" id="logCloseBtn" aria-label="Close">✕</button>
     <div class="card">
-      <h2 id="formHeading">Log an activity</h2>
+      <h2 id="formHeading">Log New activity</h2>
       <form id="entryForm" novalidate>
         <div class="field">
           <label for="fName">Your name</label>
@@ -433,8 +429,8 @@
         <div class="field">
           <label for="fCategory">Category</label>
           <select id="fCategory" required>
-            <option value="" disabled selected>Select a category</option>
-            <option value="Spiritual">Spiritual</option>
+            <!-- <option value="" disabled selected>Select a category</option> -->
+            <option value="Spiritual" selected>Spiritual</option>
             <option value="Relationship">Relationship</option>
             <option value="Others">Others</option>
           </select>
@@ -442,7 +438,7 @@
         </div>
         <div class="field">
           <label for="fActivity">Activity name</label>
-          <input type="text" id="fActivity" maxlength="200" placeholder="e.g. Morning devotion" required />
+          <input type="text" id="fActivity" maxlength="200" placeholder="e.g. Pray, Exercise, CG Hangout" required />
           <div class="field-error" data-for="fActivity">Please describe the activity.</div>
         </div>
         <div class="field">
@@ -451,25 +447,25 @@
           <div class="field-error" data-for="fDate">Date can't be in the future.</div>
         </div>
         <div class="field">
-          <label for="fAmount">Amount &amp; units</label>
+          <label for="fAmount">Amount (1 unit = 1 pt)</label>
           <div class="unit-row">
-            <input type="number" id="fAmount" step="0.1" min="0.1" placeholder="e.g. 5.0" required />
+            <input type="number" id="fAmount" step="0.1" min="0.1" placeholder="e.g. 5" required />
             <select id="fUnits" required>
               <option value="" disabled selected>Units</option>
-              <option value="km">km</option>
-              <option value="hours">hours</option>
+              <option value="km" selected>Kilometres (km)</option>
+              <option value="hours">Hours (hrs)</option>
             </select>
           </div>
           <div class="field-error" data-for="fAmount">Enter an amount greater than 0 (max 1 decimal place).</div>
         </div>
         <div class="field">
-          <label for="fMedia">Photo or video <span style="font-weight:400;color:var(--text-muted);">(required)</span></label>
-          <div class="file-drop" id="fileDrop">📷 Tap to add a photo or video</div>
+          <label for="fMedia">Upload Photo / Video <span style="font-weight:400;color:var(--text-muted);">(required)</span></label>
+          <div class="hint">Keep videos short (under ~10 sec) — large files may fail to upload.</div>
+          <div class="file-drop" id="fileDrop">📷 Tap to add a photo / video</div>
           <input type="file" id="fMedia" accept="image/*,video/*" />
           <img class="file-preview" id="filePreviewImg" alt="Preview" />
           <video class="file-preview" id="filePreviewVideo" controls muted></video>
           <div class="field-error" data-for="fMedia">A photo or video is required.</div>
-          <div class="hint">Keep videos short (under ~30 sec) — large files may fail to upload.</div>
         </div>
 
         <button type="submit" class="btn btn-primary" id="submitBtn">Log it</button>
