@@ -19,7 +19,7 @@
   :root {
     color-scheme: light;
     --surface-1: #ffffff;
-    --surface-2: #ffffff;
+    --surface-2: #f8fafc;
     --page: #f8fafc;
     --text-primary: #0f172a;
     --text-secondary: #64748b;
@@ -48,38 +48,6 @@
     --radius-lg: 20px;
     --radius-md: 12px;
     --radius-sm: 10px;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      color-scheme: dark;
-      --surface-1: #161b26;
-      --surface-2: #1c2331;
-      --page: #0b0e14;
-      --text-primary: #f1f5f9;
-      --text-secondary: #8895a7;
-      --text-muted: #8895a7;
-      --gridline: #232a38;
-      --baseline: #3a4252;
-      --border: rgba(255,255,255,0.10);
-      --series-spiritual: #a78bfa;
-      --series-relationship: #fb7185;
-      --series-others: #60a5fa;
-      --seq-track: #232a38;
-      --seq-fill: #34d399;
-      --accent: #6366f1;
-      --accent-hover: #818cf8;
-      --accent-contrast: #ffffff;
-      --countdown-bg: #05070c;
-      --countdown-accent: #ffe135;
-      --badge-bg: #ffe135;
-      --badge-text: #000000;
-      --success: #34d399;
-      --success-hover: #10b981;
-      --good: #34d399;
-      --good-bg: rgba(52,211,153,0.16);
-      --critical: #f87171;
-      --card-shadow: 0 4px 24px -4px rgba(0, 0, 0, 0.3);
-    }
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
@@ -145,10 +113,6 @@
   }
   .config-banner.show { display: block; }
   .config-banner code { background: rgba(0,0,0,0.08); padding: 1px 5px; border-radius: 4px; }
-  @media (prefers-color-scheme: dark) {
-    .config-banner { background: rgba(234,179,8,0.12); color: #fcd34d; border-color: rgba(234,179,8,0.3); }
-    .config-banner code { background: rgba(255,255,255,0.1); }
-  }
 
   main { padding: 16px 16px 8px; max-width: 560px; margin: 0 auto; }
   .panel { display: none; }
@@ -196,12 +160,12 @@
     font-weight: 700;
   }
   .card-plain {
-    background: transparent;
+    background: #f8fafc;
     border: none;
     box-shadow: none;
   }
   .card-plain h2 { text-align: center; }
-  .card-bare { background: transparent; border: none; box-shadow: none; padding: 0; }
+  .card-bare { background: #f8fafc; border: none; box-shadow: none; padding: 0; }
 
   /* Countdown */
   .countdown-grid {
