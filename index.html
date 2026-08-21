@@ -22,24 +22,29 @@
     --surface-2: #ffffff;
     --page: #f8fafc;
     --text-primary: #0f172a;
-    --text-secondary: #475569;
+    --text-secondary: #64748b;
     --text-muted: #64748b;
     --gridline: #f1f5f9;
     --baseline: #cbd5e1;
     --border: #e2e8f0;
     --series-spiritual: #8b5cf6;
-    --series-relationship: #ef4444;
+    --series-relationship: #f43f5e;
     --series-others: #3b82f6;
-    --seq-track: #f1f5f9;
-    --seq-fill: #4f46e5;
+    --seq-track: #e2e8f0;
+    --seq-fill: #10b981;
     --accent: #4f46e5;
+    --accent-hover: #4338ca;
     --accent-contrast: #ffffff;
     --countdown-bg: #0f172a;
-    --countdown-accent: #eab308;
+    --countdown-accent: #ffe135;
+    --badge-bg: #ffe135;
+    --badge-text: #000000;
+    --success: #10b981;
+    --success-hover: #059669;
     --good: #059669;
     --good-bg: #d1fae5;
-    --critical: #dc2626;
-    --card-shadow: 0 4px 24px -4px rgba(15, 23, 42, 0.06);
+    --critical: #ef4444;
+    --card-shadow: 0 4px 24px -4px rgba(0, 0, 0, 0.04);
     --radius-lg: 20px;
     --radius-md: 12px;
     --radius-sm: 10px;
@@ -51,20 +56,25 @@
       --surface-2: #1c2331;
       --page: #0b0e14;
       --text-primary: #f1f5f9;
-      --text-secondary: #cbd5e1;
+      --text-secondary: #8895a7;
       --text-muted: #8895a7;
       --gridline: #232a38;
       --baseline: #3a4252;
       --border: rgba(255,255,255,0.10);
       --series-spiritual: #a78bfa;
-      --series-relationship: #f87171;
+      --series-relationship: #fb7185;
       --series-others: #60a5fa;
       --seq-track: #232a38;
-      --seq-fill: #6366f1;
+      --seq-fill: #34d399;
       --accent: #6366f1;
+      --accent-hover: #818cf8;
       --accent-contrast: #ffffff;
       --countdown-bg: #05070c;
-      --countdown-accent: #facc15;
+      --countdown-accent: #ffe135;
+      --badge-bg: #ffe135;
+      --badge-text: #000000;
+      --success: #34d399;
+      --success-hover: #10b981;
       --good: #34d399;
       --good-bg: rgba(52,211,153,0.16);
       --critical: #f87171;
@@ -206,7 +216,7 @@
   .field .hint { font-size: 11.5px; color: var(--text-muted); margin-top: 4px; }
   input[type="text"], input[type="date"], input[type="number"], select {
     width: 100%; padding: 11px 12px; font-size: 15px; border-radius: var(--radius-sm);
-    border: 1px solid var(--border); background: var(--surface-2); color: var(--text-primary);
+    border: 1px solid var(--border); background: var(--page); color: var(--text-primary);
     font-family: inherit;
   }
   input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
@@ -214,11 +224,11 @@
   .unit-row input { flex: 1; }
   .unit-row select { flex: 1; }
   .file-drop {
-    border: 1.5px dashed var(--baseline); border-radius: var(--radius-md);
+    border: 1.5px dashed var(--border); border-radius: var(--radius-md);
     padding: 18px 12px; text-align: center; color: var(--text-secondary); font-size: 13.5px;
-    background: var(--surface-2); cursor: pointer;
+    background: var(--page); cursor: pointer;
   }
-  .file-drop.has-file { border-style: solid; border-color: var(--good); color: var(--text-primary); }
+  .file-drop.has-file { border-style: solid; border-color: var(--success); color: var(--text-primary); }
   .file-preview { margin-top: 10px; max-width: 100%; border-radius: var(--radius-sm); display: none; }
   .file-preview.show { display: block; }
   input[type="file"] { display: none; }
@@ -229,9 +239,11 @@
     font-size: 15px; font-weight: 700; cursor: pointer;
   }
   .btn-primary { background: var(--accent); color: var(--accent-contrast); }
+  .btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
   .btn-primary:disabled { opacity: 0.55; }
-  .btn-secondary { background: var(--surface-2); color: var(--text-primary); border: 1px solid var(--border); }
+  .btn-secondary { background: var(--border); color: var(--text-primary); border: none; }
   .btn-danger { background: var(--critical); color: #fff; }
+  .btn-badge { background: var(--badge-bg); color: var(--badge-text); }
   .btn-row { display: flex; gap: 10px; margin-top: 4px; }
   .btn-row .btn { width: auto; flex: 1; }
 
@@ -263,7 +275,8 @@
   .gallery-item .meta-date { font-size: 10.5px; font-weight: 700; color: var(--accent); }
   .gallery-item .meta-cat {
     font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
-    padding: 2px 7px; border-radius: 999px; white-space: nowrap;
+    padding: 2px 7px; border-radius: 6px; white-space: nowrap;
+    background: var(--gridline); color: var(--text-muted);
   }
   .gallery-item .meta-title {
     font-size: 13px; font-weight: 700; color: var(--text-primary);
@@ -476,7 +489,7 @@
     <div class="confetti-emoji">🎉</div>
     <h3 style="margin:0 0 8px;">Goal reached!</h3>
     <p style="color:var(--text-secondary);font-size:14px;margin:0 0 16px;">The group just hit <strong id="celebrateTarget">1,000</strong> points. Amazing work, everyone!</p>
-    <button class="btn btn-primary" id="celebrateCloseBtn">Keep going 🎊</button>
+    <button class="btn btn-badge" id="celebrateCloseBtn">Keep going 🎊</button>
   </div>
 </div>
 
@@ -513,14 +526,6 @@
   };
   function getCss_(name) {
     return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-  }
-  // Tints a category's swatch color for pill backgrounds (e.g. "#8b5cf6" -> "rgba(139,92,246,0.14)").
-  function tint_(hex, alpha) {
-    var h = hex.replace("#", "");
-    if (h.length === 3) h = h.split("").map(function (c) { return c + c; }).join("");
-    var r = parseInt(h.substring(0, 2), 16), g = parseInt(h.substring(2, 4), 16), b = parseInt(h.substring(4, 6), 16);
-    if (isNaN(r) || isNaN(g) || isNaN(b)) return hex;
-    return "rgba(" + r + "," + g + "," + b + "," + alpha + ")";
   }
 
   var isConfigured = WEB_APP_URL.indexOf("PASTE_YOUR") === -1 && WEB_APP_URL.length > 10;
@@ -777,13 +782,12 @@
       var mediaHtml = entry.mediaType === "video"
         ? '<div class="video-fallback">▶️</div>'
         : '<img loading="lazy" src="' + driveImageUrl(entry.driveFileId) + '" alt="' + escapeHtml_(entry.activity) + '" onerror="this.onerror=null;this.outerHTML=\'<div class=&quot;video-fallback&quot;>🖼️</div>\';" />';
-      var catColor = CATEGORY_COLORS[entry.category] || getCss_("--text-muted");
       item.innerHTML =
         '<div class="thumb">' + mediaHtml + '<span class="pts-pill">+' + formatNum_(entry.amount) + ' pts</span></div>' +
         '<div class="meta">' +
           '<div class="meta-row">' +
             '<span class="meta-date">' + formatDateShort_(entry.date) + '</span>' +
-            '<span class="meta-cat" style="background:' + tint_(catColor, 0.14) + ';color:' + catColor + '">' + escapeHtml_(entry.category) + '</span>' +
+            '<span class="meta-cat">' + escapeHtml_(entry.category) + '</span>' +
           '</div>' +
           '<div class="meta-title">' + escapeHtml_(entry.activity) + '</div>' +
           '<div class="meta-amount">' + formatNum_(entry.amount) + ' ' + escapeHtml_(entry.units) + '</div>' +
