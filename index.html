@@ -101,6 +101,7 @@
     border-bottom: 1px solid var(--border);
     position: sticky; top: 0; z-index: 20;
   }
+  body.log-mode header.app-header { display: none; }
   .header-inner {
     display: grid;
     grid-template-columns: 1fr auto 1fr;
@@ -152,6 +153,24 @@
   main { padding: 16px 16px 8px; max-width: 560px; margin: 0 auto; }
   .panel { display: none; }
   .panel.active { display: block; }
+
+  /* Log panel takes over the full screen, covering the sticky header */
+  #panel-log.active {
+    position: fixed; inset: 0; z-index: 25;
+    max-width: 560px; margin: 0 auto;
+    background: var(--page);
+    overflow-y: auto;
+    padding: max(20px, env(safe-area-inset-top)) 16px calc(20px + env(safe-area-inset-bottom));
+  }
+  .log-close-btn {
+    position: sticky; top: 0; left: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; margin-bottom: 14px;
+    border-radius: 50%; border: 1px solid var(--border);
+    background: var(--surface-1); color: var(--text-primary);
+    box-shadow: var(--card-shadow);
+    font-size: 15px; cursor: pointer;
+  }
   .section-heading {
     margin: 22px 2px 12px;
     font-size: 16px;
@@ -402,6 +421,7 @@
 
   <!-- LOG -->
   <section id="panel-log" class="panel">
+    <button type="button" class="log-close-btn" id="logCloseBtn" aria-label="Close">✕</button>
     <div class="card">
       <h2 id="formHeading">Log an activity</h2>
       <form id="entryForm" novalidate>
@@ -453,9 +473,6 @@
         </div>
 
         <button type="submit" class="btn btn-primary" id="submitBtn">Log it</button>
-        <div class="btn-row" id="cancelEditRow">
-          <button type="button" class="btn btn-secondary" id="cancelEditBtn">Cancel</button>
-        </div>
       </form>
     </div>
   </section>
@@ -863,7 +880,6 @@
       state.editingId = null;
       document.getElementById("formHeading").textContent = "Log an activity";
       document.getElementById("submitBtn").textContent = "Log it";
-      document.getElementById("cancelEditBtn").textContent = "Cancel";
     }
   }
 
@@ -886,7 +902,6 @@
     document.getElementById("fUnits").value = entry.units;
     document.getElementById("formHeading").textContent = "Edit activity";
     document.getElementById("submitBtn").textContent = "Save changes";
-    document.getElementById("cancelEditBtn").textContent = "Cancel edit";
     document.getElementById("fileDrop").textContent = "📷 Replace photo/video (optional)";
     switchPanel("log");
   }
@@ -994,6 +1009,7 @@
   function switchPanel(name) {
     document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
     document.getElementById("panel-" + name).classList.add("active");
+    document.body.classList.toggle("log-mode", name === "log");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -1068,7 +1084,7 @@
     });
 
     document.getElementById("entryForm").addEventListener("submit", submitForm);
-    document.getElementById("cancelEditBtn").addEventListener("click", function () {
+    document.getElementById("logCloseBtn").addEventListener("click", function () {
       resetForm(true);
       switchPanel("home");
     });
