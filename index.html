@@ -547,7 +547,8 @@
     pendingMedia: null, // {data, filename, mimeType}
     lightboxEntry: null,
     celebrated: false, // becomes true once we've shown the modal this session
-    prevTotal: null
+    prevTotal: null,
+    gallerySignature: null // lets loadEntries skip rebuilding gallery <img> DOM (and the flash that causes) when a poll returns unchanged data
   };
 
   // ===================================================================
@@ -1012,8 +1013,17 @@
       var totals = computeTotals(state.entries);
       renderProgress(totals, { suppressCelebration: isFirstLoad });
       renderCategoryBreakdown(totals);
-      populateMonthFilter(state.entries);
-      renderGallery();
+
+      // Rebuilding the gallery grid recreates every <img>, forcing the
+      // browser to re-decode and repaint them — visible as a "flash" on
+      // every poll even when nothing actually changed. Skip it unless the
+      // entries genuinely differ from what's already on screen.
+      var sig = JSON.stringify(state.entries.map(function (e) { return e.entryId + ":" + e.updatedAt; }));
+      if (sig !== state.gallerySignature) {
+        state.gallerySignature = sig;
+        populateMonthFilter(state.entries);
+        renderGallery();
+      }
     }).catch(function () {
       // Silent on background polls; loud on first load.
       if (!state.loaded) showToast("Couldn't reach the backend — check WEB_APP_URL.", true);
