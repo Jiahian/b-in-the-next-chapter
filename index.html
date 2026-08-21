@@ -50,7 +50,7 @@
     --radius-sm: 10px;
   }
   * { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; }
+  html, body { margin: 0; padding: 0; overflow-x: hidden; }
   body {
     font-family: 'Inter', system-ui, -apple-system, "Segoe UI", sans-serif;
     background: var(--page);
@@ -124,6 +124,7 @@
     max-width: 560px; margin: 0 auto;
     background: var(--page);
     overflow-y: auto;
+    overflow-x: hidden;
     padding: max(20px, env(safe-area-inset-top)) 16px calc(20px + env(safe-area-inset-bottom));
   }
   .log-close-btn {
@@ -230,11 +231,19 @@
   /* Form */
   .field { margin-bottom: 14px; }
   .field label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-secondary); }
-  .field .hint { font-size: 11.5px; color: var(--text-muted); margin-top: 4px; }
+  .field .hint { font-size: 11.5px; color: var(--text-muted); margin: 4px 0; }
   input[type="text"], input[type="date"], input[type="number"], select {
-    width: 100%; padding: 11px 12px; font-size: 15px; border-radius: var(--radius-sm);
+    width: 100%; min-width: 0; max-width: 100%; padding: 11px 12px; font-size: 15px; border-radius: var(--radius-sm);
     border: 1px solid var(--border); background: var(--page); color: var(--text-primary);
     font-family: inherit;
+  }
+  /* iOS Safari's date input has an internal shadow-DOM layout that ignores
+     width/max-width, letting it overflow its container (and the viewport) —
+     not reproducible in Chromium. appearance:none forces it to lay out like
+     a normal box instead of using its native intrinsic sizing. */
+  input[type="date"] {
+    -webkit-appearance: none;
+    appearance: none;
   }
   input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
   .unit-row { display: flex; gap: 10px; }
@@ -242,7 +251,7 @@
   .unit-row select { flex: 1; }
   .file-drop {
     border: 1.5px dashed var(--border); border-radius: var(--radius-md);
-    padding: 18px 12px; text-align: center; color: var(--text-secondary); font-size: 13.5px;
+    padding: 40px 12px; text-align: center; color: var(--text-secondary); font-size: 13.5px;
     background: var(--page); cursor: pointer;
   }
   .file-drop.has-file { border-style: solid; border-color: var(--success); color: var(--text-primary); }
@@ -428,8 +437,8 @@
             <input type="number" id="fAmount" step="0.1" min="0.1" placeholder="e.g. 5" required />
             <select id="fUnits" required>
               <!-- <option value="" disabled selected>Units</option> -->
-              <option value="km" selected>Kilometres (km)</option>
-              <option value="hours">Hours (hrs)</option>
+              <option value="hours" selected>Hours (hrs)</option>
+              <option value="km" >Kilometres (km)</option>
             </select>
           </div>
           <div class="field-error" data-for="fAmount">Enter an amount greater than 0 (max 1 decimal place).</div>
@@ -444,7 +453,7 @@
           <div class="field-error" data-for="fMedia">A photo or video is required.</div>
         </div>
 
-        <button type="submit" class="btn btn-primary" id="submitBtn">Log it</button>
+        <button type="submit" class="btn btn-primary" id="submitBtn">Clock it!</button>
       </form>
     </div>
   </section>
