@@ -15,7 +15,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
 <style>
   :root {
     color-scheme: light;
@@ -194,22 +193,12 @@
   }
   .status-line { margin-top: 12px; font-size: 14px; font-weight: 500; color: var(--text-secondary); text-align: center; }
 
-  /* Pie / legend */
-  .pie-wrap { display: flex; align-items: center; gap: 18px; }
-  .pie-canvas-box { width: 128px; height: 128px; flex: none; position: relative; }
-  .legend-list { flex: 1; list-style: none; margin: 0; padding: 0; }
+  /* Category legend */
+  .legend-list { list-style: none; margin: 0; padding: 0; }
   .legend-list li { display: flex; align-items: center; gap: 9px; padding: 6px 0; font-size: 13.5px; }
   .legend-swatch { width: 10px; height: 10px; border-radius: 50%; flex: none; }
   .legend-label { color: var(--text-primary); font-weight: 700; flex: 1; }
   .legend-value { color: var(--text-muted); font-weight: 500; font-variant-numeric: tabular-nums; }
-  .table-toggle {
-    background: none; border: none; padding: 0; margin-top: 12px;
-    color: var(--accent); font-size: 12.5px; font-weight: 600; cursor: pointer; text-decoration: underline;
-  }
-  table.data-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; display: none; }
-  table.data-table.show { display: table; }
-  table.data-table th, table.data-table td { text-align: left; padding: 6px 4px; border-bottom: 1px solid var(--gridline); }
-  table.data-table th { color: var(--text-muted); font-weight: 600; font-size: 11px; text-transform: uppercase; }
 
   /* Form */
   .field { margin-bottom: 14px; }
@@ -362,15 +351,7 @@
 
     <div class="card">
       <h2>Points by category</h2>
-      <div class="pie-wrap">
-        <div class="pie-canvas-box"><canvas id="pieCanvas" width="128" height="128"></canvas></div>
-        <ul class="legend-list" id="legendList"></ul>
-      </div>
-      <button class="table-toggle" id="tableToggle" type="button">View as table</button>
-      <table class="data-table" id="dataTable">
-        <thead><tr><th>Category</th><th>Points</th><th>Share</th></tr></thead>
-        <tbody id="dataTableBody"></tbody>
-      </table>
+      <ul class="legend-list" id="legendList"></ul>
     </div>
   </section>
 
@@ -557,8 +538,6 @@
     prevTotal: null
   };
 
-  var pieChart = null;
-
   // ===================================================================
   // Utilities
   // ===================================================================
@@ -571,6 +550,23 @@
 
   function formatNum_(n) {
     return Number(n).toLocaleString(undefined, { maximumFractionDigits: 1 });
+  }
+
+  // Google Sheets can store the 'date' column as either a plain 'YYYY-MM-DD'
+  // string or (if it auto-detects the value as a date) a real Date cell —
+  // which the backend then serializes as a full UTC instant like
+  // "2026-08-19T16:00:00.000Z". Both forms are accepted here and normalized
+  // to a plain 'YYYY-MM-DD' in Asia/Singapore (the challenge's timezone, per
+  // the PRD deadline) so every other date-handling function in this file
+  // (month grouping, sorting, the date input, display) can keep assuming
+  // that shape.
+  var sgDateFormatter_ = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Singapore", year: "numeric", month: "2-digit", day: "2-digit"
+  });
+  function toSGDateString_(value) {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value; // already plain YYYY-MM-DD
+    var d = new Date(value);
+    return isNaN(d.getTime()) ? value : sgDateFormatter_.format(d); // en-CA formats as YYYY-MM-DD
   }
 
   function driveImageUrl(fileId) {
@@ -730,60 +726,16 @@
     state.prevTotal = totals.total;
   }
 
-  function renderPie(totals) {
-    var labels = CATEGORIES;
-    var values = CATEGORIES.map(function (c) { return totals.byCategory[c]; });
-    var colors = CATEGORIES.map(function (c) { return CATEGORY_COLORS[c]; });
-    var hasData = totals.total > 0;
-
-    // Chart.js loads from a CDN — if it's blocked/offline, degrade to the
-    // legend + table below rather than letting the whole init sequence die.
-    if (typeof Chart === "undefined") {
-      var box = document.querySelector(".pie-canvas-box");
-      if (box) box.innerHTML = '<div style="font-size:11px;color:var(--text-muted);text-align:center;padding-top:44px;">Chart unavailable offline</div>';
-    } else {
-      try {
-        var ctx = document.getElementById("pieCanvas").getContext("2d");
-        if (pieChart) pieChart.destroy();
-        pieChart = new Chart(ctx, {
-          type: "doughnut",
-          data: {
-            labels: labels,
-            datasets: [{
-              data: hasData ? values : [1],
-              backgroundColor: hasData ? colors : [getCss_("--gridline")],
-              borderColor: getCss_("--surface-1"),
-              borderWidth: 2
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            cutout: "62%",
-            plugins: { legend: { display: false }, tooltip: { enabled: hasData } }
-          }
-        });
-      } catch (err) {
-        // Never let a chart-rendering failure take down the rest of the app.
-      }
-    }
-
+  function renderCategoryBreakdown(totals) {
     var legendList = document.getElementById("legendList");
     legendList.innerHTML = "";
-    var tableBody = document.getElementById("dataTableBody");
-    tableBody.innerHTML = "";
     CATEGORIES.forEach(function (c) {
       var v = totals.byCategory[c];
-      var pct = totals.total > 0 ? Math.round((v / totals.total) * 100) : 0;
       var li = document.createElement("li");
       li.innerHTML = '<span class="legend-swatch" style="background:' + CATEGORY_COLORS[c] + '"></span>' +
         '<span class="legend-label">' + c + '</span>' +
         '<span class="legend-value">' + formatNum_(v) + ' pts</span>';
       legendList.appendChild(li);
-
-      var tr = document.createElement("tr");
-      tr.innerHTML = "<td>" + c + "</td><td>" + formatNum_(v) + "</td><td>" + pct + "%</td>";
-      tableBody.appendChild(tr);
     });
   }
 
@@ -1043,11 +995,14 @@
     var isFirstLoad = !state.loaded;
     apiList().then(function (res) {
       if (!res.ok) { showToast(res.error || "Couldn't load entries.", true); return; }
-      state.entries = res.entries || [];
+      state.entries = (res.entries || []).map(function (e) {
+        e.date = toSGDateString_(e.date);
+        return e;
+      });
       state.loaded = true;
       var totals = computeTotals(state.entries);
       renderProgress(totals, { suppressCelebration: isFirstLoad });
-      renderPie(totals);
+      renderCategoryBreakdown(totals);
       populateMonthFilter(state.entries);
       renderGallery();
     }).catch(function () {
@@ -1061,9 +1016,8 @@
   // ===================================================================
   document.addEventListener("DOMContentLoaded", function () {
     // Wire up every interactive control FIRST, before any rendering that
-    // touches external libraries (Chart.js) or the network — so a slow/
-    // blocked CDN or an unconfigured backend can never leave the app
-    // half-wired (buttons that silently do nothing).
+    // touches the network — so an unconfigured backend can never leave the
+    // app half-wired (buttons that silently do nothing).
     bindEventListeners_();
 
     if (!isConfigured) document.getElementById("configBanner").classList.add("show");
@@ -1077,7 +1031,7 @@
     try {
       var totals0 = computeTotals([]);
       renderProgress(totals0);
-      renderPie(totals0);
+      renderCategoryBreakdown(totals0);
     } catch (err) {
       console.error("Initial render failed:", err);
     }
@@ -1108,11 +1062,6 @@
       switchPanel("dashboard");
     });
 
-    document.getElementById("tableToggle").addEventListener("click", function () {
-      var t = document.getElementById("dataTable");
-      t.classList.toggle("show");
-      this.textContent = t.classList.contains("show") ? "Hide table" : "View as table";
-    });
 
     document.getElementById("filterMonth").addEventListener("change", renderGallery);
     document.getElementById("filterCategory").addEventListener("change", renderGallery);

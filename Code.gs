@@ -44,12 +44,6 @@ function getSheet_() {
   if (sheet.getLastRow() === 0) {
     sheet.appendRow(HEADERS);
     sheet.setFrozenRows(1);
-    // Force date/timestamp columns to stay plain text so Sheets doesn't
-    // silently reinterpret 'YYYY-MM-DD' / ISO strings as serial dates.
-    var dateCols = [indexOf_('date'), indexOf_('createdAt'), indexOf_('updatedAt')];
-    dateCols.forEach(function (colIdx) {
-      sheet.getRange(1, colIdx + 1, 1000, 1).setNumberFormat('@');
-    });
   }
   return sheet;
 }
@@ -145,23 +139,7 @@ function rowToEntry_(row) {
   });
   entry.amount = Number(entry.amount) || 0;
   entry.deleted = entry.deleted === true || entry.deleted === 'TRUE';
-  // Sheets sometimes silently upgrades a plain 'YYYY-MM-DD'/ISO string cell to
-  // a real Date value on write (independent of the '@' text format applied in
-  // getSheet_), which getValues() then hands back as a JS Date object here —
-  // and JSON.stringify() would serialize that as a full UTC instant, breaking
-  // the front-end's plain-string date parsing. Normalize back to the expected
-  // string shape regardless of which form the cell actually stored.
-  entry.date = normalizeDateCell_(entry.date, 'Asia/Singapore', 'yyyy-MM-dd');
-  entry.createdAt = normalizeDateCell_(entry.createdAt, 'UTC', "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-  entry.updatedAt = normalizeDateCell_(entry.updatedAt, 'UTC', "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
   return entry;
-}
-
-function normalizeDateCell_(value, timeZone, pattern) {
-  if (Object.prototype.toString.call(value) === '[object Date]') {
-    return Utilities.formatDate(value, timeZone, pattern);
-  }
-  return value;
 }
 
 // ---------------------------------------------------------------------
