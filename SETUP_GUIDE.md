@@ -10,21 +10,21 @@ becomes the app's data owner (see the PRD's §8 note on this).
 ## 1. Create the Sheet
 
 1. Go to [sheets.google.com](https://sheets.google.com) and create a new blank spreadsheet.
-2. Name it something like **"B in the Next Chapter — Data"**.
+2. Name it something like **"BNext - Data"**.
 3. Leave it empty — the script sets up its own tab and headers in step 3.
 
 ## 2. Add the Apps Script backend
 
 1. In the Sheet, go to **Extensions > Apps Script**. This opens a script editor bound to your Sheet.
 2. Delete any placeholder code in `Code.gs`, then paste in the entire contents of the `Code.gs` file from this delivery.
-3. Click **Save** (the disk icon), name the project **"B in the Next Chapter — Backend"**.
+3. Click **Save** (the disk icon), name the project **"BNext — Backend"**.
 
 ## 3. Run setup once
 
 1. In the Apps Script editor toolbar, pick **setup** from the function dropdown (next to Debug/Run).
 2. Click **Run**.
 3. The first time, Google will ask you to authorize the script — click through **Review permissions > (choose your account) > Advanced > Go to ... (unsafe) > Allow**. This warning appears because it's your own unpublished script, not because anything is wrong.
-4. Check **View > Logs** (or Executions) — you should see a Sheet URL and a Drive folder URL logged. A new tab called **Entries** now exists in your Sheet, and a new Drive folder called **"B in the Next Chapter - Media"** now exists in your Drive — that's where every uploaded photo/video will land.
+4. Check **View > Logs** (or Executions) — you should see a Sheet URL and a Drive folder URL logged. A new tab called **Entries** now exists in your Sheet, and a new Drive folder called **"BNext - Media"** now exists in your Drive — that's where every uploaded photo/video will land.
 
 ## 4. Deploy as a Web App
 
@@ -35,36 +35,41 @@ becomes the app's data owner (see the PRD's §8 note on this).
    - **Execute as**: **Me** (your account)
    - **Who has access**: **Anyone** (this lets friends use the app without logging into Google — see the "who can do what" note below)
 4. Click **Deploy**, authorize again if asked, then **copy the Web app URL** it gives you (looks like `https://script.google.com/macros/s/AKfycb.../exec`).
-5. To sanity-check it, paste that URL into a browser with `?action=ping` on the end — you should see `{"ok":true,"message":"B in the Next Chapter backend is live."}`.
+5. To sanity-check it, paste that URL into a browser with `?action=ping` on the end — you should see `{"ok":true,"message":"BNext backend is live."}`.
 
 > **Re-deploying later**: if you ever edit `Code.gs`, use **Deploy > Manage deployments > (pencil icon) > New version > Deploy** — editing the script alone doesn't update the live URL.
 
 ## 5. Connect the front-end
 
-`WEB_APP_URL` is **not** hardcoded in `index.html` — this repo is public, and that URL grants unauthenticated write access to your Sheet/Drive, so it's kept out of git history entirely. Instead it's read from `window.WEB_APP_URL`, set by a `config.js` file that is gitignored.
+`WEB_APP_URL` is **not** hardcoded in `index.html` — this repo is public, and that URL grants unauthenticated write access to your Sheet/Drive, so it's kept out of git history entirely. Instead it's read from `window.WEB_APP_URL`, set by a `config.js` file that is gitignored. `SITE_PASSWORD` (see below) works the same way.
 
 **For local testing on your own machine:**
-1. Copy `.env.example`'s value.
+1. Copy `.env.example`'s values.
 2. Create a `config.js` file next to `index.html` (it's gitignored, so this stays local):
    ```js
    window.WEB_APP_URL = "https://script.google.com/macros/s/.../exec";
+   window.SITE_PASSWORD = "...";
    ```
-3. Open `index.html` — the orange "not connected" banner disappears once this is set correctly.
+3. Open `index.html` — the orange "not connected" banner disappears once `WEB_APP_URL` is set correctly.
 
-**For the hosted GitHub Pages build**, see step 6 below — the deploy workflow generates `config.js` at deploy time from a repository secret, so you never paste the URL into a tracked file.
+**For the hosted GitHub Pages build**, see step 6 below — the deploy workflow generates `config.js` at deploy time from repository secrets, so you never paste either value into a tracked file.
 
 If you ever want to change the point target (currently 1,000), the deadline, or the polling frequency, edit `TARGET_POINTS`, `DEADLINE_ISO`, `POLL_INTERVAL_MS` directly in `index.html` — those aren't secrets, so they stay in source.
 
+### Password gate
+
+The app can sit behind a simple password prompt — set once per device (stored in `localStorage`), everyone in the group needs to know it to get in. **Important:** this is a client-side gate only, not real authentication. There's no server to keep the password secret from — it ships in plain text inside the JavaScript every visitor's browser downloads, and anyone who opens dev tools or views page source can read it in seconds. It stops someone from stumbling onto the link by accident; it will not stop someone who's determined to get in. Leave `SITE_PASSWORD` blank/unset to disable the gate entirely.
+
 ## 6. Host it so friends can open it
 
-This repo ships a GitHub Actions workflow (`.github/workflows/deploy.yml`) that deploys to GitHub Pages and injects the backend URL from a repo secret at build time — so the URL never lands in the repo's source or git history (it does still end up in the page every visitor's browser loads, since a static client-side app has no other way to reach the backend — but it's not sitting in a searchable public repo).
+This repo ships a GitHub Actions workflow (`.github/workflows/deploy.yml`) that deploys to GitHub Pages and injects the backend URL (and site password) from repo secrets at build time — so neither lands in the repo's source or git history (they do still end up in the page every visitor's browser loads, since a static client-side app has no other way to work — but they're not sitting in a searchable public repo).
 
-1. **Settings > Secrets and variables > Actions > New repository secret**, name it `WEB_APP_URL`, paste the Apps Script Web App URL from step 4 as the value.
+1. **Settings > Secrets and variables > Actions > New repository secret**, name it `WEB_APP_URL`, paste the Apps Script Web App URL from step 4 as the value. Repeat for `SITE_PASSWORD` if you want the password gate (see above) — pick any password and share it with the group separately.
 2. **Settings > Pages > Build and deployment > Source**, choose **GitHub Actions**.
 3. Push to `master` (or run the workflow manually from the **Actions** tab) — it builds `index.html` + `manifest.json` + `sw.js` + `icons/` + a generated `config.js` into a `_site` folder and deploys that.
 4. Your app will be live at `https://<your-username>.github.io/<repo-name>/`.
 
-Any other static host (Netlify, Vercel, Cloudflare Pages) works too — each has its own equivalent of a repo secret / environment variable for injecting `WEB_APP_URL` at build time without committing it.
+Any other static host (Netlify, Vercel, Cloudflare Pages) works too — each has its own equivalent of a repo secret / environment variable for injecting these at build time without committing them.
 
 ## 7. Add to home screen
 

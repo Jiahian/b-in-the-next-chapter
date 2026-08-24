@@ -24,14 +24,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Assemble site (inject backend URL from repo secret)
+      - name: Assemble site (inject backend URL + site password from repo secrets)
         env:
           WEB_APP_URL: ${{ secrets.WEB_APP_URL }}
+          SITE_PASSWORD: ${{ secrets.SITE_PASSWORD }}
         run: |
           mkdir -p _site
           cp index.html manifest.json sw.js _site/
           cp -r icons _site/icons
-          printf 'window.WEB_APP_URL = "%s";\n' "$WEB_APP_URL" > _site/config.js
+          printf 'window.WEB_APP_URL = "%s";\nwindow.SITE_PASSWORD = "%s";\n' "$WEB_APP_URL" "$SITE_PASSWORD" > _site/config.js
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
