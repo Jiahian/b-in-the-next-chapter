@@ -5,10 +5,10 @@
 | | |
 |---|---|
 | **Author** | Sef |
-| **Date** | 20 Aug 2026 |
-| **Status** | v4 — Phase 1 in build, Phase 2 documented (§12), Drive-vs-Firebase trade-off recorded (§8.1) |
+| **Date** | 26 Aug 2026 |
+| **Status** | v5 — Phase 1 live and in use, Phase 2 documented (§12), Drive-vs-Firebase trade-off recorded (§8.1), access-control decision open (§8.3/§10) |
 | **Challenge deadline** | 31 Dec 2026 |
-| **Reference** | [binthenextchapter.ai.studio](https://binthenextchapter.ai.studio/) — an existing prototype this PRD aligns with and extends |
+| **Reference** | [binthenextchapter.ai.studio](https://binthenextchapter.ai.studio/) — the prototype this build's visual design was matched to exactly (pulled from its actual source, not just screenshots) |
 
 ---
 
@@ -47,14 +47,14 @@ A private group of friends (not the general public) participating in the same ch
 1. Page title: **"B in the Next Chapter!"**
 2. Live countdown timer to the deadline (**31 Dec 2026**), shown in days, hours, minutes, seconds, updating every second.
 3. Total points accumulated by the whole group, shown against the target with a progress bar and a motivational status line (e.g., "🔥 Almost there!") that reacts to how close the group is to goal.
-4. Points broken down by category, shown as a pie chart.
+4. Points broken down by category, shown as a bar per category.
 5. A media gallery of all uploaded photos/videos, filterable by month and by category, with edit and delete on individual entries.
 6. A submission form (see §6) for logging a new activity/points entry, including an edit flow for correcting an existing one.
 7. A celebration modal that fires once the group crosses the 1,000-point target.
 
 ### 5.2 Out of scope (v1)
 
-- User accounts / login with passwords (see §8 — a lightweight identity model is used instead).
+- Per-user accounts / real login — a lightweight free-text identity model is used instead (see §8). A shared-password gate for the whole app *was* added post-launch (§8.3) as a soft deterrent, but that's an app-wide gate, not individual accounts — whether individual accounts get added is the open §8.3/§10 access-control decision.
 - Restricting edit/delete to only the original submitter — v1 follows the reference prototype and allows any group member to edit or delete any entry (low-friction, trust-based, matching a small friend group). *Flagged as an open question in §10 if tighter control is wanted.*
 - Push notifications / reminders.
 - Individual leaderboards or rankings between friends (the goal is explicitly collective, not competitive) — the app records who logged each entry, but v1 does not add a ranked leaderboard view.
@@ -76,11 +76,13 @@ A private group of friends (not the general public) participating in the same ch
 - Progress bar, headline number, and status line update as new entries are submitted or edited/deleted (by anyone in the group, on any device) — see §8 for the sync-speed trade-off (near-real-time, not instant push).
 - Target: **1,000 points**.
 
-### 6.3 Points by category — pie chart
+### 6.3 Points by category — bar chart
 
-- One slice per category (Spiritual / Relationship / Others), sized by each category's share of total points.
-- Legend labels each slice with its name and point total (not color-only, for accessibility).
+- One row per category (Spiritual / Relationship / Others): category name, a horizontal bar, and the point total.
+- Each bar fills proportionally toward the overall 1,000-point target (not toward the other categories' totals), so the three bars visually show each category's individual contribution to the shared goal.
+- Labeled with name and point total on every row (not color-only, for accessibility) — no separate legend needed.
 - Updates as entries are submitted, edited, or deleted.
+- *Changed from an earlier pie-chart design during build — a pie/donut chart (via Chart.js) was implemented first, then dropped in favor of this bar layout, which also removed a CDN dependency (Chart.js) the app no longer needs.*
 
 ### 6.4 Photo/video gallery
 
@@ -106,7 +108,7 @@ A private group of friends (not the general public) participating in the same ch
 | Units | Dropdown | Required. Options: km, hours. |
 | Photo/video | File upload | **Mandatory.** Accepts image or video, from camera or existing gallery. |
 
-- On submit, the entry is added to the shared pool and reflected in the progress bar, pie chart, and gallery for everyone (see §8 for sync timing).
+- On submit, the entry is added to the shared pool and reflected in the progress bar, category breakdown, and gallery for everyone (see §8 for sync timing).
 - Form validates all fields client-side before allowing submission (in particular: no future dates, amount > 0 with max 1 decimal, media file present).
 - The same form is reused for **editing** an existing entry (pre-filled from the gallery's edit action), with the option to keep the existing photo/video or replace it.
 
@@ -114,7 +116,7 @@ A private group of friends (not the general public) participating in the same ch
 
 - **Mobile-first**: designed and tested primarily for phone screen sizes; installable to the home screen (so it opens and feels like a native app) rather than requiring a browser tab each time.
 - **Shared state, kept in sync**: an entry logged by one friend must become visible to the rest of the group without anyone needing to manually refresh, and without any single friend's *device* being the source of truth (the backend is). Given the chosen backend (§8), this is near-real-time (a periodic refresh, on the order of seconds) rather than an instant push.
-- **Low friction**: no password-based login; friends should be able to open the app and log an entry within seconds.
+- **Low friction**: no per-user login; friends should be able to open the app and log an entry within seconds. (A one-time, app-wide shared password gate was added post-launch — see §8.3 — but it's typed once per device, not a per-user login.)
 - **Media handling**: photo/video uploads should work reliably over mobile data, with a visible upload progress/state so users know an entry has actually gone through.
 - **Data durability**: once submitted, entries and their media persist independent of any one friend's device (i.e., not stored only in one person's browser).
 
@@ -122,13 +124,13 @@ A private group of friends (not the general public) participating in the same ch
 
 Because points must sync across every friend's own phone, this cannot be a purely front-end, on-device app (there is no single device to be the shared source of truth) — it needs a small always-on backend. Per your decision, this runs entirely on one existing Google account with spare Drive storage, rather than a separate paid backend like Firebase — **$0 cost, no billing/credit card setup.**
 
-- **Frontend**: a single mobile-optimized web app (installable as a home-screen PWA on iOS/Android), covering the dashboard (countdown, progress, pie chart), the entry form, and the gallery.
+- **Frontend**: a single mobile-optimized web app (installable as a home-screen PWA on iOS/Android), covering the dashboard (countdown, progress, category breakdown), the entry form, and the gallery.
 - **Data ("database")**: a **Google Sheet**, owned by the one nominated Google account, with one row per entry (name, category, activity, date, amount, units, Drive file link, edited/deleted flags). Doubles as a human-readable audit log/export if anyone ever wants to open it directly.
 - **Media storage**: **Google Drive**, same account — one folder holding all uploaded photos/videos, using that account's existing spare space.
 - **Glue**: a **Google Apps Script**, deployed as a Web App under that same account ("Execute as: Me / Access: Anyone with the link"). It exposes simple endpoints the front-end calls to submit, edit, delete, and list entries — it writes rows to the Sheet and files to the Drive folder, and returns a Drive-hosted URL for each media file back to the app. This is what lets every friend log entries and upload media *without* needing their own Google login or write access to the Sheet/Drive — only the Apps Script owner's account touches Drive/Sheets directly.
-- **Sync model**: the app polls the Apps Script endpoint on an interval (e.g., every 15–30 seconds) and on each app open/resume, rather than an instant push like a realtime database would give. For a friend group logging a few times a day, this trade-off is invisible in practice — worth flagging since it differs from a Firebase-style setup.
+- **Sync model**: the app polls the Apps Script endpoint every 20 seconds, and on each app open/resume, rather than an instant push like a realtime database would give. For a friend group logging a few times a day, this trade-off is invisible in practice — worth flagging since it differs from a Firebase-style setup.
 - **Identity**: lightweight — no login at all; a free-text "your name" field on each entry provides attribution, matching the reference prototype.
-- **Hosting**: the front-end itself is a static file, hostable for free (e.g., GitHub Pages, or Apps Script's own web hosting) so the app has a stable HTTPS link the group can share and add to their home screens.
+- **Hosting**: **GitHub Pages**, deployed automatically on every push via a GitHub Actions workflow. The repo is public (required for free-tier Pages), so `WEB_APP_URL` is never committed to it — the workflow injects it into a generated `config.js` at deploy time from a GitHub repository secret instead.
 
 ### 8.1 Why Google Drive over Firebase Storage for media
 
@@ -157,8 +159,20 @@ Broader than just media — the full-stack comparison, worth confirming you're c
 
 - *Single point of ownership*: everything (data + media) lives under one friend's Google account. If that person ever revokes access, deletes the Sheet/folder, or runs low on storage, the whole app's data goes with it — worth agreeing as a group who that is and treating it as the de facto admin.
 - *Not instant*: near-real-time (polling) rather than push-based live sync.
-- *Upload size ceiling*: Apps Script Web Apps have request-size limits well-suited to photos and short clips, but long/high-resolution videos (roughly 50MB+) can be unreliable through this path — worth nudging the group toward short clips (also keeps the reference prototype's spirit intact).
+- *Upload size ceiling*: Apps Script Web Apps have request-size limits well-suited to photos and short clips. Load testing found the real practical ceiling is lower than originally assumed — a 15MB video took ~44s to upload, and a 40MB video failed outright (hung, never completed). The client currently still allows up to 45MB; tightening that guidance to ~15–20MB is an open to-do, not yet done.
+- *Write concurrency*: also found under load testing — if many people submit at the exact same instant, Apps Script's free-tier execution ceiling rejects a large fraction of the truly-simultaneous requests outright (a platform limit, not a bug in this app's code). Reads (viewing the gallery) don't have this problem even under heavy concurrent load. Mitigation is just "retry if a submission fails."
 - *Quotas*: consumer Google accounts have daily Apps Script execution quotas; at 30 friends logging a few times a day this is far under the limit, but it's a shared ceiling to be aware of if usage spikes.
+
+### 8.3 Access control
+
+Not in the original scope — added after the app went live, once the group wanted the link itself to not be the only thing standing between a stranger and the group's data.
+
+- **Shipped**: a client-side password prompt gates the whole app. This is explicitly a **soft deterrent, not real authentication** — a static site has no server to keep a secret from the browser, so the password ships in plain text to every visitor and is trivially readable via dev tools or view-source. It stops someone from wandering in by accident; it will not stop someone who's determined to get in.
+- **Real protection — decision not yet made.** Three options were scoped:
+  - **(A)** Move the password check server-side into the Apps Script backend (closes the "leaks to everyone" hole specifically; still one shared secret for the whole group; moderate effort, no new services).
+  - **(B)** Google Sign-In with a per-person allowlist (real, unspoofable per-person identity; more friction — contradicts the §7 "no per-user login" goal; bigger lift).
+  - **(C)** A custom backend with real sessions (most textbook-correct; abandons the $0-cost Apps Script stack this whole project is built around).
+  - **Recommendation, if/when this gets decided: (B).** Phase 2's planned badges/character-items/Manna currency (§12) can only be tied to *specific individuals* if the backend can verify *who* is making a request, not just *that* they know a shared password — and Firebase Authentication (Google Sign-In) pairs natively with the Firestore migration §12.3 already calls for. Building B for access control now would double as the identity layer Phase 2 needs anyway.
 
 ## 9. Data model (indicative)
 
@@ -184,23 +198,26 @@ Total points = SUM(amount) across all entries where `deleted = false`. Category 
 
 ## 10. Assumptions & open questions
 
-- **Points = amount.** The brief doesn't define a separate points value distinct from the logged amount/units, so this PRD assumes 1 unit logged (1 km or 1 hour) = 1 point. *Open question: should km and hours convert to points differently (e.g., weighted), or should there be a separate "points" field independent of the measured amount?*
-- **Target = 1,000 points**, per your input — confirm this is the final number before build.
-- **Categories are fixed** at Spiritual / Relationship / Others for v1 (not user-editable).
-- **Edit/delete is unrestricted** — any group member can edit or delete any entry, not just their own (matches the reference prototype). *Open question: is that trust level fine for this group, or should edit/delete be limited to the entry's original author?*
-- **Whose Google account hosts this?** Confirm who the "someone with spare Drive storage" is — that account becomes the de facto owner/admin of all data and media (see §8's single-point-of-ownership trade-off).
-- **Privacy**: gallery and totals are visible to anyone with the app link, with no per-friend privacy controls. Confirm this is acceptable for the group.
-- **Sync interval**: proposing a 15–30 second poll (§8) — flag if the group wants it faster/slower.
+- **Points = amount.** The brief doesn't define a separate points value distinct from the logged amount/units, so this PRD assumes 1 unit logged (1 km or 1 hour) = 1 point. *Still open: should km and hours convert to points differently (e.g., weighted), or should there be a separate "points" field independent of the measured amount?*
+- **Target = 1,000 points** — confirmed, built and live (`TARGET_POINTS` in `index.html`).
+- **Categories are fixed** at Spiritual / Relationship / Others for v1 (not user-editable) — confirmed, built and live.
+- **Edit/delete is unrestricted** — any group member can edit or delete any entry, not just their own (matches the reference prototype). *Still open: is that trust level fine for this group, or should edit/delete be limited to the entry's original author? Relevant to the same §8.3 access-control decision — per-author restriction only really means something once entries are tied to a verified identity.*
+- **Whose Google account hosts this?** Resolved in practice — the backend is deployed and connected (Sheet + Drive + Apps Script all live). Not documented here by name.
+- **Privacy**: gallery and totals are visible to anyone with the app link, now behind a shared password gate (§8.3) as a soft deterrent. *Still open: whether that's sufficient, or the group wants real per-person access control — see §8.3's Option A/B/C decision.*
+- **Sync interval**: confirmed at 20 seconds (`POLL_INTERVAL_MS` in `index.html`), within the originally proposed 15–30s range.
 
 ## 11. Milestones
 
-| Milestone | Notes |
+| Milestone | Status |
 |---|---|
-| PRD sign-off | This document |
-| Backend setup (Sheet + Drive folder + Apps Script deployment on the nominated Google account) | ~1 day |
-| Core build (form incl. edit, countdown, progress + status line, pie chart, gallery incl. delete, celebration modal) | ~2–3 days |
-| Testing across friends' phones | ~1 day |
-| Launch to the group | Before campaign start |
+| PRD sign-off | Done |
+| Backend setup (Sheet + Drive folder + Apps Script deployment) | Done — connected and verified end-to-end |
+| Core build (form incl. edit, countdown, progress + status line, category breakdown, gallery incl. delete, celebration modal) | Done — category breakdown shipped as bars, not the originally planned pie chart (§6.3) |
+| Hosting + deploy pipeline | Done — GitHub Pages via GitHub Actions, secrets kept out of the repo |
+| Access-control hardening (password gate) | Done as a soft deterrent (§8.3); real per-person protection still an open decision |
+| Load/stress testing | Done — found and partly acted on (see §8.2's upload-size and write-concurrency notes) |
+| Testing across friends' phones | In progress — an iOS Safari-specific rendering bug was found and fixed, not yet confirmed resolved on a real device |
+| Launch to the group | Not yet confirmed |
 | Challenge deadline | **31 Dec 2026** |
 
 ## 12. Phase 2 (future) — gamification
@@ -237,4 +254,4 @@ The group's shared progress bar must be driven by **lifetime points earned** (su
 
 ---
 
-*Phase 1 (this document's core scope, §1–§11) is now in build. Phase 2 (§12) is documented for direction but not started — revisit once Phase 1 is live with the group.*
+*Phase 1 (this document's core scope, §1–§11) is built and live. Phase 2 (§12) is documented for direction but not started — revisit once the group has been using Phase 1 for a while. See `session-notes.md` for the day-to-day build log this PRD was kept in sync with.*
