@@ -1,0 +1,8 @@
+{
+  "name": "B in the Next Chapter",
+  "description": "Track our group's points toward the shared goal before 31 Dec 2026.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
