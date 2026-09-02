@@ -79,10 +79,26 @@ function doGet(e) {
     if (action === 'list') {
       return jsonOutput_({ ok: true, entries: listEntries_() });
     }
+    if (action === 'media') {
+      return serveMedia_(e.parameter.fileId);
+    }
     return jsonOutput_({ ok: false, error: 'Unknown action: ' + action });
   } catch (err) {
     return jsonOutput_({ ok: false, error: String(err) });
   }
+}
+
+/**
+ * Re-serves a Drive file's bytes directly from our own domain, for the
+ * image-resize/crop feature: Drive's own hotlink URLs don't reliably send
+ * CORS headers permissive enough for <canvas> to read pixels back out
+ * without tainting, which silently breaks export. Routing through our own
+ * Web App gives us a response we control.
+ */
+function serveMedia_(fileId) {
+  if (!fileId) return jsonOutput_({ ok: false, error: 'Missing fileId' });
+  var file = DriveApp.getFileById(fileId);
+  return file.getBlob();
 }
 
 function doPost(e) {

@@ -3345,7 +3345,10 @@
   function saveLocalEntries_(entries) {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(entries));
-    } catch (e) {}
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   // ===================================================================
@@ -3474,6 +3477,10 @@
         canvas.width = Math.round(w * scale);
         canvas.height = Math.round(h * scale);
         var ctx = canvas.getContext("2d");
+        // JPEG has no alpha channel — flatten onto white first so a
+        // transparent PNG doesn't silently turn black where it was see-through.
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         canvas.toBlob(function (blob) {
           resolve(blob || file);
@@ -3609,27 +3616,35 @@
           if (targetTime > dur) targetTime = dur;
           if (targetTime === 0 && frameIndex === 0) targetTime = 0.01;
 
+          var seekSettled = false;
           var seekTimeout = setTimeout(function () {
-            onSeekComplete();
+            // The 'seeked' event never fired in time — skip this frame rather
+            // than drawing whatever the video currently happens to have
+            // decoded (which may not match targetTime at all).
+            onSeekComplete(false);
           }, 1000);
 
-          function onSeekComplete() {
+          function onSeekComplete(realSeek) {
+            if (seekSettled) return;
+            seekSettled = true;
             clearTimeout(seekTimeout);
-            video.removeEventListener("seeked", onSeekComplete);
+            video.removeEventListener("seeked", onRealSeek);
             try {
-              ctx.clearRect(0, 0, targetW, targetH);
-              ctx.drawImage(video, 0, 0, targetW, targetH);
-              var imgData = ctx.getImageData(0, 0, targetW, targetH);
-              var rgba = imgData.data;
+              if (realSeek) {
+                ctx.clearRect(0, 0, targetW, targetH);
+                ctx.drawImage(video, 0, 0, targetW, targetH);
+                var imgData = ctx.getImageData(0, 0, targetW, targetH);
+                var rgba = imgData.data;
 
-              var palette = window.GIFEnc.quantize(rgba, 256, { format: "rgb565" });
-              var indexed = window.GIFEnc.applyPalette(rgba, palette, "rgb565");
+                var palette = window.GIFEnc.quantize(rgba, 256, { format: "rgb565" });
+                var indexed = window.GIFEnc.applyPalette(rgba, palette, "rgb565");
 
-              gif.writeFrame(indexed, targetW, targetH, {
-                palette: palette,
-                delay: frameDelay,
-                repeat: 0
-              });
+                gif.writeFrame(indexed, targetW, targetH, {
+                  palette: palette,
+                  delay: frameDelay,
+                  repeat: 0
+                });
+              }
 
               frameIndex++;
               if (onProgress) {
@@ -3643,7 +3658,11 @@
             }
           }
 
-          video.addEventListener("seeked", onSeekComplete);
+          function onRealSeek() {
+            onSeekComplete(true);
+          }
+
+          video.addEventListener("seeked", onRealSeek);
           try {
             video.currentTime = targetTime;
           } catch (e) {
@@ -4033,7 +4052,7 @@
     item.className = "gallery-item";
     var catKey = String(entry.category || "others").toLowerCase().replace(/[^a-z0-9]/g, "");
     var catClass = "cat-" + (catKey === "spiritual" || catKey === "relationship" ? catKey : "others");
-    var imgSrc = driveImageUrl(entry.driveFileId);
+    var imgSrc = escapeHtml_(driveImageUrl(entry.driveFileId));
     var altText = escapeHtml_(entry.activity || "Activity");
 
     var isExplicitPortrait = (entry.aspectRatio === "3:4" || entry.aspectRatio === "portrait");
@@ -4463,6 +4482,7 @@
   function openResizeModal() {
     var currentImgSrc = "";
     var isVideo = false;
+    var driveFileId = "";
 
     if (state.pendingEditMedia) {
       if (state.pendingEditMedia.mimeType && state.pendingEditMedia.mimeType.indexOf("video") === 0) {
@@ -4474,7 +4494,8 @@
       if (state.editingEntry.mediaType === "video") {
         isVideo = true;
       } else {
-        currentImgSrc = driveImageUrl(state.editingEntry.driveFileId);
+        driveFileId = state.editingEntry.driveFileId || "";
+        currentImgSrc = driveImageUrl(driveFileId);
       }
     } else {
       var imgEl = document.getElementById("editMediaImg");
@@ -4519,14 +4540,22 @@
       onImgLoaded(img);
     };
     img.onerror = function () {
+      // The direct Drive URL didn't send CORS headers permissive enough for
+      // canvas export — retry through our own backend (serveMedia_ in
+      // Code.gs), which re-serves the file from a response we control.
+      if (!driveFileId || !isConfigured) {
+        showToast("Could not load image for resizing.", true);
+        return;
+      }
       var img2 = new Image();
+      img2.crossOrigin = "anonymous";
       img2.onload = function () {
         onImgLoaded(img2);
       };
       img2.onerror = function () {
         showToast("Could not load image for resizing.", true);
       };
-      img2.src = currentImgSrc;
+      img2.src = WEB_APP_URL + "?action=media&fileId=" + encodeURIComponent(driveFileId);
     };
     img.src = currentImgSrc;
   }
@@ -4995,7 +5024,10 @@
         return x;
       });
       if (!found) localEntries.unshift(localEntry);
-      saveLocalEntries_(localEntries);
+      if (!saveLocalEntries_(localEntries)) {
+        showToast("Couldn't save — your device's local storage is full. Try removing an old entry or a smaller photo/video.", true);
+        return;
+      }
       showToast("Changes saved! 🎉");
       closeEditModal();
       loadEntries();
@@ -5091,6 +5123,11 @@
     var submitBtn = document.getElementById("submitBtn");
 
     if (isVideo) {
+      var MAX_VIDEO_BYTES = 20 * 1024 * 1024;
+      if (file.size > MAX_VIDEO_BYTES) {
+        showToast("That video is over 20MB and may fail to upload — trim it or pick a shorter clip.", true);
+        return;
+      }
       fileDrop.classList.add("has-file");
       if (fileDropText) fileDropText.textContent = "Converting video to GIF… 0%";
       if (submitBtn) {
@@ -5213,7 +5250,10 @@
       } else {
         localEntries.unshift(localEntry);
       }
-      saveLocalEntries_(localEntries);
+      if (!saveLocalEntries_(localEntries)) {
+        showToast("Couldn't save — your device's local storage is full. Try removing an old entry or a smaller photo/video.", true);
+        return;
+      }
       showToast(state.editingId ? "Entry updated (preview)." : "Logged to gallery! 🎉");
       resetForm(true);
       switchPanel("home");
@@ -5260,9 +5300,9 @@
     if (!pendingDeleteId) return;
     if (!isConfigured || pendingDeleteId.indexOf("demo-") === 0 || pendingDeleteId.indexOf("local-") === 0) {
       var localEntries = loadLocalEntries_().filter(function (x) { return x.entryId !== pendingDeleteId; });
-      saveLocalEntries_(localEntries);
+      var deleteSaveOk = saveLocalEntries_(localEntries);
       document.getElementById("deleteConfirmOverlay").classList.remove("show");
-      showToast("Entry deleted.");
+      showToast(deleteSaveOk ? "Entry deleted." : "Couldn't save that change — your device's local storage is full.", !deleteSaveOk);
       closeLightbox();
       pendingDeleteId = null;
       loadEntries();
