@@ -6,6 +6,7 @@
 <title>B in the Next Chapter!</title>
 <meta name="description" content="Track our group's points toward the shared goal before 31 Dec 2026." />
 <meta name="color-scheme" content="light dark" />
+<meta name="referrer" content="no-referrer" />
 <meta name="theme-color" content="#ffffff" id="metaThemeColor" />
 <script>
   (function () {
@@ -3034,7 +3035,7 @@
 <div class="post-preview-overlay" id="postPreviewOverlay">
   <div class="post-preview-sheet gallery-item" id="postPreviewSheet">
     <div class="thumb" id="previewMediaBox">
-      <img id="previewMediaImg" src="icons/block-party-2026.svg" alt="Activity media" onerror="this.onerror=null;this.src='icons/block-party-2026.svg';" />
+      <img id="previewMediaImg" referrerpolicy="no-referrer" src="icons/block-party-2026.svg" alt="Activity media" onerror="this.onerror=null;this.src='icons/block-party-2026.svg';" />
       <iframe id="previewMediaVideo" style="display:none;width:100%;height:100%;border:none;" allow="autoplay"></iframe>
       
       <div class="preview-top-actions">
@@ -3077,7 +3078,7 @@
 <div class="edit-activity-overlay" id="editActivityOverlay">
   <div class="edit-activity-sheet">
     <div class="edit-media-container" id="editMediaBox">
-      <img id="editMediaImg" src="icons/block-party-2026.svg" alt="Activity preview" onerror="this.onerror=null;this.src='icons/block-party-2026.svg';" />
+      <img id="editMediaImg" referrerpolicy="no-referrer" src="icons/block-party-2026.svg" alt="Activity preview" onerror="this.onerror=null;this.src='icons/block-party-2026.svg';" />
       <iframe id="editMediaVideo" style="display:none;width:100%;height:100%;border:none;" allow="autoplay"></iframe>
       <button type="button" class="edit-media-close-btn" id="editTopCloseBtn" title="Close" aria-label="Close">✕</button>
       <button type="button" class="edit-media-crop-btn" id="editCropBtn" title="Resize image" aria-label="Resize image">
@@ -4041,7 +4042,7 @@
 
     var mediaHtml = entry.mediaType === "video"
       ? '<div class="video-fallback">▶️</div>'
-      : '<img loading="lazy" decoding="async" src="' + imgSrc + '" alt="' + altText + '" onerror="if(this.src.indexOf(\'lh3.googleusercontent.com\')!==-1){this.src=\'https://drive.google.com/thumbnail?id=' + encodeURIComponent(entry.driveFileId || '') + '&sz=w800\';}else{this.onerror=null;this.outerHTML=\'<div class=&quot;video-fallback&quot; style=&quot;background:var(--card);color:var(--text-muted);&quot;>📷</div>\';}" />';
+      : '<img loading="lazy" decoding="async" referrerpolicy="no-referrer" src="' + imgSrc + '" alt="' + altText + '" onerror="if(this.src.indexOf(\'lh3.googleusercontent.com\')!==-1){this.src=\'https://drive.google.com/thumbnail?id=' + encodeURIComponent(entry.driveFileId || '') + '&sz=w800\';}else if(this.src.indexOf(\'drive.google.com/thumbnail\')!==-1){this.src=\'https://drive.google.com/uc?export=view&id=' + encodeURIComponent(entry.driveFileId || '') + '\';}else{this.onerror=null;this.outerHTML=\'<div class=&quot;video-fallback&quot; style=&quot;background:var(--card);color:var(--text-muted);&quot;>📷</div>\';}" />';
     
     var rawWhatWentOn = (entry.name || "").trim();
     var whatWentOn = "";

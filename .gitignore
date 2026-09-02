@@ -3,6 +3,9 @@
 # config.js comment for how this is wired up instead.
 .env
 config.js
+dev_server.py
+node_modules/
+package-lock.json
 
 # OS / editor cruft
 .DS_Store

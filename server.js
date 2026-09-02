@@ -1,4 +1,5 @@
 import express from 'express';
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -9,12 +10,20 @@ const app = express();
 const PORT = 3000;
 const HOST = '0.0.0.0';
 
-// Dynamic config.js endpoint to inject environment variables
+// Dynamic config.js endpoint to inject environment variables or fallback to local file
 app.get('/config.js', (req, res) => {
+  if (process.env.WEB_APP_URL || process.env.SITE_PASSWORD) {
+    res.type('application/javascript');
+    const webAppUrl = process.env.WEB_APP_URL || '';
+    const sitePassword = process.env.SITE_PASSWORD || '';
+    return res.send(`window.WEB_APP_URL = ${JSON.stringify(webAppUrl)};\nwindow.SITE_PASSWORD = ${JSON.stringify(sitePassword)};\n`);
+  }
+  const configPath = path.join(__dirname, 'config.js');
+  if (fs.existsSync(configPath)) {
+    return res.sendFile(configPath);
+  }
   res.type('application/javascript');
-  const webAppUrl = process.env.WEB_APP_URL || '';
-  const sitePassword = process.env.SITE_PASSWORD || '';
-  res.send(`window.WEB_APP_URL = ${JSON.stringify(webAppUrl)};\nwindow.SITE_PASSWORD = ${JSON.stringify(sitePassword)};\n`);
+  res.send('window.WEB_APP_URL = "";\nwindow.SITE_PASSWORD = "";\n');
 });
 
 // Serve static files from root directory

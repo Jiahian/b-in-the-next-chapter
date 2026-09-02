@@ -3,7 +3,7 @@
 // something even when offline). Data (Sheet entries, Drive media) always
 // comes from the network — this never caches API responses.
 
-var CACHE_NAME = "bnext-shell-v54";
+var CACHE_NAME = "bnext-shell-v55";
 var SHELL_FILES = [
   "./",
   "./index.html",
