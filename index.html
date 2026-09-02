@@ -56,8 +56,8 @@
     --accent-hover: #4338ca;
     --accent-contrast: #ffffff;
     --countdown-bg: #0f172a;
-    --countdown-accent: #ffe135;
-    --badge-bg: #ffe135;
+    --countdown-accent: #facc15;
+    --badge-bg: #facc15;
     --badge-text: #000000;
     --success: #10b981;
     --success-hover: #059669;
@@ -103,8 +103,8 @@
     --accent-hover: #a8c7fa;
     --accent-contrast: #131314;
     --countdown-bg: #1e1f20;
-    --countdown-accent: #fdd663;
-    --badge-bg: #fdd663;
+    --countdown-accent: #facc15;
+    --badge-bg: #facc15;
     --badge-text: #131314;
     --success: #81c995;
     --success-hover: #a8dab5;
@@ -232,9 +232,9 @@
   /* Log panel modal overlay */
   #panel-log.active {
     position: fixed; inset: 0; z-index: 50;
-    background: rgba(15, 23, 42, 0.52);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
+    background: rgba(0, 0, 0, 0.48);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
     overflow-y: auto;
     overflow-x: hidden;
     display: flex;
@@ -854,6 +854,9 @@
     font-weight: 800;
     letter-spacing: -0.02em;
     color: var(--text-primary);
+    white-space: nowrap;
+    flex-shrink: 0;
+    min-width: 0;
   }
   /* Minimal Filter Capsule (Gallery Filter) */
   .filter-capsule-root {
@@ -864,6 +867,7 @@
     z-index: 40;
     max-width: 100%;
     min-height: 34px;
+    flex-shrink: 0;
   }
   .filter-capsule-wrap {
     position: relative;
@@ -877,8 +881,11 @@
     padding: 3px;
     height: 34px;
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.08), inset 0 1px 2px rgba(0, 0, 0, 0.05);
-    transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-                box-shadow 0.2s ease;
+    transition: width 0.38s cubic-bezier(0.16, 1, 0.3, 1),
+                min-width 0.38s cubic-bezier(0.16, 1, 0.3, 1),
+                background-color 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.28s ease,
+                border-color 0.28s ease;
     box-sizing: border-box;
     user-select: none;
     overflow: hidden;
@@ -909,12 +916,19 @@
     justify-content: center;
     height: 100%;
     width: 100%;
-    transition: opacity 0.12s ease;
+    position: relative;
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+    transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .filter-capsule-wrap.is-open .filter-capsule-idle-box {
-    opacity: 0;
-    pointer-events: none;
     position: absolute;
+    inset: 0;
+    opacity: 0;
+    transform: scale(0.72);
+    pointer-events: none;
   }
   .filter-capsule-idle-btn {
     display: inline-flex;
@@ -936,10 +950,16 @@
     line-height: 1;
     user-select: none;
     box-shadow: none;
-    transition: background-color 0.15s ease, transform 0.12s ease;
+    transition: background-color 0.24s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.24s ease;
   }
   .filter-capsule-idle-btn:hover {
     background: #eab308;
+    transform: translateY(-0.5px);
+  }
+  .filter-capsule-idle-btn:active {
+    transform: scale(0.95);
   }
   .filter-capsule-idle-btn.is-icon-btn {
     width: 34px;
@@ -952,16 +972,22 @@
     justify-content: space-between;
     gap: 3px;
     width: 100%;
-    transition: opacity 0.18s ease;
+    height: 100%;
+    position: relative;
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+    transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1) 0.06s,
+                transform 0.32s cubic-bezier(0.16, 1, 0.3, 1) 0.04s;
   }
   .filter-capsule-wrap.is-idle .filter-capsule-row {
-    opacity: 0;
-    pointer-events: none;
     position: absolute;
-  }
-  .filter-capsule-wrap.is-open .filter-capsule-row {
-    opacity: 1;
-    pointer-events: auto;
+    inset: 0;
+    opacity: 0;
+    transform: scale(0.88);
+    pointer-events: none;
+    transition: opacity 0.16s ease,
+                transform 0.18s ease;
   }
   .filter-capsule-btn {
     display: inline-flex;
@@ -979,8 +1005,10 @@
     border-radius: 9999px;
     cursor: pointer;
     white-space: nowrap;
-    transition: background-color 0.15s ease,
-                color 0.15s ease;
+    transition: background-color 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+                color 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.16s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.22s ease;
     font-family: inherit;
     line-height: 1.2;
     user-select: none;
@@ -989,6 +1017,10 @@
   .filter-capsule-btn:hover {
     background: #f8fafc;
     color: #0f172a;
+    transform: translateY(-0.5px);
+  }
+  .filter-capsule-btn:active {
+    transform: scale(0.95);
   }
   .filter-capsule-btn.active {
     background: #facc15;
@@ -996,6 +1028,7 @@
     font-weight: 700;
     border: none;
     box-shadow: none;
+    transform: scale(1);
   }
 
   /* Floating Pill Sub-categories Popover */
@@ -1009,15 +1042,23 @@
     border-radius: 16px;
     padding: 9px;
     box-shadow: 0 14px 34px -4px rgba(15, 23, 42, 0.12), 0 4px 12px -2px rgba(15, 23, 42, 0.04);
-    animation: capsulePopIn 0.16s ease-out;
     display: flex;
     flex-direction: column;
     gap: 6px;
     transform-origin: top right;
+    opacity: 0;
+    transform: translateY(-8px) scale(0.94);
+    pointer-events: none;
+    visibility: hidden;
+    transition: opacity 0.24s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+                visibility 0.28s;
   }
-  @keyframes capsulePopIn {
-    from { opacity: 0; transform: translateY(-4px); }
-    to { opacity: 1; transform: translateY(0); }
+  .filter-capsule-popover.is-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+    visibility: visible;
   }
   .filter-sub-grid-months {
     display: grid;
@@ -1047,7 +1088,10 @@
     background: #f8fafc;
     color: #334155;
     cursor: pointer;
-    transition: background-color 0.14s ease, color 0.14s ease;
+    transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+                color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.16s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.2s ease;
     font-family: inherit;
     white-space: nowrap;
     text-align: center;
@@ -1058,13 +1102,18 @@
   .filter-sub-pill:hover {
     background: #fef9c3;
     color: #854d0e;
+    transform: translateY(-1px);
+  }
+  .filter-sub-pill:active {
+    transform: scale(0.95);
   }
   .filter-sub-pill.selected {
     background: #facc15;
     color: #ffffff;
     font-weight: 700;
     border: none;
-    box-shadow: none;
+    box-shadow: 0 2px 6px rgba(250, 204, 21, 0.3);
+    transform: scale(1);
   }
 
   /* Dark mode capsule overrides */
@@ -1125,12 +1174,12 @@
     color: #000000;
     font-weight: 700;
     border: none;
-    box-shadow: none;
+    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.25);
   }
 
   /* Gallery Category Subheader matching screenshot layout */
   .gallery-category-group {
-    margin-bottom: 24px;
+    margin-bottom: 20px;
     width: 100%;
   }
   .gallery-category-group:last-child {
@@ -1141,7 +1190,7 @@
     font-weight: 800;
     color: #0f172a;
     letter-spacing: -0.015em;
-    margin: 4px 0 14px 0;
+    margin: 4px 0 10px 0;
     padding-bottom: 4px;
     border-bottom: none;
     width: 100%;
@@ -1154,7 +1203,7 @@
   }
   .gallery-masonry {
     display: flex;
-    gap: 14px;
+    gap: 9px;
     width: 100%;
     align-items: flex-start;
   }
@@ -1163,12 +1212,12 @@
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 9px;
   }
   .gallery-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px;
+    gap: 9px;
     width: 100%;
     align-items: start;
   }
@@ -1273,13 +1322,13 @@
     width: 100%;
     box-sizing: border-box;
   }
-  .gallery-item .meta-row {
+  .gallery-item .meta-bottom {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 4px 6px;
-    margin-bottom: 6px;
+    margin-top: auto;
+    padding-top: 6px;
+    gap: 6px;
     width: 100%;
     min-width: 0;
   }
@@ -1289,6 +1338,7 @@
     color: var(--accent);
     letter-spacing: 0.02em;
     white-space: nowrap;
+    margin-bottom: 2px;
   }
   .gallery-item .meta-cat {
     font-size: 10px;
@@ -1298,11 +1348,12 @@
     padding: 2px 6px;
     border-radius: 6px;
     white-space: nowrap;
-    max-width: 100%;
+    max-width: 55%;
     overflow: hidden;
     text-overflow: ellipsis;
     line-height: 1.25;
     display: inline-block;
+    flex-shrink: 0;
   }
   .gallery-item .meta-title {
     font-size: 15px;
@@ -1332,23 +1383,89 @@
     font-size: 12.5px;
     font-weight: 600;
     color: var(--text-muted);
-    margin-top: auto;
-    padding-top: 6px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     min-width: 0;
-    width: 100%;
+    flex: 1;
   }
   .empty-state { text-align: center; padding: 44px 16px; color: var(--text-muted); font-size: 16px; }
 
   @media (max-width: 480px) {
+    .gallery-header-row {
+      margin: 22px 0 14px;
+      gap: 8px;
+    }
+    .gallery-header-row .section-heading {
+      font-size: 17px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .filter-capsule-root {
+      min-height: 25.5px;
+      flex-shrink: 0;
+    }
+    .filter-capsule-wrap {
+      height: 25.5px;
+      padding: 2px;
+    }
+    .filter-capsule-wrap.is-circle {
+      width: 25.5px;
+      min-width: 25.5px;
+      height: 25.5px;
+    }
+    .filter-capsule-wrap.is-open {
+      width: 171px;
+      min-width: 171px;
+      padding: 2px;
+    }
+    .filter-capsule-idle-btn {
+      height: 25.5px;
+      padding: 0 11px;
+      font-size: 10px;
+    }
+    .filter-capsule-idle-btn.is-icon-btn {
+      width: 25.5px;
+      height: 25.5px;
+      padding: 0;
+    }
+    .filter-capsule-idle-btn.is-icon-btn svg {
+      width: 12px;
+      height: 12px;
+    }
+    .filter-capsule-row {
+      gap: 2px;
+    }
+    .filter-capsule-btn {
+      padding: 3px 5px;
+      font-size: 10px;
+      line-height: 1.1;
+    }
+    .filter-capsule-popover {
+      top: calc(100% + 5px);
+      padding: 5px;
+      border-radius: 12px;
+      gap: 4px;
+    }
+    .filter-sub-grid-months {
+      width: 177px;
+      gap: 3px;
+    }
+    .filter-sub-list-areas {
+      width: 109px;
+      gap: 3px;
+    }
+    .filter-sub-pill {
+      padding: 3.5px 6px;
+      font-size: 9.5px;
+    }
+
     .gallery-masonry,
     .gallery-grid {
-      gap: 10px;
+      gap: 7px;
     }
     .gallery-masonry-col {
-      gap: 10px;
+      gap: 7px;
     }
     .gallery-item {
       border-radius: 10px;
@@ -1356,12 +1473,13 @@
     .gallery-item .meta {
       padding: 10px 10px 12px;
     }
-    .gallery-item .meta-row {
-      gap: 3px 4px;
-      margin-bottom: 4px;
+    .gallery-item .meta-bottom {
+      padding-top: 4px;
+      gap: 4px;
     }
     .gallery-item .meta-date {
       font-size: 10.5px;
+      margin-bottom: 1px;
     }
     .gallery-item .meta-cat {
       font-size: 9px;
@@ -1382,7 +1500,6 @@
     }
     .gallery-item .meta-amount {
       font-size: 11.5px;
-      padding-top: 4px;
     }
     .gallery-item .pts-pill {
       font-size: 10px;
@@ -1399,11 +1516,11 @@
     }
     .gallery-category-title {
       font-size: 16.5px;
-      margin: 2px 0 10px 0;
+      margin: 2px 0 8px 0;
       padding-bottom: 6px;
     }
     .gallery-category-group {
-      margin-bottom: 18px;
+      margin-bottom: 16px;
     }
 
     /* Log New Activity Mobile Optimization */
@@ -1523,9 +1640,9 @@
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(15, 23, 42, 0.65);
-    backdrop-filter: blur(3px);
-    -webkit-backdrop-filter: blur(3px);
+    background: rgba(0, 0, 0, 0.52);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
     z-index: 50;
     align-items: center;
     justify-content: center;
@@ -1621,16 +1738,24 @@
   .post-preview-sheet .meta {
     padding: 15px 16px 16px;
   }
-  .post-preview-sheet .meta-row {
-    margin-bottom: 8px;
-    gap: 6px;
+  .post-preview-sheet .meta-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: auto;
+    padding-top: 8px;
+    gap: 8px;
+    width: 100%;
+    min-width: 0;
   }
   .post-preview-sheet .meta-date {
     font-size: 12px;
+    margin-bottom: 2px;
   }
   .post-preview-sheet .meta-cat {
     font-size: 10.5px;
     padding: 2.5px 7px;
+    flex-shrink: 0;
   }
   .post-preview-sheet .meta-title {
     font-size: 15.5px;
@@ -1645,9 +1770,13 @@
     letter-spacing: 0.01em;
   }
   .post-preview-sheet .meta-amount {
-    padding-top: 8px;
     font-size: 12.5px;
     line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    flex: 1;
   }
   @keyframes menuDropIn {
     from { opacity: 0; transform: scale(0.92) translateY(-6px); }
@@ -1673,6 +1802,10 @@
     .post-preview-sheet .meta {
       padding: 12px 13px 13px;
     }
+    .post-preview-sheet .meta-bottom {
+      padding-top: 6px;
+      gap: 6px;
+    }
     .post-preview-sheet .meta-title {
       font-size: 14.5px;
       line-height: 1.35;
@@ -1685,7 +1818,6 @@
     }
     .post-preview-sheet .meta-amount {
       font-size: 11.5px;
-      padding-top: 6px;
     }
   }
 
@@ -1694,8 +1826,9 @@
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(15, 23, 42, 0.65);
-    backdrop-filter: blur(3px);
+    background: rgba(0, 0, 0, 0.52);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
     z-index: 50;
     align-items: center;
     justify-content: center;
@@ -1880,9 +2013,9 @@
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(15, 23, 42, 0.78);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
+    background: rgba(0, 0, 0, 0.68);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     z-index: 70;
     align-items: center;
     justify-content: center;
@@ -2065,7 +2198,7 @@
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background: #ffe135;
+    background: #facc15;
     border: none;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
     cursor: pointer;
@@ -2078,7 +2211,7 @@
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background: #ffe135;
+    background: #facc15;
     border: none;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
     cursor: pointer;
@@ -2159,7 +2292,11 @@
 
   /* Modal */
   .modal-overlay {
-    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 50;
+    display: none; position: fixed; inset: 0;
+    background: rgba(0, 0, 0, 0.48);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 50;
     align-items: flex-end; justify-content: center;
   }
   .modal-overlay.show { display: flex; }
@@ -2203,7 +2340,7 @@
     width: 40px;
     height: 22px;
     padding: 0;
-    background: #ffe135;
+    background: #facc15;
     border: 1px solid #facc15;
     border-radius: 999px;
     cursor: pointer;
@@ -2325,8 +2462,8 @@
   }
   [data-theme="dark"] .config-banner {
     background: #2c2514;
-    color: #fdd663;
-    border: 1px solid rgba(253, 214, 99, 0.25);
+    color: #facc15;
+    border: 1px solid rgba(250, 204, 21, 0.25);
   }
   [data-theme="dark"] .config-banner code {
     background: rgba(255, 255, 255, 0.1);
@@ -2666,8 +2803,17 @@
   [data-theme="dark"] .resize-btn-apply:hover {
     background: #a8c7fa;
   }
-  [data-theme="dark"] .modal-overlay {
+  [data-theme="dark"] .modal-overlay,
+  [data-theme="dark"] .post-preview-overlay,
+  [data-theme="dark"] .edit-activity-overlay {
     background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  [data-theme="dark"] .resize-image-overlay {
+    background: rgba(0, 0, 0, 0.82);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
   }
   [data-theme="dark"] .modal-sheet {
     background: #1e1f20;
@@ -2916,13 +3062,13 @@
     </div>
 
     <div class="meta">
-      <div class="meta-row">
-        <span class="meta-date" id="previewDate"></span>
-        <span class="meta-cat" id="previewAreaBadge">General</span>
-      </div>
+      <div class="meta-date" id="previewDate"></div>
       <div class="meta-title" id="previewTitle"></div>
       <div class="meta-desc" id="previewFullDesc"></div>
-      <div class="meta-amount" id="previewAmount"></div>
+      <div class="meta-bottom">
+        <div class="meta-amount" id="previewAmount"></div>
+        <span class="meta-cat" id="previewAreaBadge">General</span>
+      </div>
     </div>
   </div>
 </div>
@@ -3658,6 +3804,15 @@
     "Sep": "September", "Oct": "October", "Nov": "November", "Dec": "December"
   };
 
+  function getCapsulePillWidth(text) {
+    if (!text || text === "Default") return 34;
+    var canvas = getCapsulePillWidth._canvas || (getCapsulePillWidth._canvas = document.createElement("canvas"));
+    var ctx = canvas.getContext("2d");
+    ctx.font = "700 12px 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif";
+    var textWidth = ctx.measureText(text).width;
+    return Math.max(34, Math.ceil(textWidth + 34));
+  }
+
   function applyCapsuleFilter(type, value) {
     filterCapsuleState.selectedOption = {
       type: type,
@@ -3688,124 +3843,154 @@
 
     var wrap = document.getElementById("filterCapsuleWrap");
     if (!wrap) {
-      root.innerHTML = '<div class="filter-capsule-wrap" id="filterCapsuleWrap"></div>';
+      root.innerHTML =
+        '<div class="filter-capsule-wrap" id="filterCapsuleWrap">' +
+          '<div class="filter-capsule-idle-box" id="capsuleIdleBox">' +
+            '<button type="button" class="filter-capsule-idle-btn" id="capsuleTriggerBtn" aria-label="Filter activities"></button>' +
+          '</div>' +
+          '<div class="filter-capsule-row" id="capsuleRow">' +
+            '<button type="button" class="filter-capsule-btn" id="capsuleDefaultBtn">Default</button>' +
+            '<button type="button" class="filter-capsule-btn" id="capsuleMonthBtn">Month</button>' +
+            '<button type="button" class="filter-capsule-btn" id="capsuleAreaBtn">Area</button>' +
+          '</div>' +
+          '<div class="filter-capsule-popover" id="filterCapsuleSubmenu" role="dialog" aria-hidden="true"></div>' +
+        '</div>';
       wrap = document.getElementById("filterCapsuleWrap");
+
+      wrap.onclick = function(e) {
+        if (!filterCapsuleState.open) {
+          e.stopPropagation();
+          filterCapsuleState.open = true;
+          filterCapsuleState.activeSubmenu = null;
+          renderFilterCapsule();
+        }
+      };
+
+      var triggerBtn = wrap.querySelector("#capsuleTriggerBtn");
+      if (triggerBtn) {
+        triggerBtn.addEventListener("click", function (e) {
+          e.stopPropagation();
+          filterCapsuleState.open = true;
+          filterCapsuleState.activeSubmenu = null;
+          renderFilterCapsule();
+        });
+      }
+
+      var defaultBtn = wrap.querySelector("#capsuleDefaultBtn");
+      if (defaultBtn) {
+        defaultBtn.addEventListener("click", function (e) {
+          e.stopPropagation();
+          resetCapsuleToDefault();
+        });
+      }
+
+      var monthBtn = wrap.querySelector("#capsuleMonthBtn");
+      if (monthBtn) {
+        monthBtn.addEventListener("click", function (e) {
+          e.stopPropagation();
+          filterCapsuleState.activeSubmenu = (filterCapsuleState.activeSubmenu === "month" ? null : "month");
+          renderFilterCapsule();
+        });
+      }
+
+      var areaBtn = wrap.querySelector("#capsuleAreaBtn");
+      if (areaBtn) {
+        areaBtn.addEventListener("click", function (e) {
+          e.stopPropagation();
+          filterCapsuleState.activeSubmenu = (filterCapsuleState.activeSubmenu === "area" ? null : "area");
+          renderFilterCapsule();
+        });
+      }
     }
 
-    // Set classes on wrap for smooth CSS morph transition
+    // Set classes and explicit animated widths on wrap for smooth CSS morph transition
     wrap.className = "filter-capsule-wrap " +
       (isOpen ? "is-open" : "is-idle" + (isDefault ? " is-circle" : ""));
 
+    if (isOpen) {
+      wrap.style.width = "228px";
+      wrap.style.minWidth = "228px";
+    } else if (isDefault) {
+      wrap.style.width = "34px";
+      wrap.style.minWidth = "34px";
+    } else {
+      var targetPillW = getCapsulePillWidth(sel.value);
+      wrap.style.width = targetPillW + "px";
+      wrap.style.minWidth = targetPillW + "px";
+    }
+
+    // Update idle trigger button content
+    var triggerBtn = wrap.querySelector("#capsuleTriggerBtn");
+    if (triggerBtn) {
+      triggerBtn.className = "filter-capsule-idle-btn " + (isDefault ? "is-icon-btn" : "");
+      triggerBtn.innerHTML = isDefault
+        ? '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block;"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>'
+        : escapeHtml_(sel.value);
+    }
+
+    // Update segmented active tab buttons
     var isDefaultActive = (activeSubmenu ? false : sel.type === "default");
     var isMonthActive = (activeSubmenu === "month" || (!activeSubmenu && sel.type === "month"));
     var isAreaActive = (activeSubmenu === "area" || (!activeSubmenu && sel.type === "area"));
 
-    var html = '<div class="filter-capsule-idle-box" id="capsuleIdleBox">' +
-      '<button type="button" class="filter-capsule-idle-btn ' + (isDefault ? "is-icon-btn" : "") + '" id="capsuleTriggerBtn" aria-label="Filter activities">' +
-        (isDefault
-          ? '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block;"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>'
-          : escapeHtml_(sel.value)) +
-      '</button>' +
-    '</div>' +
-    '<div class="filter-capsule-row" id="capsuleRow">' +
-      '<button type="button" class="filter-capsule-btn ' + (isDefaultActive ? "active" : "") + '" id="capsuleDefaultBtn">Default</button>' +
-      '<button type="button" class="filter-capsule-btn ' + (isMonthActive ? "active" : "") + '" id="capsuleMonthBtn">Month</button>' +
-      '<button type="button" class="filter-capsule-btn ' + (isAreaActive ? "active" : "") + '" id="capsuleAreaBtn">Area</button>' +
-    '</div>';
+    var defaultBtn = wrap.querySelector("#capsuleDefaultBtn");
+    if (defaultBtn) defaultBtn.className = "filter-capsule-btn " + (isDefaultActive ? "active" : "");
+    var monthBtn = wrap.querySelector("#capsuleMonthBtn");
+    if (monthBtn) monthBtn.className = "filter-capsule-btn " + (isMonthActive ? "active" : "");
+    var areaBtn = wrap.querySelector("#capsuleAreaBtn");
+    if (areaBtn) areaBtn.className = "filter-capsule-btn " + (isAreaActive ? "active" : "");
 
-    if (isOpen && activeSubmenu === "month") {
-      html += '<div class="filter-capsule-popover" id="filterCapsuleSubmenu" role="dialog" aria-label="Select Month">' +
-        '<div class="filter-sub-grid-months">' +
+    // Update popover floating submenu with smooth open/close
+    var popover = wrap.querySelector("#filterCapsuleSubmenu");
+    if (popover) {
+      if (isOpen && activeSubmenu === "month") {
+        popover.className = "filter-capsule-popover is-visible";
+        popover.setAttribute("aria-hidden", "false");
+        popover.setAttribute("aria-label", "Select Month");
+        var phtml = '<div class="filter-sub-grid-months">' +
           '<button type="button" class="filter-sub-pill filter-sub-col-all ' + (sel.type === "month" && sel.value === "All Months" ? "selected" : "") + '" data-month="All Months">All Months</button>';
 
-      MONTHS_LIST.slice(1).forEach(function (m) {
-        var isSel = (sel.type === "month" && sel.value === m);
-        html += '<button type="button" class="filter-sub-pill ' + (isSel ? "selected" : "") + '" data-month="' + escapeHtml_(m) + '">' +
-          escapeHtml_(m) +
-        '</button>';
-      });
+        MONTHS_LIST.slice(1).forEach(function (m) {
+          var isSel = (sel.type === "month" && sel.value === m);
+          phtml += '<button type="button" class="filter-sub-pill ' + (isSel ? "selected" : "") + '" data-month="' + escapeHtml_(m) + '">' +
+            escapeHtml_(m) +
+          '</button>';
+        });
+        phtml += '</div>';
+        popover.innerHTML = phtml;
 
-      html += '</div></div>';
-    } else if (isOpen && activeSubmenu === "area") {
-      html += '<div class="filter-capsule-popover" id="filterCapsuleSubmenu" role="dialog" aria-label="Select Area">' +
-        '<div class="filter-sub-list-areas">';
+        popover.querySelectorAll("button[data-month]").forEach(function (btn) {
+          btn.addEventListener("click", function (e) {
+            e.stopPropagation();
+            var chosenMonth = btn.getAttribute("data-month");
+            applyCapsuleFilter("month", chosenMonth);
+          });
+        });
+      } else if (isOpen && activeSubmenu === "area") {
+        popover.className = "filter-capsule-popover is-visible";
+        popover.setAttribute("aria-hidden", "false");
+        popover.setAttribute("aria-label", "Select Area");
+        var ahtml = '<div class="filter-sub-list-areas">';
+        AREAS_LIST.forEach(function (a) {
+          var isSel = (sel.type === "area" && sel.value === a);
+          ahtml += '<button type="button" class="filter-sub-pill ' + (isSel ? "selected" : "") + '" data-area="' + escapeHtml_(a) + '">' +
+            escapeHtml_(a) +
+          '</button>';
+        });
+        ahtml += '</div>';
+        popover.innerHTML = ahtml;
 
-      AREAS_LIST.forEach(function (a) {
-        var isSel = (sel.type === "area" && sel.value === a);
-        html += '<button type="button" class="filter-sub-pill ' + (isSel ? "selected" : "") + '" data-area="' + escapeHtml_(a) + '">' +
-          escapeHtml_(a) +
-        '</button>';
-      });
-
-      html += '</div></div>';
-    }
-
-    wrap.innerHTML = html;
-
-    // Attach event handlers
-    wrap.onclick = function(e) {
-      if (!filterCapsuleState.open) {
-        e.stopPropagation();
-        filterCapsuleState.open = true;
-        filterCapsuleState.activeSubmenu = null;
-        renderFilterCapsule();
+        popover.querySelectorAll("button[data-area]").forEach(function (btn) {
+          btn.addEventListener("click", function (e) {
+            e.stopPropagation();
+            var chosenArea = btn.getAttribute("data-area");
+            applyCapsuleFilter("area", chosenArea);
+          });
+        });
+      } else {
+        popover.className = "filter-capsule-popover";
+        popover.setAttribute("aria-hidden", "true");
       }
-    };
-
-    var triggerBtn = wrap.querySelector("#capsuleTriggerBtn");
-    if (triggerBtn) {
-      triggerBtn.addEventListener("click", function (e) {
-        e.stopPropagation();
-        filterCapsuleState.open = true;
-        filterCapsuleState.activeSubmenu = null;
-        renderFilterCapsule();
-      });
-    }
-
-    var defaultBtn = wrap.querySelector("#capsuleDefaultBtn");
-    if (defaultBtn) {
-      defaultBtn.addEventListener("click", function (e) {
-        e.stopPropagation();
-        resetCapsuleToDefault();
-      });
-    }
-
-    var monthBtn = wrap.querySelector("#capsuleMonthBtn");
-    if (monthBtn) {
-      monthBtn.addEventListener("click", function (e) {
-        e.stopPropagation();
-        filterCapsuleState.activeSubmenu = (filterCapsuleState.activeSubmenu === "month" ? null : "month");
-        renderFilterCapsule();
-      });
-    }
-
-    var areaBtn = wrap.querySelector("#capsuleAreaBtn");
-    if (areaBtn) {
-      areaBtn.addEventListener("click", function (e) {
-        e.stopPropagation();
-        filterCapsuleState.activeSubmenu = (filterCapsuleState.activeSubmenu === "area" ? null : "area");
-        renderFilterCapsule();
-      });
-    }
-
-    if (isOpen && activeSubmenu === "month") {
-      var mPills = wrap.querySelectorAll("[data-month]");
-      mPills.forEach(function (p) {
-        p.addEventListener("click", function (e) {
-          e.stopPropagation();
-          var chosenMonth = p.getAttribute("data-month");
-          applyCapsuleFilter("month", chosenMonth);
-        });
-      });
-    } else if (isOpen && activeSubmenu === "area") {
-      var aPills = wrap.querySelectorAll("[data-area]");
-      aPills.forEach(function (p) {
-        p.addEventListener("click", function (e) {
-          e.stopPropagation();
-          var chosenArea = p.getAttribute("data-area");
-          applyCapsuleFilter("area", chosenArea);
-        });
-      });
     }
   }
 
@@ -3885,13 +4070,13 @@
         '<span class="pts-pill">+' + formatNum_(entry.amount) + ' pts</span>' +
       '</div>' +
       '<div class="meta">' +
-        '<div class="meta-row">' +
-          '<span class="meta-date">' + formatDateShort_(entry.date) + '</span>' +
-          '<span class="meta-cat ' + catClass + '">' + escapeHtml_(entry.category || 'General') + '</span>' +
-        '</div>' +
+        '<div class="meta-date">' + formatDateShort_(entry.date) + '</div>' +
         '<div class="meta-title" title="' + altText + '">' + altText + '</div>' +
         descHtml +
-        '<div class="meta-amount">' + formatNum_(entry.amount) + ' ' + escapeHtml_(unitDisplay) + '</div>' +
+        '<div class="meta-bottom">' +
+          '<div class="meta-amount">' + formatNum_(entry.amount) + ' ' + escapeHtml_(unitDisplay) + '</div>' +
+          '<span class="meta-cat ' + catClass + '">' + escapeHtml_(entry.category || 'General') + '</span>' +
+        '</div>' +
       '</div>';
 
     var thumbEl = item.querySelector(".thumb");
@@ -3991,7 +4176,9 @@
 
     // 3. Specific Month chosen (e.g. "Aug"):
     if (filterType === "month") {
-      var monthDisplay = MONTH_FULL_NAMES[filterVal] || filterVal;
+      var yearStr = (filtered.length && filtered[0].date && filtered[0].date.slice(0, 4)) || "2026";
+      var monthName = MONTH_FULL_NAMES[filterVal] || filterVal;
+      var monthDisplay = monthName + " " + yearStr;
       var groupEl = document.createElement("div");
       groupEl.className = "gallery-category-group";
       groupEl.innerHTML = '<div class="gallery-category-title">' + escapeHtml_(monthDisplay) + '</div>';
