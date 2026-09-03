@@ -30,7 +30,7 @@ jobs:
           SITE_PASSWORD: ${{ secrets.SITE_PASSWORD }}
         run: |
           mkdir -p _site
-          cp index.html manifest.json sw.js _site/
+          cp index.html manifest.json sw.js gifenc.browser.js _site/
           cp -r icons _site/icons
           printf 'window.WEB_APP_URL = "%s";\nwindow.SITE_PASSWORD = "%s";\n' "$WEB_APP_URL" "$SITE_PASSWORD" > _site/config.js
 
