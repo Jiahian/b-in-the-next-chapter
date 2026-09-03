@@ -5,8 +5,8 @@
 | | |
 |---|---|
 | **Author** | Sef |
-| **Date** | 26 Aug 2026 |
-| **Status** | v5 — Phase 1 live and in use, Phase 2 documented (§12), Drive-vs-Firebase trade-off recorded (§8.1), access-control decision open (§8.3/§10) |
+| **Date** | 26 Aug 2026 (last updated 3 Sep 2026) |
+| **Status** | v6 — Phase 1 live and in use; gallery/UI overhaul merged (§6.4, §6.6, §11); Phase 2 documented (§12); Drive-vs-Firebase trade-off recorded (§8.1); access-control decision open (§8.3/§10), now blocked on rebasing the unmerged Google Sign-In branch onto the overhauled UI |
 | **Challenge deadline** | 31 Dec 2026 |
 | **Reference** | [binthenextchapter.ai.studio](https://binthenextchapter.ai.studio/) — the prototype this build's visual design was matched to exactly (pulled from its actual source, not just screenshots) |
 
@@ -48,9 +48,10 @@ A private group of friends (not the general public) participating in the same ch
 2. Live countdown timer to the deadline (**31 Dec 2026**), shown in days, hours, minutes, seconds, updating every second.
 3. Total points accumulated by the whole group, shown against the target with a progress bar and a motivational status line (e.g., "🔥 Almost there!") that reacts to how close the group is to goal.
 4. Points broken down by category, shown as a bar per category.
-5. A media gallery of all uploaded photos/videos, filterable by month and by category, with edit and delete on individual entries.
-6. A submission form (see §6) for logging a new activity/points entry, including an edit flow for correcting an existing one.
+5. A media gallery of all uploaded photos/videos, in a masonry collage layout with a tap-to-open post preview, filterable by month and by category via a single unified filter control, with edit and delete on individual entries. An uploaded photo can also be resized/cropped after the fact (§6.4).
+6. A submission form (see §6) for logging a new activity/points entry, including an edit flow for correcting an existing one. Video uploads are automatically converted to a short animated GIF client-side (§6.6).
 7. A celebration modal that fires once the group crosses the 1,000-point target.
+8. Light/dark theme, user-toggleable and persisted per device (added 3 Sep 2026 — reverses an earlier build decision to ship light-only; see session-notes.md for that history).
 
 ### 5.2 Out of scope (v1)
 
@@ -86,10 +87,14 @@ A private group of friends (not the general public) participating in the same ch
 
 ### 6.4 Photo/video gallery
 
-- Grid of thumbnails, one per submitted entry (image thumbnail, or a video thumbnail/play icon for video entries).
-- Two filters, usable together: **Month** (derived from entry dates) and **Category**.
-- Tapping a thumbnail opens the full photo/video along with its details: who logged it, activity name, category, date, and amount + units.
+*Substantially reworked 3 Sep 2026 via a community-contributed PR (reviewed, tested, and hardened — see session-notes.md).*
+
+- **Masonry collage view** by default — thumbnails of varying aspect ratios tiled together without subheaders; an alternate grouped-by-month view is available via the filter control.
+- A single **filter capsule** replaces the earlier separate Month/Category dropdowns, offering the same two filter dimensions (usable together) through one unified control.
+- Tapping a thumbnail opens a **post preview modal** with the full photo/video and its details: who logged it, activity name, category, date, and amount + units.
 - Each entry can be **edited** (opens the entry form pre-filled, including the option to replace the media) or **deleted** (behind a confirmation modal, since deletes also remove the underlying Drive file and are not recoverable).
+- **Resize/crop**: from the edit flow, an uploaded photo can be re-cropped (zoom, pan, 3:4/4:3 aspect ratio) via an in-browser canvas tool. This is **destructive** — cropping replaces the currently-stored photo; the pre-crop original is not preserved, so cropping again later crops the already-cropped version, not the original upload. Deliberate simplicity trade-off (see §10) — revisit only if this causes real user frustration, since fixing it non-destructively means storing two files per cropped entry.
+- Not available for videos (resize/crop is photo-only).
 
 ### 6.5 Goal-achieved celebration
 
@@ -106,11 +111,12 @@ A private group of friends (not the general public) participating in the same ch
 | Date | Date picker | Required. Defaults to today. Cannot be a future date. |
 | Amount | Number | Required. Up to 1 decimal place. Must be greater than 0. |
 | Units | Dropdown | Required. Options: km, hours. |
-| Photo/video | File upload | **Mandatory.** Accepts image or video, from camera or existing gallery. |
+| Photo/video | File upload | **Mandatory.** Accepts image or video, from camera or existing gallery. Videos over 20MB are rejected client-side before any processing (tightened from an original 45MB ceiling per §8.2's stress-test findings). |
 
 - On submit, the entry is added to the shared pool and reflected in the progress bar, category breakdown, and gallery for everyone (see §8 for sync timing).
 - Form validates all fields client-side before allowing submission (in particular: no future dates, amount > 0 with max 1 decimal, media file present).
 - The same form is reused for **editing** an existing entry (pre-filled from the gallery's edit action), with the option to keep the existing photo/video or replace it.
+- **Video-to-GIF conversion** (added 3 Sep 2026): a chosen video is automatically converted client-side to a short animated GIF (~5 seconds, 9fps, capped at 360px on the long edge) before upload, so the gallery can show it as a simple, consistently-playable image rather than needing a native video embed. If conversion fails (unsupported format, slow device, etc.), the app falls back to uploading the original video file as before.
 
 ## 7. Non-functional requirements
 
@@ -119,6 +125,8 @@ A private group of friends (not the general public) participating in the same ch
 - **Low friction**: no per-user login; friends should be able to open the app and log an entry within seconds. (A one-time, app-wide shared password gate was added post-launch — see §8.3 — but it's typed once per device, not a per-user login.)
 - **Media handling**: photo/video uploads should work reliably over mobile data, with a visible upload progress/state so users know an entry has actually gone through.
 - **Data durability**: once submitted, entries and their media persist independent of any one friend's device (i.e., not stored only in one person's browser).
+- **Theming**: supports both light and dark appearance, user-toggleable and persisted per device (added 3 Sep 2026).
+- **Honest empty/error states** (added 3 Sep 2026): the app no longer substitutes a canned demo entry or a false "saved" confirmation when it isn't actually connected to a backend — an empty gallery shows a plain "no activities yet" message, and attempting to log/edit/delete while disconnected shows a clear error instead of silently no-op'ing to on-device storage.
 
 ## 8. Proposed technical approach
 
@@ -131,6 +139,8 @@ Because points must sync across every friend's own phone, this cannot be a purel
 - **Sync model**: the app polls the Apps Script endpoint every 20 seconds, and on each app open/resume, rather than an instant push like a realtime database would give. For a friend group logging a few times a day, this trade-off is invisible in practice — worth flagging since it differs from a Firebase-style setup.
 - **Identity**: lightweight — no login at all; a free-text "your name" field on each entry provides attribution, matching the reference prototype.
 - **Hosting**: **GitHub Pages**, deployed automatically on every push via a GitHub Actions workflow. The repo is public (required for free-tier Pages), so `WEB_APP_URL` is never committed to it — the workflow injects it into a generated `config.js` at deploy time from a GitHub repository secret instead.
+- **Local dev tooling** (added 3 Sep 2026): an optional small Express server (`server.js`, run via `npm run dev`) can serve the app locally for contributors, as an alternative to any plain static file server. Purely a development convenience — doesn't change production hosting (still static GitHub Pages) and isn't part of the deploy pipeline.
+- **Known platform limitation** (found 3 Sep 2026, while investigating a resize/crop bug): Apps Script Web Apps cannot set custom HTTP response headers — including CORS headers — on binary (`Blob`) `doGet` output, only on plain text/JSON output. This rules out using Apps Script itself as a general-purpose CORS-friendly proxy for re-serving media; any future feature needing that would require infrastructure outside Apps Script (see §10).
 
 ### 8.1 Why Google Drive over Firebase Storage for media
 
@@ -159,7 +169,7 @@ Broader than just media — the full-stack comparison, worth confirming you're c
 
 - *Single point of ownership*: everything (data + media) lives under one friend's Google account. If that person ever revokes access, deletes the Sheet/folder, or runs low on storage, the whole app's data goes with it — worth agreeing as a group who that is and treating it as the de facto admin.
 - *Not instant*: near-real-time (polling) rather than push-based live sync.
-- *Upload size ceiling*: Apps Script Web Apps have request-size limits well-suited to photos and short clips. Load testing found the real practical ceiling is lower than originally assumed — a 15MB video took ~44s to upload, and a 40MB video failed outright (hung, never completed). The client currently still allows up to 45MB; tightening that guidance to ~15–20MB is an open to-do, not yet done.
+- *Upload size ceiling*: Apps Script Web Apps have request-size limits well-suited to photos and short clips. Load testing found the real practical ceiling is lower than originally assumed — a 15MB video took ~44s to upload, and a 40MB video failed outright (hung, never completed). **Resolved 3 Sep 2026** — the client now enforces a hard 20MB limit before any upload/GIF-conversion attempt.
 - *Write concurrency*: also found under load testing — if many people submit at the exact same instant, Apps Script's free-tier execution ceiling rejects a large fraction of the truly-simultaneous requests outright (a platform limit, not a bug in this app's code). Reads (viewing the gallery) don't have this problem even under heavy concurrent load. Mitigation is just "retry if a submission fails."
 - *Quotas*: consumer Google accounts have daily Apps Script execution quotas; at 30 friends logging a few times a day this is far under the limit, but it's a shared ceiling to be aware of if usage spikes.
 
@@ -167,12 +177,12 @@ Broader than just media — the full-stack comparison, worth confirming you're c
 
 Not in the original scope — added after the app went live, once the group wanted the link itself to not be the only thing standing between a stranger and the group's data.
 
-- **Shipped**: a client-side password prompt gates the whole app. This is explicitly a **soft deterrent, not real authentication** — a static site has no server to keep a secret from the browser, so the password ships in plain text to every visitor and is trivially readable via dev tools or view-source. It stops someone from wandering in by accident; it will not stop someone who's determined to get in.
-- **Real protection — decision not yet made.** Three options were scoped:
+- **Currently live**: a client-side password prompt gates the whole app. This is explicitly a **soft deterrent, not real authentication** — a static site has no server to keep a secret from the browser, so the password ships in plain text to every visitor and is trivially readable via dev tools or view-source. It stops someone from wandering in by accident; it will not stop someone who's determined to get in.
+- **Real protection — decided, built, tested, not yet merged.** Three options were scoped:
   - **(A)** Move the password check server-side into the Apps Script backend (closes the "leaks to everyone" hole specifically; still one shared secret for the whole group; moderate effort, no new services).
   - **(B)** Google Sign-In with a per-person allowlist (real, unspoofable per-person identity; more friction — contradicts the §7 "no per-user login" goal; bigger lift).
   - **(C)** A custom backend with real sessions (most textbook-correct; abandons the $0-cost Apps Script stack this whole project is built around).
-  - **Recommendation, if/when this gets decided: (B).** Phase 2's planned badges/character-items/Manna currency (§12) can only be tied to *specific individuals* if the backend can verify *who* is making a request, not just *that* they know a shared password — and Firebase Authentication (Google Sign-In) pairs natively with the Firestore migration §12.3 already calls for. Building B for access control now would double as the identity layer Phase 2 needs anyway.
+  - **Chosen: (B)** (2026-08-29). Phase 2's planned badges/character-items/Manna currency (§12) can only be tied to *specific individuals* if the backend can verify *who* is making a request, not just *that* they know a shared password — and Firebase Authentication (Google Sign-In) pairs natively with the Firestore migration §12.3 already calls for. Built and tested working end-to-end (2026-08-31/09-01) — Google Identity Services sign-in, `Code.gs` verifies the token server-side and checks an email allowlist, the free-text name field is replaced by the verified identity. **Not yet merged**: it was built against the pre-3-Sep-2026 UI, and the gallery/UI overhaul (§6.4, §11) rewrote most of `index.html`, so it needs a rebase first — see §10.
 
 ## 9. Data model (indicative)
 
@@ -203,10 +213,10 @@ Total points = SUM(amount) across all entries where `deleted = false`. Category 
 - **Categories are fixed** at Spiritual / Relationship / Others for v1 (not user-editable) — confirmed, built and live.
 - **Edit/delete is unrestricted** — any group member can edit or delete any entry, not just their own (matches the reference prototype). *Still open: is that trust level fine for this group, or should edit/delete be limited to the entry's original author? Relevant to the same §8.3 access-control decision — per-author restriction only really means something once entries are tied to a verified identity.*
 - **Whose Google account hosts this?** Resolved in practice — the backend is deployed and connected (Sheet + Drive + Apps Script all live). Not documented here by name.
-- **Privacy**: gallery and totals are visible to anyone with the app link, now behind a shared password gate (§8.3) as a soft deterrent. *Still open: whether that's sufficient, or the group wants real per-person access control — see §8.3's Option A/B/C decision.*
+- **Privacy**: gallery and totals are visible to anyone with the app link, currently behind a shared password gate (§8.3) as a soft deterrent. Real per-person access control (§8.3 Option B) is decided and built, just not yet merged — see §10's Google Sign-In note below.
 - **Sync interval**: confirmed at 20 seconds (`POLL_INTERVAL_MS` in `index.html`), within the originally proposed 15–30s range.
-
-## 11. Milestones
+- **Photo re-cropping is destructive** (decided 3 Sep 2026) — cropping replaces the currently-stored photo; the pre-crop original isn't kept, so re-cropping later starts from the already-cropped version. Deliberate: the alternative (preserving the original) needs a second stored file per cropped entry plus a schema/lifecycle change, which felt disproportionate to a rare, low-stakes failure mode (worst case, re-upload the photo). Revisit only if this causes real frustration in practice.
+- **Google Sign-In (§8.3 Option B) still isn't merged**, and now needs a substantial rebase — the 3 Sep 2026 gallery/UI overhaul rewrote most of `index.html`, so the auth-gate/header/form changes built for Option B (on the old UI) will need to be reapplied against the new one before that work can move forward.
 
 | Milestone | Status |
 |---|---|
@@ -217,6 +227,8 @@ Total points = SUM(amount) across all entries where `deleted = false`. Category 
 | Access-control hardening (password gate) | Done as a soft deterrent (§8.3); real per-person protection still an open decision |
 | Load/stress testing | Done — found and partly acted on (see §8.2's upload-size and write-concurrency notes) |
 | Testing across friends' phones | In progress — an iOS Safari-specific rendering bug was found and fixed, not yet confirmed resolved on a real device |
+| Gallery/UI overhaul (masonry layout, dark mode, resize/crop, GIF conversion) | Done — 3 Sep 2026, merged via community-contributed PR #1 after code review found and fixed a stored-XSS issue, a missing video size limit, a transparent-PNG-to-black bug, two service-worker caching bugs, and a GIF-frame-capture race; also removed a fake "demo/offline" mode that silently no-op'd saves |
+| Google Sign-In access control (§8.3 Option B) | Blocked — built and tested working against the pre-overhaul UI, but not merged; needs rebasing onto the new gallery/UI before it can land |
 | Launch to the group | Not yet confirmed |
 | Challenge deadline | **31 Dec 2026** |
 
