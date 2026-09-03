@@ -3,7 +3,7 @@
 // something even when offline). Data (Sheet entries, Drive media) always
 // comes from the network — this never caches API responses.
 
-var CACHE_NAME = "bnext-shell-v54";
+var CACHE_NAME = "bnext-shell-v55";
 var SHELL_FILES = [
   "./",
   "./index.html",
@@ -44,10 +44,14 @@ self.addEventListener("fetch", function (event) {
   if (req.url.endsWith("/config.js") || req.mode === "navigate" || req.url.endsWith("/") || req.url.endsWith("/index.html")) {
     event.respondWith(
       fetch(req).then(function (res) {
-        var resClone = res.clone();
-        caches.open(CACHE_NAME).then(function (cache) {
-          cache.put(req, resClone);
-        });
+        if (res.ok) {
+          var resClone = res.clone();
+          event.waitUntil(
+            caches.open(CACHE_NAME).then(function (cache) {
+              return cache.put(req, resClone);
+            })
+          );
+        }
         return res;
       }).catch(function () {
         return caches.match(req);

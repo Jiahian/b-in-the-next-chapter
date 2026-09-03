@@ -6,6 +6,7 @@
 <title>B in the Next Chapter!</title>
 <meta name="description" content="Track our group's points toward the shared goal before 31 Dec 2026." />
 <meta name="color-scheme" content="light dark" />
+<meta name="referrer" content="no-referrer" />
 <meta name="theme-color" content="#ffffff" id="metaThemeColor" />
 <script>
   (function () {
@@ -56,8 +57,8 @@
     --accent-hover: #4338ca;
     --accent-contrast: #ffffff;
     --countdown-bg: #0f172a;
-    --countdown-accent: #ffe135;
-    --badge-bg: #ffe135;
+    --countdown-accent: #facc15;
+    --badge-bg: #facc15;
     --badge-text: #000000;
     --success: #10b981;
     --success-hover: #059669;
@@ -103,8 +104,8 @@
     --accent-hover: #a8c7fa;
     --accent-contrast: #131314;
     --countdown-bg: #1e1f20;
-    --countdown-accent: #fdd663;
-    --badge-bg: #fdd663;
+    --countdown-accent: #facc15;
+    --badge-bg: #facc15;
     --badge-text: #131314;
     --success: #81c995;
     --success-hover: #a8dab5;
@@ -232,9 +233,9 @@
   /* Log panel modal overlay */
   #panel-log.active {
     position: fixed; inset: 0; z-index: 50;
-    background: rgba(15, 23, 42, 0.52);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
+    background: rgba(0, 0, 0, 0.48);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
     overflow-y: auto;
     overflow-x: hidden;
     display: flex;
@@ -476,10 +477,12 @@
     border: none;
     border-radius: 20px;
     box-shadow: 0 16px 36px rgba(15, 23, 42, 0.16);
-    padding: 16px 18px 16px;
+    padding: 22px 24px 24px;
     margin: auto;
     width: 100%;
     max-width: 480px;
+    max-height: 90vh;
+    overflow-y: auto;
     box-sizing: border-box;
     animation: modalPopIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
@@ -487,11 +490,11 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 10px;
+    margin-bottom: 16px;
   }
   .log-modal-header h2 {
     margin: 0;
-    font-size: 18px;
+    font-size: 19px;
     font-weight: 700;
     color: #0f172a;
     letter-spacing: -0.02em;
@@ -501,13 +504,13 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
     border: none;
     background: #f1f5f9;
     color: #64748b;
-    font-size: 13px;
+    font-size: 14px;
     cursor: pointer;
     transition: all 0.15s ease;
   }
@@ -516,24 +519,24 @@
     color: #0f172a;
   }
 
-  .field { margin-bottom: 9px; }
+  .field { margin-bottom: 15px; }
   .field label, .field-label {
     display: flex;
     align-items: center;
     gap: 5px;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
-    margin-bottom: 3px;
+    margin-bottom: 6px;
     color: #475569;
   }
-  .field-error { color: var(--critical); font-size: 11px; margin-top: 2px; line-height: 1.3; display: none; }
+  .field-error { color: var(--critical); font-size: 11.5px; margin-top: 3px; line-height: 1.3; display: none; }
   .field-error.show { display: block; }
 
   .form-grid-2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-bottom: 9px;
+    gap: 12px;
+    margin-bottom: 15px;
   }
   .form-grid-2 .field {
     margin-bottom: 0;
@@ -799,11 +802,11 @@
     color: #ffffff;
     border: none;
     border-radius: 10px;
-    padding: 10px 16px;
+    padding: 11px 16px;
     font-size: 14.5px;
     font-weight: 700;
     width: 100%;
-    margin-top: 9px;
+    margin-top: 14px;
     cursor: pointer;
     box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
     transition: all 0.2s ease;
@@ -811,7 +814,7 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    min-height: 40px;
+    min-height: 42px;
   }
   .btn-submit-log:hover:not(:disabled) {
     background: #4338ca;
@@ -843,7 +846,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    margin: 26px 0 14px;
+    margin: 36px 0 24px;
     position: relative;
   }
   .gallery-header-row .section-heading {
@@ -852,190 +855,332 @@
     font-weight: 800;
     letter-spacing: -0.02em;
     color: var(--text-primary);
+    white-space: nowrap;
+    flex-shrink: 0;
+    min-width: 0;
   }
-  .gallery-filter-dropdown-wrap {
+  /* Minimal Filter Capsule (Gallery Filter) */
+  .filter-capsule-root {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
     position: relative;
+    z-index: 40;
+    max-width: 100%;
+    min-height: 34px;
+    flex-shrink: 0;
   }
-  .gallery-filter-btn {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: #ffe135;
-    border: none;
+  .filter-capsule-wrap {
+    position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: #ffffff;
-    cursor: pointer;
-    box-shadow: none;
-    transition: all 0.15s ease;
-    position: relative;
+    background: #ffffff;
+    color: #0f172a;
+    border: none;
+    border-radius: 9999px;
+    padding: 3px;
+    height: 34px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.08), inset 0 1px 2px rgba(0, 0, 0, 0.05);
+    transition: width 0.38s cubic-bezier(0.16, 1, 0.3, 1),
+                min-width 0.38s cubic-bezier(0.16, 1, 0.3, 1),
+                background-color 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.28s ease,
+                border-color 0.28s ease;
+    box-sizing: border-box;
     user-select: none;
-    flex-shrink: 0;
+    overflow: hidden;
+  }
+  .filter-capsule-wrap.is-idle {
+    background: transparent;
+    padding: 0;
+    box-shadow: none;
+    cursor: pointer;
+  }
+  .filter-capsule-wrap.is-circle {
+    width: 34px;
+    min-width: 34px;
+    height: 34px;
     padding: 0;
   }
-  .gallery-filter-btn:hover {
-    background: #facc15;
-    color: #ffffff;
-    transform: translateY(-1px);
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.18);
+  .filter-capsule-wrap.is-open {
+    width: 228px;
+    min-width: 228px;
+    background: #ffffff;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.08), inset 0 1px 2px rgba(0, 0, 0, 0.05);
+    padding: 3px;
+    overflow: visible;
   }
-  .gallery-filter-btn.is-active {
-    background: #facc15;
-    color: #ffffff;
-    border: none;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.22);
-  }
-  .gallery-filter-btn .filter-icon {
-    flex-shrink: 0;
-    color: #ffffff;
-    opacity: 1;
-  }
-  .filter-count-badge {
-    position: absolute;
-    top: -3px;
-    right: -3px;
+  .filter-capsule-idle-box {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: #2563eb;
-    color: #ffffff;
-    border-radius: 999px;
-    font-size: 10px;
-    font-weight: 800;
-    min-width: 16px;
-    height: 16px;
-    padding: 0 4px;
-    line-height: 1;
-    border: 1.5px solid #ffffff;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    height: 100%;
+    width: 100%;
+    position: relative;
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+    transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
   }
-  .gallery-filter-popover {
+  .filter-capsule-wrap.is-open .filter-capsule-idle-box {
     position: absolute;
-    top: calc(100% + 6px);
-    right: 0;
-    z-index: 50;
-    width: 184px;
-    background: #ffffff;
+    inset: 0;
+    opacity: 0;
+    transform: scale(0.72);
+    pointer-events: none;
+  }
+  .filter-capsule-idle-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 34px;
+    padding: 0 16px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: #ffffff;
+    background: #facc15;
     border: none;
-    border-radius: 12px;
-    padding: 11px 11px 13px;
-    box-shadow: 0 10px 25px -4px rgba(15, 23, 42, 0.12), 0 4px 10px -2px rgba(15, 23, 42, 0.05);
-    display: none;
-    flex-direction: column;
-    gap: 9px;
+    outline: none;
+    border-radius: 9999px;
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: inherit;
+    line-height: 1;
+    user-select: none;
+    box-shadow: none;
+    transition: background-color 0.24s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.24s ease;
   }
-  .gallery-filter-popover.open {
-    display: flex;
-    animation: filterPop 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  .filter-capsule-idle-btn:hover {
+    background: #eab308;
+    transform: translateY(-0.5px);
   }
-  @keyframes filterPop {
-    from { opacity: 0; transform: translateY(-4px) scale(0.97); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
+  .filter-capsule-idle-btn:active {
+    transform: scale(0.95);
   }
-  .filter-popover-header {
+  .filter-capsule-idle-btn.is-icon-btn {
+    width: 34px;
+    height: 34px;
+    padding: 0;
+  }
+  .filter-capsule-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding-bottom: 7px;
-    border-bottom: none;
+    gap: 3px;
+    width: 100%;
+    height: 100%;
+    position: relative;
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+    transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1) 0.06s,
+                transform 0.32s cubic-bezier(0.16, 1, 0.3, 1) 0.04s;
   }
-  .filter-popover-title {
-    font-size: 11px;
-    font-weight: 700;
-    color: #0f172a;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+  .filter-capsule-wrap.is-idle .filter-capsule-row {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transform: scale(0.88);
+    pointer-events: none;
+    transition: opacity 0.16s ease,
+                transform 0.18s ease;
   }
-  .filter-clear-btn {
-    background: none;
+  .filter-capsule-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1 1 0;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: #475569;
+    background: #ffffff;
     border: none;
-    padding: 0;
-    font-size: 11px;
-    font-weight: 700;
-    color: #64748b;
+    outline: none;
+    border-radius: 9999px;
     cursor: pointer;
-    transition: color 0.15s ease;
+    white-space: nowrap;
+    transition: background-color 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+                color 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.16s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.22s ease;
     font-family: inherit;
+    line-height: 1.2;
+    user-select: none;
+    box-shadow: none;
+  }
+  .filter-capsule-btn:hover {
+    background: #f8fafc;
+    color: #0f172a;
+    transform: translateY(-0.5px);
+  }
+  .filter-capsule-btn:active {
+    transform: scale(0.95);
+  }
+  .filter-capsule-btn.active {
+    background: #facc15;
+    color: #ffffff;
+    font-weight: 700;
+    border: none;
+    box-shadow: none;
+    transform: scale(1);
+  }
+
+  /* Floating Pill Sub-categories Popover */
+  .filter-capsule-popover {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: 50;
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 16px;
+    padding: 9px;
+    box-shadow: 0 14px 34px -4px rgba(15, 23, 42, 0.12), 0 4px 12px -2px rgba(15, 23, 42, 0.04);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transform-origin: top right;
+    opacity: 0;
+    transform: translateY(-8px) scale(0.94);
+    pointer-events: none;
     visibility: hidden;
+    transition: opacity 0.24s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+                visibility 0.28s;
   }
-  .filter-clear-btn:hover {
-    color: #ef4444;
-    text-decoration: underline;
+  .filter-capsule-popover.is-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+    visibility: visible;
   }
-  .filter-field-group {
+  .filter-sub-grid-months {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 5px;
+    width: 236px;
+  }
+  .filter-sub-col-all {
+    grid-column: span 4;
+  }
+  .filter-sub-list-areas {
     display: flex;
     flex-direction: column;
     gap: 4px;
+    width: 145px;
   }
-  .filter-field-label {
-    font-size: 10.5px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: #64748b;
-    padding-left: 2px;
-  }
-  .filter-select-wrap {
-    position: relative;
-    width: 100%;
-    display: flex;
-    align-items: center;
-  }
-  .filter-select {
-    width: 100%;
-    height: 32px;
-    padding: 0 26px 0 10px;
-    font-size: 12px;
-    font-weight: 600;
-    border: 1px solid var(--border);
-    border-radius: 7px;
-    background: #f8fafc;
-    color: #0f172a;
-    font-family: inherit;
-    outline: none;
-    cursor: pointer;
-    -webkit-appearance: none !important;
-    -moz-appearance: none !important;
-    appearance: none !important;
-    background-image: none !important;
-    transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
-  }
-  .filter-select::-ms-expand {
-    display: none;
-  }
-  .filter-select:hover {
-    background: #ffffff;
-    border-color: #cbd5e1;
-  }
-  .filter-select:focus {
-    border-color: var(--accent);
-    background: #ffffff;
-    box-shadow: 0 0 0 2.5px rgba(99, 102, 241, 0.12);
-  }
-  .filter-select-arrow {
-    position: absolute;
-    right: 9px;
-    top: 50%;
-    transform: translateY(-50%);
-    pointer-events: none;
-    color: #94a3b8;
-    display: flex;
+  .filter-sub-pill {
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: color 0.15s ease;
+    padding: 6px 10px;
+    font-size: 11.5px;
+    font-weight: 600;
+    border-radius: 9999px;
+    border: none;
+    outline: none;
+    background: #f8fafc;
+    color: #334155;
+    cursor: pointer;
+    transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+                color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.16s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.2s ease;
+    font-family: inherit;
+    white-space: nowrap;
+    text-align: center;
+    line-height: 1.2;
+    user-select: none;
+    box-shadow: none;
   }
-  .filter-select-wrap:hover .filter-select-arrow {
-    color: #64748b;
+  .filter-sub-pill:hover {
+    background: #fef9c3;
+    color: #854d0e;
+    transform: translateY(-1px);
   }
-  .filter-select:focus + .filter-select-arrow,
-  .filter-select-wrap:focus-within .filter-select-arrow {
-    color: var(--accent);
+  .filter-sub-pill:active {
+    transform: scale(0.95);
+  }
+  .filter-sub-pill.selected {
+    background: #facc15;
+    color: #ffffff;
+    font-weight: 700;
+    border: none;
+    box-shadow: 0 2px 6px rgba(250, 204, 21, 0.3);
+    transform: scale(1);
+  }
+
+  /* Dark mode capsule overrides */
+  [data-theme="dark"] .filter-capsule-wrap {
+    background: #18181b;
+    color: #f5f5f5;
+    border: 1px solid #3f3f46;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+  [data-theme="dark"] .filter-capsule-wrap.is-idle {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+  }
+  [data-theme="dark"] .filter-capsule-idle-btn {
+    background: #27272a;
+    border: 1px solid #3f3f46;
+    color: #f5f5f5;
+  }
+  [data-theme="dark"] .filter-capsule-idle-btn:hover {
+    background: #3f3f46;
+    border-color: #52525b;
+  }
+  [data-theme="dark"] .filter-capsule-btn {
+    background: #27272a;
+    color: #a1a1aa;
+  }
+  [data-theme="dark"] .filter-capsule-btn:hover {
+    background: #3f3f46;
+    color: #ffffff;
+  }
+  [data-theme="dark"] .filter-capsule-btn.active {
+    background: #ffffff;
+    color: #000000;
+    font-weight: 700;
+    border: none;
+    box-shadow: none;
+  }
+  [data-theme="dark"] .filter-capsule-popover {
+    background: rgba(24, 24, 27, 0.96);
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+    border: 1px solid #3f3f46;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7);
+  }
+  [data-theme="dark"] .filter-sub-pill {
+    background: #27272a;
+    color: #e4e4e7;
+    border: none;
+    box-shadow: none;
+  }
+  [data-theme="dark"] .filter-sub-pill:hover {
+    background: #3f3f46;
+    color: #ffffff;
+  }
+  [data-theme="dark"] .filter-sub-pill.selected {
+    background: #ffffff;
+    color: #000000;
+    font-weight: 700;
+    border: none;
+    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.25);
   }
 
   /* Gallery Category Subheader matching screenshot layout */
   .gallery-category-group {
-    margin-bottom: 24px;
+    margin-bottom: 20px;
     width: 100%;
   }
   .gallery-category-group:last-child {
@@ -1046,7 +1191,7 @@
     font-weight: 800;
     color: #0f172a;
     letter-spacing: -0.015em;
-    margin: 4px 0 14px 0;
+    margin: 4px 0 10px 0;
     padding-bottom: 4px;
     border-bottom: none;
     width: 100%;
@@ -1057,11 +1202,25 @@
     width: 100%;
     min-width: 0;
   }
+  .gallery-masonry {
+    display: flex;
+    gap: 9px;
+    width: 100%;
+    align-items: flex-start;
+  }
+  .gallery-masonry-col {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+  }
   .gallery-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px;
+    gap: 9px;
     width: 100%;
+    align-items: start;
   }
   .gallery-item {
     display: flex;
@@ -1087,6 +1246,15 @@
     aspect-ratio: 4 / 3;
     background: var(--gridline);
     overflow: hidden;
+    transition: aspect-ratio 0.2s ease;
+  }
+  .gallery-item .thumb.ratio-3-4,
+  .gallery-item.ratio-3-4 .thumb {
+    aspect-ratio: 3 / 4;
+  }
+  .gallery-item .thumb.ratio-4-3,
+  .gallery-item.ratio-4-3 .thumb {
+    aspect-ratio: 4 / 3;
   }
   .gallery-item .thumb img, .gallery-item .thumb .video-fallback {
     width: 100%;
@@ -1155,13 +1323,13 @@
     width: 100%;
     box-sizing: border-box;
   }
-  .gallery-item .meta-row {
+  .gallery-item .meta-bottom {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 4px 6px;
-    margin-bottom: 6px;
+    margin-top: auto;
+    padding-top: 6px;
+    gap: 6px;
     width: 100%;
     min-width: 0;
   }
@@ -1171,6 +1339,7 @@
     color: var(--accent);
     letter-spacing: 0.02em;
     white-space: nowrap;
+    margin-bottom: 2px;
   }
   .gallery-item .meta-cat {
     font-size: 10px;
@@ -1180,11 +1349,12 @@
     padding: 2px 6px;
     border-radius: 6px;
     white-space: nowrap;
-    max-width: 100%;
+    max-width: 55%;
     overflow: hidden;
     text-overflow: ellipsis;
     line-height: 1.25;
     display: inline-block;
+    flex-shrink: 0;
   }
   .gallery-item .meta-title {
     font-size: 15px;
@@ -1214,19 +1384,89 @@
     font-size: 12.5px;
     font-weight: 600;
     color: var(--text-muted);
-    margin-top: auto;
-    padding-top: 6px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     min-width: 0;
-    width: 100%;
+    flex: 1;
   }
   .empty-state { text-align: center; padding: 44px 16px; color: var(--text-muted); font-size: 16px; }
 
   @media (max-width: 480px) {
+    .gallery-header-row {
+      margin: 22px 0 14px;
+      gap: 8px;
+    }
+    .gallery-header-row .section-heading {
+      font-size: 17px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .filter-capsule-root {
+      min-height: 25.5px;
+      flex-shrink: 0;
+    }
+    .filter-capsule-wrap {
+      height: 25.5px;
+      padding: 2px;
+    }
+    .filter-capsule-wrap.is-circle {
+      width: 25.5px;
+      min-width: 25.5px;
+      height: 25.5px;
+    }
+    .filter-capsule-wrap.is-open {
+      width: 171px;
+      min-width: 171px;
+      padding: 2px;
+    }
+    .filter-capsule-idle-btn {
+      height: 25.5px;
+      padding: 0 11px;
+      font-size: 10px;
+    }
+    .filter-capsule-idle-btn.is-icon-btn {
+      width: 25.5px;
+      height: 25.5px;
+      padding: 0;
+    }
+    .filter-capsule-idle-btn.is-icon-btn svg {
+      width: 12px;
+      height: 12px;
+    }
+    .filter-capsule-row {
+      gap: 2px;
+    }
+    .filter-capsule-btn {
+      padding: 3px 5px;
+      font-size: 10px;
+      line-height: 1.1;
+    }
+    .filter-capsule-popover {
+      top: calc(100% + 5px);
+      padding: 5px;
+      border-radius: 12px;
+      gap: 4px;
+    }
+    .filter-sub-grid-months {
+      width: 177px;
+      gap: 3px;
+    }
+    .filter-sub-list-areas {
+      width: 109px;
+      gap: 3px;
+    }
+    .filter-sub-pill {
+      padding: 3.5px 6px;
+      font-size: 9.5px;
+    }
+
+    .gallery-masonry,
     .gallery-grid {
-      gap: 10px;
+      gap: 7px;
+    }
+    .gallery-masonry-col {
+      gap: 7px;
     }
     .gallery-item {
       border-radius: 10px;
@@ -1234,12 +1474,13 @@
     .gallery-item .meta {
       padding: 10px 10px 12px;
     }
-    .gallery-item .meta-row {
-      gap: 3px 4px;
-      margin-bottom: 4px;
+    .gallery-item .meta-bottom {
+      padding-top: 4px;
+      gap: 4px;
     }
     .gallery-item .meta-date {
       font-size: 10.5px;
+      margin-bottom: 1px;
     }
     .gallery-item .meta-cat {
       font-size: 9px;
@@ -1260,7 +1501,6 @@
     }
     .gallery-item .meta-amount {
       font-size: 11.5px;
-      padding-top: 4px;
     }
     .gallery-item .pts-pill {
       font-size: 10px;
@@ -1277,118 +1517,308 @@
     }
     .gallery-category-title {
       font-size: 16.5px;
-      margin: 2px 0 10px 0;
+      margin: 2px 0 8px 0;
       padding-bottom: 6px;
     }
     .gallery-category-group {
-      margin-bottom: 18px;
+      margin-bottom: 16px;
     }
 
     /* Log New Activity Mobile Optimization */
     #panel-log.active {
-      padding: max(6px, env(safe-area-inset-top)) 10px max(6px, env(safe-area-inset-bottom));
+      padding: max(8px, env(safe-area-inset-top)) 12px max(8px, env(safe-area-inset-bottom));
     }
     .log-modal-card {
-      padding: 13px 14px 13px;
-      border-radius: 16px;
+      padding: 18px 18px 20px;
+      border-radius: 18px;
       max-width: 100%;
+      max-height: 92vh;
+      overflow-y: auto;
     }
     .log-modal-header {
-      margin-bottom: 7px;
+      margin-bottom: 14px;
     }
     .log-modal-header h2 {
-      font-size: 16px;
+      font-size: 17px;
     }
     .field {
-      margin-bottom: 6px;
+      margin-bottom: 13px;
     }
     .field label, .field-label {
-      font-size: 11px;
-      margin-bottom: 2px;
+      font-size: 12px;
+      margin-bottom: 4px;
     }
     .field-error {
-      font-size: 10.5px;
+      font-size: 11px;
       margin-top: 2px;
     }
     input[type="text"], input[type="date"], input[type="number"], input[type="password"], select {
-      padding: 5px 9px;
-      font-size: 12px;
-      height: 33px;
-      border-radius: 7px;
-    }
-    .form-grid-2 {
-      gap: 7px;
-      margin-bottom: 6px;
-    }
-    .file-drop-card {
-      padding: 3px 9px;
-      min-height: 33px;
-      gap: 7px;
-      border-radius: 7px;
-    }
-    .upload-badge-btn {
-      padding: 4px 10px;
-      font-size: 11px;
-    }
-    .upload-drop-text {
-      font-size: 11px;
-    }
-    .btn-submit-log {
-      padding: 8px 12px;
+      padding: 7px 10px;
       font-size: 13px;
       height: 36px;
+      border-radius: 8px;
+    }
+    .form-grid-2 {
+      gap: 10px;
+      margin-bottom: 13px;
+    }
+    .file-drop-card {
+      padding: 5px 10px;
       min-height: 36px;
-      margin-top: 6px;
+      gap: 8px;
+      border-radius: 8px;
+    }
+    .upload-badge-btn {
+      padding: 4px 11px;
+      font-size: 11.5px;
+    }
+    .upload-drop-text {
+      font-size: 11.5px;
+    }
+    .btn-submit-log {
+      padding: 10px 14px;
+      font-size: 13.5px;
+      height: 38px;
+      min-height: 38px;
+      margin-top: 10px;
       border-radius: 8px;
     }
   }
 
   @media (max-height: 640px) {
     #panel-log.active {
-      padding: 4px 8px;
+      padding: 6px 10px;
     }
     .log-modal-card {
-      padding: 10px 12px 10px;
-      border-radius: 14px;
+      padding: 14px 16px 16px;
+      border-radius: 16px;
+      max-height: 94vh;
+      overflow-y: auto;
     }
     .log-modal-header {
-      margin-bottom: 5px;
+      margin-bottom: 10px;
     }
     .log-modal-header h2 {
-      font-size: 15px;
+      font-size: 16px;
     }
     .field {
-      margin-bottom: 4px;
+      margin-bottom: 10px;
     }
     .field label, .field-label {
-      font-size: 10.5px;
-      margin-bottom: 1.5px;
+      font-size: 11px;
+      margin-bottom: 3px;
     }
     input[type="text"], input[type="date"], input[type="number"], input[type="password"], select {
-      padding: 4px 8px;
-      font-size: 11.5px;
-      height: 29px;
-      border-radius: 6px;
+      padding: 5px 9px;
+      font-size: 12px;
+      height: 32px;
+      border-radius: 7px;
     }
     .form-grid-2 {
-      gap: 6px;
-      margin-bottom: 4px;
+      gap: 8px;
+      margin-bottom: 10px;
     }
     .file-drop-card {
-      padding: 2px 8px;
-      min-height: 29px;
-      border-radius: 6px;
+      padding: 4px 9px;
+      min-height: 32px;
+      border-radius: 7px;
     }
     .upload-badge-btn {
-      padding: 3px 8px;
-      font-size: 10.5px;
+      padding: 3px 9px;
+      font-size: 11px;
     }
     .btn-submit-log {
-      padding: 6px 10px;
+      padding: 8px 12px;
+      font-size: 13px;
+      min-height: 34px;
+      height: 34px;
+      margin-top: 8px;
+    }
+  }
+
+  /* Post Preview Modal (Expanded View matching Gallery Item exactly) */
+  .post-preview-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.52);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 50;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    overflow-y: auto;
+  }
+  .post-preview-overlay.show {
+    display: flex;
+  }
+  .post-preview-sheet.gallery-item {
+    width: 100%;
+    max-width: 380px;
+    border-radius: 14px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+    max-height: 92vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    animation: modalPopIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: default;
+    transform: none !important;
+  }
+  .post-preview-sheet .thumb .preview-top-actions {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    z-index: 5;
+  }
+  .post-preview-sheet .preview-menu-wrapper {
+    position: relative;
+  }
+  .post-preview-sheet .preview-menu-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(15, 23, 42, 0.65);
+    color: #ffffff;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    transition: background 0.15s ease, transform 0.1s ease;
+    padding: 0;
+  }
+  .post-preview-sheet .preview-menu-btn:hover {
+    background: rgba(15, 23, 42, 0.88);
+    transform: scale(1.08);
+  }
+  .post-preview-sheet .preview-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 5px);
+    right: 0;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.2), 0 4px 10px -2px rgba(15, 23, 42, 0.08);
+    padding: 4px;
+    min-width: 100px;
+    z-index: 20;
+    display: none;
+    transform-origin: top right;
+    animation: menuDropIn 0.15s ease-out;
+  }
+  .post-preview-sheet .preview-dropdown-menu.show {
+    display: block;
+  }
+  .post-preview-sheet .preview-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 7px 10px;
+    border: none;
+    background: transparent;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1e293b;
+    border-radius: 6px;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.12s ease, color 0.12s ease;
+    box-sizing: border-box;
+  }
+  .post-preview-sheet .preview-dropdown-item:hover {
+    background: #f1f5f9;
+    color: #4f46e5;
+  }
+  .post-preview-sheet .meta {
+    padding: 15px 16px 16px;
+  }
+  .post-preview-sheet .meta-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: auto;
+    padding-top: 8px;
+    gap: 8px;
+    width: 100%;
+    min-width: 0;
+  }
+  .post-preview-sheet .meta-date {
+    font-size: 12px;
+    margin-bottom: 2px;
+  }
+  .post-preview-sheet .meta-cat {
+    font-size: 10.5px;
+    padding: 2.5px 7px;
+    flex-shrink: 0;
+  }
+  .post-preview-sheet .meta-title {
+    font-size: 15.5px;
+    line-height: 1.45;
+    margin: 2px 0 6px;
+    font-weight: 700;
+  }
+  .post-preview-sheet .meta-desc {
+    font-size: 13.5px;
+    line-height: 1.7;
+    margin: 6px 0 10px;
+    letter-spacing: 0.01em;
+  }
+  .post-preview-sheet .meta-amount {
+    font-size: 12.5px;
+    line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    flex: 1;
+  }
+  @keyframes menuDropIn {
+    from { opacity: 0; transform: scale(0.92) translateY(-6px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  @media (max-width: 480px), (max-height: 750px) {
+    .post-preview-overlay {
+      padding: 12px 10px;
+    }
+    .post-preview-sheet.gallery-item {
+      max-width: min(340px, calc(100vw - 20px));
+      max-height: calc(100vh - 24px);
+      border-radius: 12px;
+    }
+    .post-preview-sheet .thumb {
+      max-height: 32vh;
+    }
+    .post-preview-sheet .thumb.ratio-3-4,
+    .post-preview-sheet.ratio-3-4 .thumb {
+      max-height: 36vh;
+    }
+    .post-preview-sheet .meta {
+      padding: 12px 13px 13px;
+    }
+    .post-preview-sheet .meta-bottom {
+      padding-top: 6px;
+      gap: 6px;
+    }
+    .post-preview-sheet .meta-title {
+      font-size: 14.5px;
+      line-height: 1.35;
+      margin: 2px 0 4px;
+    }
+    .post-preview-sheet .meta-desc {
       font-size: 12.5px;
-      min-height: 32px;
-      height: 32px;
-      margin-top: 4px;
+      line-height: 1.6;
+      margin: 4px 0 8px;
+    }
+    .post-preview-sheet .meta-amount {
+      font-size: 11.5px;
     }
   }
 
@@ -1397,8 +1827,9 @@
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(15, 23, 42, 0.65);
-    backdrop-filter: blur(3px);
+    background: rgba(0, 0, 0, 0.52);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
     z-index: 50;
     align-items: center;
     justify-content: center;
@@ -1413,31 +1844,31 @@
     width: 100%;
     max-width: 440px;
     border-radius: 24px;
-    padding: 26px 22px 22px;
+    padding: 0;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     max-height: 92vh;
     overflow-y: auto;
+    overflow-x: hidden;
     animation: modalPopIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     display: flex;
     flex-direction: column;
-    gap: 16px;
-  }
-  .edit-activity-title {
-    margin: 0 0 2px;
-    font-size: 20px;
-    font-weight: 800;
-    color: #0f172a;
-    letter-spacing: -0.02em;
   }
   .edit-media-container {
     position: relative;
     width: 100%;
-    border-radius: 16px;
+    aspect-ratio: 4 / 3;
+    border-radius: 0;
     overflow: hidden;
     background: #0f172a;
+    box-shadow: none;
+    flex-shrink: 0;
+    transition: aspect-ratio 0.2s ease;
+  }
+  .edit-media-container.ratio-3-4 {
+    aspect-ratio: 3 / 4;
+  }
+  .edit-media-container.ratio-4-3 {
     aspect-ratio: 4 / 3;
-    max-height: 250px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   }
   .edit-media-container img, .edit-media-container iframe {
     width: 100%;
@@ -1446,10 +1877,35 @@
     display: block;
     border: none;
   }
+  .edit-media-close-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(15, 23, 42, 0.65);
+    color: #ffffff;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: all 0.15s ease;
+    z-index: 2;
+  }
+  .edit-media-close-btn:hover {
+    background: rgba(15, 23, 42, 0.88);
+    transform: scale(1.08);
+  }
   .edit-media-crop-btn {
     position: absolute;
-    right: 12px;
-    bottom: 12px;
+    right: 14px;
+    bottom: 14px;
     width: 38px;
     height: 38px;
     border-radius: 50%;
@@ -1462,10 +1918,16 @@
     cursor: pointer;
     box-shadow: 0 4px 10px rgba(16, 185, 129, 0.4);
     transition: all 0.15s ease;
+    z-index: 2;
   }
   .edit-media-crop-btn:hover {
     background: #059669;
     transform: scale(1.05);
+  }
+  .edit-activity-content {
+    padding: 20px 22px 24px;
+    display: flex;
+    flex-direction: column;
   }
   .edit-form-field {
     display: flex;
@@ -1552,9 +2014,9 @@
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(15, 23, 42, 0.78);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
+    background: rgba(0, 0, 0, 0.68);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     z-index: 70;
     align-items: center;
     justify-content: center;
@@ -1577,9 +2039,21 @@
     overflow: hidden;
     box-sizing: border-box;
   }
-  .resize-crop-frame {
+  .resize-stage {
     position: relative;
     width: 100%;
+    height: 330px;
+    background: #090d16;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .resize-crop-frame {
+    position: relative;
+    height: 100%;
+    max-width: 100%;
     aspect-ratio: 4 / 3;
     background: #0f172a;
     border-radius: 0;
@@ -1589,7 +2063,17 @@
     -webkit-user-select: none;
     touch-action: none;
     border: none;
-    box-shadow: none;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2), 0 8px 30px rgba(0, 0, 0, 0.7);
+  }
+  .resize-crop-frame.ratio-3-4 {
+    aspect-ratio: 3 / 4;
+    height: 100%;
+    max-width: 100%;
+  }
+  .resize-crop-frame.ratio-4-3 {
+    aspect-ratio: 4 / 3;
+    height: 100%;
+    max-width: 100%;
   }
   .resize-crop-frame.dragging {
     cursor: grabbing;
@@ -1634,6 +2118,39 @@
     flex-direction: column;
     gap: 14px;
     box-sizing: border-box;
+  }
+  .resize-ratio-row {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    background: #f1f5f9;
+    padding: 3px;
+    border-radius: 999px;
+    margin: 0 auto;
+    width: fit-content;
+  }
+  .resize-ratio-btn {
+    border: none;
+    background: transparent;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .resize-ratio-btn:hover {
+    color: #0f172a;
+  }
+  .resize-ratio-btn.active {
+    background: #ffffff;
+    color: #0f172a;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
   }
   .resize-zoom-row {
     display: flex;
@@ -1682,7 +2199,7 @@
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background: #ffe135;
+    background: #facc15;
     border: none;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
     cursor: pointer;
@@ -1695,7 +2212,7 @@
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background: #ffe135;
+    background: #facc15;
     border: none;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
     cursor: pointer;
@@ -1776,7 +2293,11 @@
 
   /* Modal */
   .modal-overlay {
-    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 50;
+    display: none; position: fixed; inset: 0;
+    background: rgba(0, 0, 0, 0.48);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 50;
     align-items: flex-end; justify-content: center;
   }
   .modal-overlay.show { display: flex; }
@@ -1820,7 +2341,7 @@
     width: 40px;
     height: 22px;
     padding: 0;
-    background: #ffe135;
+    background: #facc15;
     border: 1px solid #facc15;
     border-radius: 999px;
     cursor: pointer;
@@ -1942,8 +2463,8 @@
   }
   [data-theme="dark"] .config-banner {
     background: #2c2514;
-    color: #fdd663;
-    border: 1px solid rgba(253, 214, 99, 0.25);
+    color: #facc15;
+    border: 1px solid rgba(250, 204, 21, 0.25);
   }
   [data-theme="dark"] .config-banner code {
     background: rgba(255, 255, 255, 0.1);
@@ -2007,58 +2528,6 @@
   }
   [data-theme="dark"] .gallery-header-row .section-heading {
     color: #e3e3e3;
-  }
-  [data-theme="dark"] .gallery-filter-btn {
-    background: #ffe135;
-    border: none;
-    color: #ffffff;
-    box-shadow: none;
-  }
-  [data-theme="dark"] .gallery-filter-btn:hover {
-    background: #facc15;
-    border: none;
-    color: #ffffff;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.22);
-  }
-  [data-theme="dark"] .gallery-filter-btn.is-active {
-    background: #facc15;
-    color: #ffffff;
-    border: none;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.26);
-  }
-  [data-theme="dark"] .gallery-filter-popover {
-    background: #1e1f20;
-    border: 1px solid #3c4043;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
-  }
-  [data-theme="dark"] .filter-popover-title {
-    color: #e3e3e3;
-  }
-  [data-theme="dark"] .filter-field-label {
-    color: #9aa0a6;
-  }
-  [data-theme="dark"] .filter-select {
-    background-color: #282a2c;
-    border-color: #3c4043;
-    color: #e3e3e3;
-  }
-  [data-theme="dark"] .filter-select:hover {
-    background-color: #303134;
-    border-color: #5f6368;
-  }
-  [data-theme="dark"] .filter-select:focus {
-    border-color: #8ab4f8;
-    background-color: #282a2c;
-    box-shadow: 0 0 0 2.5px rgba(138, 180, 248, 0.2);
-  }
-  [data-theme="dark"] .filter-select-arrow {
-    color: #9aa0a6;
-  }
-  [data-theme="dark"] .filter-clear-btn {
-    color: #8ab4f8;
-  }
-  [data-theme="dark"] .filter-clear-btn:hover {
-    color: #f28b82;
   }
   [data-theme="dark"] .gallery-category-title {
     color: #e3e3e3;
@@ -2240,13 +2709,27 @@
     background: #a8c7fa;
     box-shadow: 0 6px 20px rgba(138, 180, 248, 0.4);
   }
-  [data-theme="dark"] .edit-activity-sheet {
+  [data-theme="dark"] .post-preview-sheet.gallery-item {
     background: #1e1f20;
     border: 1px solid #3c4043;
     box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
   }
-  [data-theme="dark"] .edit-activity-title {
+  [data-theme="dark"] .post-preview-sheet .preview-dropdown-menu {
+    background: #282a2c;
+    border-color: #3c4043;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  }
+  [data-theme="dark"] .post-preview-sheet .preview-dropdown-item {
     color: #e3e3e3;
+  }
+  [data-theme="dark"] .post-preview-sheet .preview-dropdown-item:hover {
+    background: #3c4043;
+    color: #8ab4f8;
+  }
+  [data-theme="dark"] .edit-activity-sheet {
+    background: #1e1f20;
+    border: 1px solid #3c4043;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
   }
   [data-theme="dark"] .edit-form-label {
     color: #c4c7c5;
@@ -2276,6 +2759,20 @@
   [data-theme="dark"] .resize-image-card {
     background: #1e1f20;
     border: 1px solid #3c4043;
+  }
+  [data-theme="dark"] .resize-ratio-row {
+    background: #282a2c;
+  }
+  [data-theme="dark"] .resize-ratio-btn {
+    color: #9aa0a6;
+  }
+  [data-theme="dark"] .resize-ratio-btn:hover {
+    color: #e3e3e3;
+  }
+  [data-theme="dark"] .resize-ratio-btn.active {
+    background: #3c4043;
+    color: #e3e3e3;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
   }
   [data-theme="dark"] .resize-zoom-btn {
     color: #9aa0a6;
@@ -2307,8 +2804,17 @@
   [data-theme="dark"] .resize-btn-apply:hover {
     background: #a8c7fa;
   }
-  [data-theme="dark"] .modal-overlay {
+  [data-theme="dark"] .modal-overlay,
+  [data-theme="dark"] .post-preview-overlay,
+  [data-theme="dark"] .edit-activity-overlay {
     background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  [data-theme="dark"] .resize-image-overlay {
+    background: rgba(0, 0, 0, 0.82);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
   }
   [data-theme="dark"] .modal-sheet {
     background: #1e1f20;
@@ -2409,54 +2915,7 @@
 
     <div class="gallery-header-row">
       <h2 class="section-heading">Activity Gallery</h2>
-      <div class="gallery-filter-dropdown-wrap" id="galleryFilterWrap">
-        <button type="button" class="gallery-filter-btn" id="galleryFilterBtn" aria-haspopup="true" aria-expanded="false" title="Filter activities" aria-label="Filter activities">
-          <svg class="filter-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M3 6h3 M11 6h10"></path>
-            <circle cx="8.5" cy="6" r="2.5"></circle>
-            <path d="M3 12h10 M18 12h3"></path>
-            <circle cx="15.5" cy="12" r="2.5"></circle>
-            <path d="M3 18h3 M11 18h10"></path>
-            <circle cx="8.5" cy="18" r="2.5"></circle>
-          </svg>
-          <span class="filter-count-badge" id="filterCountBadge" style="display:none;">0</span>
-        </button>
-        <div class="gallery-filter-popover" id="galleryFilterPopover" role="dialog" aria-label="Filter Options">
-          <div class="filter-popover-header">
-            <span class="filter-popover-title">Filter by</span>
-            <button type="button" class="filter-clear-btn" id="filterClearBtn">Reset</button>
-          </div>
-          <div class="filter-field-group">
-            <label for="filterMonth" class="filter-field-label">Month</label>
-            <div class="filter-select-wrap">
-              <select id="filterMonth" class="filter-select">
-                <option value="">All months</option>
-              </select>
-              <span class="filter-select-arrow" aria-hidden="true">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="m6 9 6 6 6-6"></path>
-                </svg>
-              </span>
-            </div>
-          </div>
-          <div class="filter-field-group">
-            <label for="filterCategory" class="filter-field-label">Category</label>
-            <div class="filter-select-wrap">
-              <select id="filterCategory" class="filter-select">
-                <option value="">All categories</option>
-                <option value="Spiritual">Spiritual</option>
-                <option value="Relationship">Relationship</option>
-                <option value="Others">Others</option>
-              </select>
-              <span class="filter-select-arrow" aria-hidden="true">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="m6 9 6 6 6-6"></path>
-                </svg>
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
+      <div class="filter-capsule-root" id="filterCapsuleRoot"></div>
     </div>
     <div class="card card-bare">
       <div id="galleryGroups"></div>
@@ -2473,11 +2932,6 @@
       </div>
       <form id="entryForm" novalidate>
         <div class="field">
-          <label for="fPersonName">Name</label>
-          <input type="text" id="fPersonName" maxlength="100" placeholder="Your name" />
-        </div>
-
-        <div class="field">
           <label for="fActivity">Activity Name</label>
           <input type="text" id="fActivity" maxlength="200" placeholder="Pray, Exercise, Serve..." required />
           <div class="field-error" data-for="fActivity">Please enter an activity name.</div>
@@ -2491,7 +2945,7 @@
 
         <div class="form-grid-2">
           <div class="field">
-            <label for="fCategory">Category</label>
+            <label for="fCategory">Area</label>
             <div class="select-wrap">
               <select id="fCategory" required>
                 <option value="Others" selected>Others</option>
@@ -2499,7 +2953,7 @@
                 <option value="Relationship">Relationship</option>
               </select>
             </div>
-            <div class="field-error" data-for="fCategory">Please choose a category.</div>
+            <div class="field-error" data-for="fCategory">Please choose an area.</div>
           </div>
           <div class="field">
             <label for="fDate">Date</label>
@@ -2577,16 +3031,56 @@
   </div>
 </div>
 
+<!-- Post Preview Modal (Exact gallery post card layout with expanded full text) -->
+<div class="post-preview-overlay" id="postPreviewOverlay">
+  <div class="post-preview-sheet gallery-item" id="postPreviewSheet">
+    <div class="thumb" id="previewMediaBox">
+      <img id="previewMediaImg" referrerpolicy="no-referrer" src="icons/block-party-2026.svg" alt="Activity media" onerror="this.onerror=null;this.src='icons/block-party-2026.svg';" />
+      <iframe id="previewMediaVideo" style="display:none;width:100%;height:100%;border:none;" allow="autoplay"></iframe>
+      
+      <div class="preview-top-actions">
+        <div class="preview-menu-wrapper">
+          <button type="button" class="preview-menu-btn" id="previewMenuBtn" title="More options" aria-label="More options">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+              <circle cx="12" cy="5" r="2"></circle>
+              <circle cx="12" cy="12" r="2"></circle>
+              <circle cx="12" cy="19" r="2"></circle>
+            </svg>
+          </button>
+          <div class="preview-dropdown-menu" id="previewDropdownMenu">
+            <button type="button" class="preview-dropdown-item" id="previewEditOption">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20h9"></path>
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+              </svg>
+              <span>Edit</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <span class="pts-pill" id="previewPointsPill">+0 pts</span>
+    </div>
+
+    <div class="meta">
+      <div class="meta-date" id="previewDate"></div>
+      <div class="meta-title" id="previewTitle"></div>
+      <div class="meta-desc" id="previewFullDesc"></div>
+      <div class="meta-bottom">
+        <div class="meta-amount" id="previewAmount"></div>
+        <span class="meta-cat" id="previewAreaBadge">General</span>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Edit Activity pop-up modal (opened on clicking any gallery post) -->
 <div class="edit-activity-overlay" id="editActivityOverlay">
   <div class="edit-activity-sheet">
-    <div class="edit-activity-header">
-      <h3 class="edit-activity-title">Edit Activity</h3>
-    </div>
-    
     <div class="edit-media-container" id="editMediaBox">
-      <img id="editMediaImg" src="icons/block-party-2026.svg" alt="Activity preview" onerror="this.onerror=null;this.src='icons/block-party-2026.svg';" />
+      <img id="editMediaImg" referrerpolicy="no-referrer" src="icons/block-party-2026.svg" alt="Activity preview" onerror="this.onerror=null;this.src='icons/block-party-2026.svg';" />
       <iframe id="editMediaVideo" style="display:none;width:100%;height:100%;border:none;" allow="autoplay"></iframe>
+      <button type="button" class="edit-media-close-btn" id="editTopCloseBtn" title="Close" aria-label="Close">✕</button>
       <button type="button" class="edit-media-crop-btn" id="editCropBtn" title="Resize image" aria-label="Resize image">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
           <path d="M6 2v14a2 2 0 0 0 2 2h14"></path>
@@ -2595,97 +3089,103 @@
       </button>
     </div>
 
-    <form id="editActivityForm" novalidate style="display:flex;flex-direction:column;gap:14px;">
-      <div class="edit-form-field">
-        <label class="edit-form-label" for="editPersonName">Name</label>
-        <input type="text" id="editPersonName" maxlength="100" placeholder="Your name" />
-      </div>
-
-      <div class="edit-form-field">
-        <label class="edit-form-label" for="editActivityName">Activity Name</label>
-        <input type="text" id="editActivityName" maxlength="200" placeholder="Activity Name" required />
-        <div class="field-error" data-for="editActivityName">Please enter an activity name.</div>
-      </div>
-
-      <div class="edit-form-field">
-        <label class="edit-form-label" for="editWhatWentOn">What went on!</label>
-        <input type="text" id="editWhatWentOn" maxlength="200" placeholder="Share what went on!" required />
-        <div class="field-error" data-for="editWhatWentOn">Please share what went on!</div>
-      </div>
-
-      <div class="edit-form-grid-2">
+    <div class="edit-activity-content">
+      <form id="editActivityForm" novalidate style="display:flex;flex-direction:column;gap:14px;">
         <div class="edit-form-field">
-          <label class="edit-form-label" for="editDate">Date</label>
-          <input type="date" id="editDate" required />
-          <div class="field-error" data-for="editDate">Date can't be in the future.</div>
+          <label class="edit-form-label" for="editActivityName">Activity Name</label>
+          <input type="text" id="editActivityName" maxlength="200" placeholder="Activity Name" required />
+          <div class="field-error" data-for="editActivityName">Please enter an activity name.</div>
         </div>
+
         <div class="edit-form-field">
-          <label class="edit-form-label" for="editCategory">Category</label>
-          <div class="select-wrap">
-            <select id="editCategory" required>
-              <option value="Spiritual">Spiritual</option>
-              <option value="Relationship">Relationship</option>
-              <option value="Others">Others</option>
-            </select>
+          <label class="edit-form-label" for="editWhatWentOn">What went on!</label>
+          <input type="text" id="editWhatWentOn" maxlength="200" placeholder="Share what went on!" required />
+          <div class="field-error" data-for="editWhatWentOn">Please share what went on!</div>
+        </div>
+
+        <div class="edit-form-grid-2">
+          <div class="edit-form-field">
+            <label class="edit-form-label" for="editDate">Date</label>
+            <input type="date" id="editDate" required />
+            <div class="field-error" data-for="editDate">Date can't be in the future.</div>
           </div>
-          <div class="field-error" data-for="editCategory">Please choose a category.</div>
-        </div>
-      </div>
-
-      <div class="edit-form-grid-2">
-        <div class="edit-form-field">
-          <label class="edit-form-label" for="editAmount">Amount</label>
-          <input type="number" id="editAmount" step="0.1" min="0.1" placeholder="e.g. 5" required />
-          <div class="field-error" data-for="editAmount">Enter an amount &gt; 0.</div>
-        </div>
-        <div class="edit-form-field" style="justify-content:flex-end;">
-          <div class="select-wrap">
-            <select id="editUnits" required>
-              <option value="hours">Hours (hrs)</option>
-              <option value="km">Kilometres (km)</option>
-            </select>
+          <div class="edit-form-field">
+            <label class="edit-form-label" for="editCategory">Area</label>
+            <div class="select-wrap">
+              <select id="editCategory" required>
+                <option value="Spiritual">Spiritual</option>
+                <option value="Relationship">Relationship</option>
+                <option value="Others">Others</option>
+              </select>
+            </div>
+            <div class="field-error" data-for="editCategory">Please choose an area.</div>
           </div>
         </div>
-      </div>
 
-      <div class="edit-form-field">
-        <label class="edit-form-label">Change Media (optional)</label>
-        <div class="file-drop-card" id="editFileDrop">
-          <span class="upload-badge-btn">Upload</span>
-          <span class="upload-drop-text" id="editFileDropText">or drag and drop files here</span>
-          <button type="button" class="file-remove-btn" id="editFileRemoveBtn" aria-label="Remove media" title="Remove media">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
+        <div class="edit-form-grid-2">
+          <div class="edit-form-field">
+            <label class="edit-form-label" for="editAmount">Amount</label>
+            <input type="number" id="editAmount" step="0.1" min="0.1" placeholder="e.g. 5" required />
+            <div class="field-error" data-for="editAmount">Enter an amount &gt; 0.</div>
+          </div>
+          <div class="edit-form-field" style="justify-content:flex-end;">
+            <div class="select-wrap">
+              <select id="editUnits" required>
+                <option value="hours">Hours (hrs)</option>
+                <option value="km">Kilometres (km)</option>
+              </select>
+            </div>
+          </div>
         </div>
-        <input type="file" id="editFileInput" accept="image/*,video/*,video/mp4,video/quicktime,video/mov,video/webm,video/3gpp,video/3gpp2,video/x-m4v,video/x-matroska,video/avi,video/x-msvideo,.mov,.MOV,.mp4,.MP4,.m4v,.M4V,.webm,.WEBM,.3gp,.3gpp,.mkv,.MKV,.avi,.AVI,.heic,.HEIC,.heif,.HEIF" />
-      </div>
 
-      <div class="edit-actions-row">
-        <button type="submit" class="btn-edit-save" id="editSaveBtn">Save Changes</button>
-        <button type="button" class="btn-edit-cancel" id="editCancelBtn">Cancel</button>
-      </div>
-      <button type="button" class="btn-edit-delete" id="editDeleteBtn">Delete activity</button>
-    </form>
+        <div class="edit-form-field">
+          <label class="edit-form-label">Change Media (optional)</label>
+          <div class="file-drop-card" id="editFileDrop">
+            <span class="upload-badge-btn">Upload</span>
+            <span class="upload-drop-text" id="editFileDropText">or drag and drop files here</span>
+            <button type="button" class="file-remove-btn" id="editFileRemoveBtn" aria-label="Remove media" title="Remove media">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+          <input type="file" id="editFileInput" accept="image/*,video/*,video/mp4,video/quicktime,video/mov,video/webm,video/3gpp,video/3gpp2,video/x-m4v,video/x-matroska,video/avi,video/x-msvideo,.mov,.MOV,.mp4,.MP4,.m4v,.M4V,.webm,.WEBM,.3gp,.3gpp,.mkv,.MKV,.avi,.AVI,.heic,.HEIC,.heif,.HEIF" />
+        </div>
+
+        <div class="edit-actions-row">
+          <button type="submit" class="btn-edit-save" id="editSaveBtn">Save Changes</button>
+          <button type="button" class="btn-edit-cancel" id="editCancelBtn">Cancel</button>
+        </div>
+
+        <button type="button" class="btn-edit-delete" id="editDeleteBtn">Delete activity</button>
+      </form>
+    </div>
   </div>
 </div>
 
 <!-- Resize Image modal -->
 <div class="resize-image-overlay" id="resizeImageOverlay">
   <div class="resize-image-card">
-    <div class="resize-crop-frame" id="resizeCropFrame">
-      <canvas id="resizeCanvas"></canvas>
-      <div class="resize-grid-lines">
-        <div class="grid-line-h h1"></div>
-        <div class="grid-line-h h2"></div>
-        <div class="grid-line-v v1"></div>
-        <div class="grid-line-v v2"></div>
+    <div class="resize-stage">
+      <div class="resize-crop-frame ratio-4-3" id="resizeCropFrame">
+        <canvas id="resizeCanvas"></canvas>
+        <div class="resize-grid-lines">
+          <div class="grid-line-h h1"></div>
+          <div class="grid-line-h h2"></div>
+          <div class="grid-line-v v1"></div>
+          <div class="grid-line-v v2"></div>
+        </div>
       </div>
     </div>
 
     <div class="resize-controls-body">
+      <!-- Aspect ratio switcher -->
+      <div class="resize-ratio-row">
+        <button type="button" class="resize-ratio-btn active" id="resizeRatio43" data-ratio="4:3">4:3 Landscape</button>
+        <button type="button" class="resize-ratio-btn" id="resizeRatio34" data-ratio="3:4">3:4 Portrait</button>
+      </div>
+
       <!-- Zoom Slider row -->
       <div class="resize-zoom-row">
         <button type="button" class="resize-zoom-btn" id="resizeZoomOut" aria-label="Zoom out" title="Zoom out">
@@ -2820,34 +3320,6 @@
 
   var isConfigured = WEB_APP_URL.indexOf("PASTE_YOUR") === -1 && WEB_APP_URL.length > 10;
 
-  var DEMO_ENTRY = {
-    entryId: "demo-block-party-2026",
-    name: "Celebrated Block Party with friends and CG mates! Reconnected and had a blast.",
-    category: "Relationship",
-    activity: "Block Party 2026",
-    date: "2026-08-19",
-    amount: 3,
-    units: "hours",
-    driveFileId: "icons/block-party-2026.svg",
-    mediaType: "image",
-    createdAt: "2026-08-19T20:30:00.000Z",
-    updatedAt: "2026-08-19T20:30:00.000Z"
-  };
-
-  var LOCAL_STORAGE_KEY = "bnext_local_entries_v2";
-  function loadLocalEntries_() {
-    try {
-      var raw = localStorage.getItem(LOCAL_STORAGE_KEY);
-      if (raw) return JSON.parse(raw);
-    } catch (e) {}
-    return [DEMO_ENTRY];
-  }
-  function saveLocalEntries_(entries) {
-    try {
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(entries));
-    } catch (e) {}
-  }
-
   // ===================================================================
   // State
   // ===================================================================
@@ -2974,6 +3446,10 @@
         canvas.width = Math.round(w * scale);
         canvas.height = Math.round(h * scale);
         var ctx = canvas.getContext("2d");
+        // JPEG has no alpha channel — flatten onto white first so a
+        // transparent PNG doesn't silently turn black where it was see-through.
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         canvas.toBlob(function (blob) {
           resolve(blob || file);
@@ -3109,27 +3585,35 @@
           if (targetTime > dur) targetTime = dur;
           if (targetTime === 0 && frameIndex === 0) targetTime = 0.01;
 
+          var seekSettled = false;
           var seekTimeout = setTimeout(function () {
-            onSeekComplete();
+            // The 'seeked' event never fired in time — skip this frame rather
+            // than drawing whatever the video currently happens to have
+            // decoded (which may not match targetTime at all).
+            onSeekComplete(false);
           }, 1000);
 
-          function onSeekComplete() {
+          function onSeekComplete(realSeek) {
+            if (seekSettled) return;
+            seekSettled = true;
             clearTimeout(seekTimeout);
-            video.removeEventListener("seeked", onSeekComplete);
+            video.removeEventListener("seeked", onRealSeek);
             try {
-              ctx.clearRect(0, 0, targetW, targetH);
-              ctx.drawImage(video, 0, 0, targetW, targetH);
-              var imgData = ctx.getImageData(0, 0, targetW, targetH);
-              var rgba = imgData.data;
+              if (realSeek) {
+                ctx.clearRect(0, 0, targetW, targetH);
+                ctx.drawImage(video, 0, 0, targetW, targetH);
+                var imgData = ctx.getImageData(0, 0, targetW, targetH);
+                var rgba = imgData.data;
 
-              var palette = window.GIFEnc.quantize(rgba, 256, { format: "rgb565" });
-              var indexed = window.GIFEnc.applyPalette(rgba, palette, "rgb565");
+                var palette = window.GIFEnc.quantize(rgba, 256, { format: "rgb565" });
+                var indexed = window.GIFEnc.applyPalette(rgba, palette, "rgb565");
 
-              gif.writeFrame(indexed, targetW, targetH, {
-                palette: palette,
-                delay: frameDelay,
-                repeat: 0
-              });
+                gif.writeFrame(indexed, targetW, targetH, {
+                  palette: palette,
+                  delay: frameDelay,
+                  repeat: 0
+                });
+              }
 
               frameIndex++;
               if (onProgress) {
@@ -3143,7 +3627,11 @@
             }
           }
 
-          video.addEventListener("seeked", onSeekComplete);
+          function onRealSeek() {
+            onSeekComplete(true);
+          }
+
+          video.addEventListener("seeked", onRealSeek);
           try {
             video.currentTime = targetTime;
           } catch (e) {
@@ -3277,40 +3765,255 @@
     return isNaN(d.getTime()) ? key : d.toLocaleDateString(undefined, { month: "long", year: "numeric" });
   }
 
-  function populateMonthFilter(entries) {
-    var select = document.getElementById("filterMonth");
-    if (!select) return;
-    var current = select.value;
-    var months = Array.from(new Set(entries.map(function (e) { return monthKey(e.date); }).filter(Boolean))).sort().reverse();
-    select.innerHTML = '<option value="">All months</option>' +
-      months.map(function (m) { return '<option value="' + m + '">' + escapeHtml_(monthLabel(m)) + "</option>"; }).join("");
-    if (months.indexOf(current) !== -1) select.value = current;
+  var filterCapsuleState = {
+    open: false,
+    activeSubmenu: null, // null | 'month' | 'area'
+    selectedOption: {
+      type: "default", // 'default' | 'month' | 'area'
+      value: "Default"  // 'Default' | 'All Months' | 'Jan'..'Dec' | 'Spiritual' | 'Relationship' | 'Others'
+    }
+  };
+
+  var MONTHS_LIST = [
+    "All Months", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+  ];
+
+  var AREAS_LIST = ["Spiritual", "Relationship", "Others"];
+
+  var MONTH_NUM_MAP = {
+    "Jan": "01", "Feb": "02", "Mar": "03", "Apr": "04",
+    "May": "05", "Jun": "06", "Jul": "07", "Aug": "08",
+    "Sep": "09", "Oct": "10", "Nov": "11", "Dec": "12"
+  };
+
+  var MONTH_FULL_NAMES = {
+    "Jan": "January", "Feb": "February", "Mar": "March", "Apr": "April",
+    "May": "May", "Jun": "June", "Jul": "July", "Aug": "August",
+    "Sep": "September", "Oct": "October", "Nov": "November", "Dec": "December"
+  };
+
+  function getCapsulePillWidth(text) {
+    if (!text || text === "Default") return 34;
+    var canvas = getCapsulePillWidth._canvas || (getCapsulePillWidth._canvas = document.createElement("canvas"));
+    var ctx = canvas.getContext("2d");
+    ctx.font = "700 12px 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif";
+    var textWidth = ctx.measureText(text).width;
+    return Math.max(34, Math.ceil(textWidth + 34));
   }
 
-  function updateGalleryFilterUI() {
-    var monthSelect = document.getElementById("filterMonth");
-    var catSelect = document.getElementById("filterCategory");
-    var monthVal = monthSelect ? monthSelect.value : "";
-    var catVal = catSelect ? catSelect.value : "";
-    var btn = document.getElementById("galleryFilterBtn");
-    var badgeEl = document.getElementById("filterCountBadge");
-    var clearBtn = document.getElementById("filterClearBtn");
+  function applyCapsuleFilter(type, value) {
+    filterCapsuleState.selectedOption = {
+      type: type,
+      value: value
+    };
+    filterCapsuleState.open = false;
+    filterCapsuleState.activeSubmenu = null;
+    renderFilterCapsule();
+    renderGallery();
+  }
 
-    var activeCount = (monthVal ? 1 : 0) + (catVal ? 1 : 0);
-    if (btn) {
-      btn.classList.toggle("is-active", activeCount > 0);
+  function resetCapsuleToDefault(e) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
     }
-    if (badgeEl) {
-      if (activeCount > 0) {
-        badgeEl.textContent = activeCount;
-        badgeEl.style.display = "inline-flex";
-      } else {
-        badgeEl.style.display = "none";
+    applyCapsuleFilter("default", "Default");
+  }
+
+  function renderFilterCapsule() {
+    var root = document.getElementById("filterCapsuleRoot");
+    if (!root) return;
+
+    var isOpen = filterCapsuleState.open;
+    var activeSubmenu = filterCapsuleState.activeSubmenu;
+    var sel = filterCapsuleState.selectedOption;
+    var isDefault = (sel.type === "default");
+
+    var wrap = document.getElementById("filterCapsuleWrap");
+    if (!wrap) {
+      root.innerHTML =
+        '<div class="filter-capsule-wrap" id="filterCapsuleWrap">' +
+          '<div class="filter-capsule-idle-box" id="capsuleIdleBox">' +
+            '<button type="button" class="filter-capsule-idle-btn" id="capsuleTriggerBtn" aria-label="Filter activities"></button>' +
+          '</div>' +
+          '<div class="filter-capsule-row" id="capsuleRow">' +
+            '<button type="button" class="filter-capsule-btn" id="capsuleDefaultBtn">Default</button>' +
+            '<button type="button" class="filter-capsule-btn" id="capsuleMonthBtn">Month</button>' +
+            '<button type="button" class="filter-capsule-btn" id="capsuleAreaBtn">Area</button>' +
+          '</div>' +
+          '<div class="filter-capsule-popover" id="filterCapsuleSubmenu" role="dialog" aria-hidden="true"></div>' +
+        '</div>';
+      wrap = document.getElementById("filterCapsuleWrap");
+
+      wrap.onclick = function(e) {
+        if (!filterCapsuleState.open) {
+          e.stopPropagation();
+          filterCapsuleState.open = true;
+          filterCapsuleState.activeSubmenu = null;
+          renderFilterCapsule();
+        }
+      };
+
+      var triggerBtn = wrap.querySelector("#capsuleTriggerBtn");
+      if (triggerBtn) {
+        triggerBtn.addEventListener("click", function (e) {
+          e.stopPropagation();
+          filterCapsuleState.open = true;
+          filterCapsuleState.activeSubmenu = null;
+          renderFilterCapsule();
+        });
+      }
+
+      var defaultBtn = wrap.querySelector("#capsuleDefaultBtn");
+      if (defaultBtn) {
+        defaultBtn.addEventListener("click", function (e) {
+          e.stopPropagation();
+          resetCapsuleToDefault();
+        });
+      }
+
+      var monthBtn = wrap.querySelector("#capsuleMonthBtn");
+      if (monthBtn) {
+        monthBtn.addEventListener("click", function (e) {
+          e.stopPropagation();
+          filterCapsuleState.activeSubmenu = (filterCapsuleState.activeSubmenu === "month" ? null : "month");
+          renderFilterCapsule();
+        });
+      }
+
+      var areaBtn = wrap.querySelector("#capsuleAreaBtn");
+      if (areaBtn) {
+        areaBtn.addEventListener("click", function (e) {
+          e.stopPropagation();
+          filterCapsuleState.activeSubmenu = (filterCapsuleState.activeSubmenu === "area" ? null : "area");
+          renderFilterCapsule();
+        });
       }
     }
-    if (clearBtn) {
-      clearBtn.style.visibility = activeCount > 0 ? "visible" : "hidden";
+
+    // Set classes and explicit animated widths on wrap for smooth CSS morph transition
+    wrap.className = "filter-capsule-wrap " +
+      (isOpen ? "is-open" : "is-idle" + (isDefault ? " is-circle" : ""));
+
+    if (isOpen) {
+      wrap.style.width = "228px";
+      wrap.style.minWidth = "228px";
+    } else if (isDefault) {
+      wrap.style.width = "34px";
+      wrap.style.minWidth = "34px";
+    } else {
+      var targetPillW = getCapsulePillWidth(sel.value);
+      wrap.style.width = targetPillW + "px";
+      wrap.style.minWidth = targetPillW + "px";
     }
+
+    // Update idle trigger button content
+    var triggerBtn = wrap.querySelector("#capsuleTriggerBtn");
+    if (triggerBtn) {
+      triggerBtn.className = "filter-capsule-idle-btn " + (isDefault ? "is-icon-btn" : "");
+      triggerBtn.innerHTML = isDefault
+        ? '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block;"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>'
+        : escapeHtml_(sel.value);
+    }
+
+    // Update segmented active tab buttons
+    var isDefaultActive = (activeSubmenu ? false : sel.type === "default");
+    var isMonthActive = (activeSubmenu === "month" || (!activeSubmenu && sel.type === "month"));
+    var isAreaActive = (activeSubmenu === "area" || (!activeSubmenu && sel.type === "area"));
+
+    var defaultBtn = wrap.querySelector("#capsuleDefaultBtn");
+    if (defaultBtn) defaultBtn.className = "filter-capsule-btn " + (isDefaultActive ? "active" : "");
+    var monthBtn = wrap.querySelector("#capsuleMonthBtn");
+    if (monthBtn) monthBtn.className = "filter-capsule-btn " + (isMonthActive ? "active" : "");
+    var areaBtn = wrap.querySelector("#capsuleAreaBtn");
+    if (areaBtn) areaBtn.className = "filter-capsule-btn " + (isAreaActive ? "active" : "");
+
+    // Update popover floating submenu with smooth open/close
+    var popover = wrap.querySelector("#filterCapsuleSubmenu");
+    if (popover) {
+      if (isOpen && activeSubmenu === "month") {
+        popover.className = "filter-capsule-popover is-visible";
+        popover.setAttribute("aria-hidden", "false");
+        popover.setAttribute("aria-label", "Select Month");
+        var phtml = '<div class="filter-sub-grid-months">' +
+          '<button type="button" class="filter-sub-pill filter-sub-col-all ' + (sel.type === "month" && sel.value === "All Months" ? "selected" : "") + '" data-month="All Months">All Months</button>';
+
+        MONTHS_LIST.slice(1).forEach(function (m) {
+          var isSel = (sel.type === "month" && sel.value === m);
+          phtml += '<button type="button" class="filter-sub-pill ' + (isSel ? "selected" : "") + '" data-month="' + escapeHtml_(m) + '">' +
+            escapeHtml_(m) +
+          '</button>';
+        });
+        phtml += '</div>';
+        popover.innerHTML = phtml;
+
+        popover.querySelectorAll("button[data-month]").forEach(function (btn) {
+          btn.addEventListener("click", function (e) {
+            e.stopPropagation();
+            var chosenMonth = btn.getAttribute("data-month");
+            applyCapsuleFilter("month", chosenMonth);
+          });
+        });
+      } else if (isOpen && activeSubmenu === "area") {
+        popover.className = "filter-capsule-popover is-visible";
+        popover.setAttribute("aria-hidden", "false");
+        popover.setAttribute("aria-label", "Select Area");
+        var ahtml = '<div class="filter-sub-list-areas">';
+        AREAS_LIST.forEach(function (a) {
+          var isSel = (sel.type === "area" && sel.value === a);
+          ahtml += '<button type="button" class="filter-sub-pill ' + (isSel ? "selected" : "") + '" data-area="' + escapeHtml_(a) + '">' +
+            escapeHtml_(a) +
+          '</button>';
+        });
+        ahtml += '</div>';
+        popover.innerHTML = ahtml;
+
+        popover.querySelectorAll("button[data-area]").forEach(function (btn) {
+          btn.addEventListener("click", function (e) {
+            e.stopPropagation();
+            var chosenArea = btn.getAttribute("data-area");
+            applyCapsuleFilter("area", chosenArea);
+          });
+        });
+      } else {
+        popover.className = "filter-capsule-popover";
+        popover.setAttribute("aria-hidden", "true");
+      }
+    }
+  }
+
+  function renderMasonryGrid(entriesList, parentEl) {
+    var masonry = document.createElement("div");
+    masonry.className = "gallery-masonry";
+
+    var colLeft = document.createElement("div");
+    colLeft.className = "gallery-masonry-col";
+
+    var colRight = document.createElement("div");
+    colRight.className = "gallery-masonry-col";
+
+    masonry.appendChild(colLeft);
+    masonry.appendChild(colRight);
+
+    var hLeft = 0;
+    var hRight = 0;
+
+    entriesList.forEach(function (entry) {
+      var itemEl = createGalleryItemEl(entry);
+      var isPortrait = (entry.aspectRatio === "3:4" || entry.aspectRatio === "portrait");
+      var itemWeight = (isPortrait ? 1.333 : 0.75) + 0.35;
+
+      if (hLeft <= hRight) {
+        colLeft.appendChild(itemEl);
+        hLeft += itemWeight;
+      } else {
+        colRight.appendChild(itemEl);
+        hRight += itemWeight;
+      }
+    });
+
+    parentEl.appendChild(masonry);
   }
 
   function createGalleryItemEl(entry) {
@@ -3318,14 +4021,27 @@
     item.className = "gallery-item";
     var catKey = String(entry.category || "others").toLowerCase().replace(/[^a-z0-9]/g, "");
     var catClass = "cat-" + (catKey === "spiritual" || catKey === "relationship" ? catKey : "others");
-    var imgSrc = driveImageUrl(entry.driveFileId);
+    var imgSrc = escapeHtml_(driveImageUrl(entry.driveFileId));
     var altText = escapeHtml_(entry.activity || "Activity");
+
+    var isExplicitPortrait = (entry.aspectRatio === "3:4" || entry.aspectRatio === "portrait");
+    var isExplicitLandscape = (entry.aspectRatio === "4:3" || entry.aspectRatio === "landscape");
+    var initialRatioClass = isExplicitPortrait ? "ratio-3-4" : (isExplicitLandscape ? "ratio-4-3" : "");
 
     var mediaHtml = entry.mediaType === "video"
       ? '<div class="video-fallback">▶️</div>'
-      : '<img loading="lazy" decoding="async" src="' + imgSrc + '" alt="' + altText + '" onerror="if(this.src.indexOf(\'lh3.googleusercontent.com\')!==-1){this.src=\'https://drive.google.com/thumbnail?id=' + encodeURIComponent(entry.driveFileId || '') + '&sz=w800\';}else{this.onerror=null;this.outerHTML=\'<div class=&quot;video-fallback&quot; style=&quot;background:var(--card);color:var(--text-muted);&quot;>📷</div>\';}" />';
+      : '<img loading="lazy" decoding="async" referrerpolicy="no-referrer" src="' + imgSrc + '" alt="' + altText + '" onerror="if(this.src.indexOf(\'lh3.googleusercontent.com\')!==-1){this.src=\'https://drive.google.com/thumbnail?id=' + encodeURIComponent(entry.driveFileId || '') + '&sz=w800\';}else if(this.src.indexOf(\'drive.google.com/thumbnail\')!==-1){this.src=\'https://drive.google.com/uc?export=view&id=' + encodeURIComponent(entry.driveFileId || '') + '\';}else{this.onerror=null;this.outerHTML=\'<div class=&quot;video-fallback&quot; style=&quot;background:var(--card);color:var(--text-muted);&quot;>📷</div>\';}" />';
     
-    var whatWentOn = entry.name || "";
+    var rawWhatWentOn = (entry.name || "").trim();
+    var whatWentOn = "";
+    if (rawWhatWentOn) {
+      var words = rawWhatWentOn.split(/\s+/);
+      if (words.length > 12) {
+        whatWentOn = words.slice(0, 12).join(" ") + "...";
+      } else {
+        whatWentOn = rawWhatWentOn;
+      }
+    }
     var descHtml = whatWentOn ? '<div class="meta-desc">' + escapeHtml_(whatWentOn) + '</div>' : '';
     
     var unitDisplay = (entry.units || 'pts').toLowerCase();
@@ -3338,43 +4054,66 @@
     }
     
     item.innerHTML =
-      '<div class="thumb">' +
+      '<div class="thumb ' + initialRatioClass + '">' +
         mediaHtml +
-        '<button type="button" class="thumb-menu-btn" title="Edit activity" aria-label="Edit activity">' +
-          '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="12" cy="19" r="2"></circle></svg>' +
-        '</button>' +
         '<span class="pts-pill">+' + formatNum_(entry.amount) + ' pts</span>' +
       '</div>' +
       '<div class="meta">' +
-        '<div class="meta-row">' +
-          '<span class="meta-date">' + formatDateShort_(entry.date) + '</span>' +
-          '<span class="meta-cat ' + catClass + '">' + escapeHtml_(entry.category || 'General') + '</span>' +
-        '</div>' +
+        '<div class="meta-date">' + formatDateShort_(entry.date) + '</div>' +
         '<div class="meta-title" title="' + altText + '">' + altText + '</div>' +
         descHtml +
-        '<div class="meta-amount">' + formatNum_(entry.amount) + ' ' + escapeHtml_(unitDisplay) + '</div>' +
+        '<div class="meta-bottom">' +
+          '<div class="meta-amount">' + formatNum_(entry.amount) + ' ' + escapeHtml_(unitDisplay) + '</div>' +
+          '<span class="meta-cat ' + catClass + '">' + escapeHtml_(entry.category || 'General') + '</span>' +
+        '</div>' +
       '</div>';
 
-    var menuBtn = item.querySelector(".thumb-menu-btn");
-    if (menuBtn) {
-      menuBtn.addEventListener("click", function (e) {
-        e.stopPropagation();
-        openEditModal(entry);
-      });
+    var thumbEl = item.querySelector(".thumb");
+    var imgEl = item.querySelector(".thumb img");
+    if (imgEl && thumbEl) {
+      var adjustRatio = function () {
+        if (imgEl.naturalWidth && imgEl.naturalHeight) {
+          var isPortrait = (imgEl.naturalHeight > imgEl.naturalWidth * 1.05);
+          thumbEl.classList.toggle("ratio-3-4", isPortrait);
+          thumbEl.classList.toggle("ratio-4-3", !isPortrait);
+        }
+      };
+      if (imgEl.complete && imgEl.naturalWidth > 0) {
+        adjustRatio();
+      } else {
+        imgEl.addEventListener("load", adjustRatio);
+      }
     }
-    item.addEventListener("click", function () { openEditModal(entry); });
+
+    item.addEventListener("click", function () { openPreviewModal(entry); });
     return item;
   }
 
   function renderGallery() {
-    var monthFilter = (document.getElementById("filterMonth") && document.getElementById("filterMonth").value) || "";
-    var catFilter = (document.getElementById("filterCategory") && document.getElementById("filterCategory").value) || "";
-    updateGalleryFilterUI();
+    renderFilterCapsule();
 
-    // Default sort: sorted by date/month with most recent post at the top
+    var filterType = filterCapsuleState.selectedOption.type;
+    var filterVal = filterCapsuleState.selectedOption.value;
+
+    // Filter entries based strictly on the single active option
     var filtered = (state.entries || []).filter(function (e) {
-      if (monthFilter && monthKey(e.date) !== monthFilter) return false;
-      if (catFilter && e.category !== catFilter) return false;
+      if (filterType === "month") {
+        if (filterVal !== "All Months") {
+          var targetDigits = MONTH_NUM_MAP[filterVal];
+          var eDate = e.date || "";
+          var eDigits = eDate.slice(5, 7);
+          if (targetDigits && eDigits !== targetDigits) return false;
+        }
+      } else if (filterType === "area") {
+        var cat = (e.category || "").trim();
+        if (filterVal === "Spiritual") {
+          if (cat.toLowerCase() !== "spiritual") return false;
+        } else if (filterVal === "Relationship") {
+          if (cat.toLowerCase() !== "relationship") return false;
+        } else if (filterVal === "Others") {
+          if (cat.toLowerCase() === "spiritual" || cat.toLowerCase() === "relationship") return false;
+        }
+      }
       return true;
     }).sort(function (a, b) {
       var dateA = a.date || "";
@@ -3390,13 +4129,26 @@
     container.innerHTML = "";
 
     if (!filtered.length) {
-      if (emptyEl) emptyEl.style.display = "block";
+      if (emptyEl) {
+        emptyEl.textContent = (state.entries || []).length
+          ? "No entries match these filters yet."
+          : "No activities logged yet — be the first!";
+        emptyEl.style.display = "block";
+      }
       return;
     }
     if (emptyEl) emptyEl.style.display = "none";
 
-    if (!catFilter) {
-      // Default: sub-header by month (e.g. "August 2026", "July 2026")
+    // 1. DEFAULT COLLAGE VIEW:
+    // Fits all posts of different dimensions together without any subheaders
+    if (filterType === "default") {
+      renderMasonryGrid(filtered, container);
+      return;
+    }
+
+    // 2. "All Months" chosen:
+    // Displays all posts grouped under sub-headers by month (e.g. "August 2026", "July 2026")
+    if (filterType === "month" && filterVal === "All Months") {
       var months = Array.from(new Set(filtered.map(function (e) { return monthKey(e.date); }).filter(Boolean)))
         .sort().reverse();
 
@@ -3408,30 +4160,35 @@
 
         var groupEl = document.createElement("div");
         groupEl.className = "gallery-category-group";
-        groupEl.innerHTML =
-          '<div class="gallery-category-title">' + escapeHtml_(monthLabel(mKey)) + '</div>' +
-          '<div class="gallery-grid"></div>';
+        groupEl.innerHTML = '<div class="gallery-category-title">' + escapeHtml_(monthLabel(mKey)) + '</div>';
 
-        var grid = groupEl.querySelector(".gallery-grid");
-        monthEntries.forEach(function (entry) {
-          grid.appendChild(createGalleryItemEl(entry));
-        });
+        renderMasonryGrid(monthEntries, groupEl);
         container.appendChild(groupEl);
       });
-    } else {
-      // When category is chosen under filters: sub-header shows category (and month if also filtered)
-      var titleText = catFilter + (monthFilter ? " · " + monthLabel(monthFilter) : "");
+      return;
+    }
+
+    // 3. Specific Month chosen (e.g. "Aug"):
+    if (filterType === "month") {
+      var yearStr = (filtered.length && filtered[0].date && filtered[0].date.slice(0, 4)) || "2026";
+      var monthName = MONTH_FULL_NAMES[filterVal] || filterVal;
+      var monthDisplay = monthName + " " + yearStr;
       var groupEl = document.createElement("div");
       groupEl.className = "gallery-category-group";
-      groupEl.innerHTML =
-        '<div class="gallery-category-title">' + escapeHtml_(titleText) + '</div>' +
-        '<div class="gallery-grid"></div>';
-
-      var grid = groupEl.querySelector(".gallery-grid");
-      filtered.forEach(function (entry) {
-        grid.appendChild(createGalleryItemEl(entry));
-      });
+      groupEl.innerHTML = '<div class="gallery-category-title">' + escapeHtml_(monthDisplay) + '</div>';
+      renderMasonryGrid(filtered, groupEl);
       container.appendChild(groupEl);
+      return;
+    }
+
+    // 4. Specific Area chosen (e.g. "Spiritual"):
+    if (filterType === "area") {
+      var groupEl = document.createElement("div");
+      groupEl.className = "gallery-category-group";
+      groupEl.innerHTML = '<div class="gallery-category-title">' + escapeHtml_(filterVal) + '</div>';
+      renderMasonryGrid(filtered, groupEl);
+      container.appendChild(groupEl);
+      return;
     }
   }
 
@@ -3455,15 +4212,138 @@
   }
 
   // ===================================================================
+  // Post Preview Pop-up Modal (Expanded View)
+  // ===================================================================
+  function updatePreviewMediaBoxRatio(isPortrait) {
+    var box = document.getElementById("previewMediaBox");
+    if (!box) return;
+    box.classList.toggle("ratio-3-4", !!isPortrait);
+    box.classList.toggle("ratio-4-3", !isPortrait);
+  }
+
+  function openPreviewModal(entry) {
+    state.previewingEntry = entry;
+    
+    // Close dropdown menu if previously open
+    var menuDropdown = document.getElementById("previewDropdownMenu");
+    if (menuDropdown) menuDropdown.classList.remove("show");
+
+    // Area badge & color class
+    var catKey = String(entry.category || "others").toLowerCase().replace(/[^a-z0-9]/g, "");
+    var catClass = "cat-" + (catKey === "spiritual" || catKey === "relationship" ? catKey : "others");
+    var areaBadge = document.getElementById("previewAreaBadge");
+    if (areaBadge) {
+      areaBadge.className = "meta-cat " + catClass;
+      areaBadge.textContent = entry.category || "General";
+    }
+
+    var dateEl = document.getElementById("previewDate");
+    if (dateEl) dateEl.textContent = formatDateShort_(entry.date);
+
+    var ptsPill = document.getElementById("previewPointsPill");
+    if (ptsPill) ptsPill.textContent = "+" + formatNum_(entry.amount) + " pts";
+
+    var titleEl = document.getElementById("previewTitle");
+    if (titleEl) {
+      titleEl.textContent = entry.activity || "Activity";
+      titleEl.title = entry.activity || "Activity";
+    }
+
+    var descEl = document.getElementById("previewFullDesc");
+    var fullDescText = (entry.name || "").trim();
+    if (descEl) {
+      if (fullDescText) {
+        descEl.textContent = fullDescText;
+        descEl.style.display = "block";
+      } else {
+        descEl.textContent = "";
+        descEl.style.display = "none";
+      }
+    }
+
+    var unitDisplay = (entry.units || 'pts').toLowerCase();
+    if (unitDisplay === 'hours' || unitDisplay === 'hour' || unitDisplay === 'hr') {
+      unitDisplay = 'hrs';
+    } else if (unitDisplay === 'km' || unitDisplay === 'kilometres' || unitDisplay === 'kilometre' || unitDisplay === 'kilometers' || unitDisplay === 'kilometer') {
+      unitDisplay = 'km';
+    } else {
+      unitDisplay = entry.units || 'pts';
+    }
+
+    var amountEl = document.getElementById("previewAmount");
+    if (amountEl) {
+      amountEl.textContent = formatNum_(entry.amount) + " " + unitDisplay;
+    }
+
+    // Media handling
+    var isExplicitPortrait = (entry.aspectRatio === "3:4" || entry.aspectRatio === "portrait");
+    updatePreviewMediaBoxRatio(isExplicitPortrait);
+
+    var imgEl = document.getElementById("previewMediaImg");
+    var vidEl = document.getElementById("previewMediaVideo");
+    if (imgEl && vidEl) {
+      if (entry.mediaType === "video") {
+        imgEl.style.display = "none";
+        vidEl.style.display = "block";
+        vidEl.src = driveVideoEmbedUrl(entry.driveFileId);
+      } else {
+        vidEl.style.display = "none";
+        imgEl.style.display = "block";
+
+        var checkImgRatio = function () {
+          if (imgEl.naturalWidth && imgEl.naturalHeight) {
+            var isPort = (imgEl.naturalHeight > imgEl.naturalWidth * 1.05);
+            updatePreviewMediaBoxRatio(isPort);
+          }
+        };
+
+        imgEl.onload = checkImgRatio;
+        imgEl.onerror = function () {
+          if (entry.driveFileId && this.src.indexOf("lh3.googleusercontent.com") !== -1) {
+            this.src = "https://drive.google.com/thumbnail?id=" + encodeURIComponent(entry.driveFileId) + "&sz=w1000";
+          } else if (entry.driveFileId && this.src.indexOf("drive.google.com/thumbnail") !== -1) {
+            this.src = "https://drive.google.com/uc?export=view&id=" + encodeURIComponent(entry.driveFileId);
+          } else {
+            this.onerror = null;
+            this.src = "icons/block-party-2026.svg";
+          }
+        };
+        imgEl.src = driveImageUrl(entry.driveFileId) || "icons/block-party-2026.svg";
+        if (imgEl.complete && imgEl.naturalWidth > 0) {
+          checkImgRatio();
+        }
+      }
+    }
+
+    var overlay = document.getElementById("postPreviewOverlay");
+    if (overlay) overlay.classList.add("show");
+  }
+
+  function closePreviewModal() {
+    var overlay = document.getElementById("postPreviewOverlay");
+    if (overlay) overlay.classList.remove("show");
+    var vidEl = document.getElementById("previewMediaVideo");
+    if (vidEl) vidEl.src = "";
+    var menuDropdown = document.getElementById("previewDropdownMenu");
+    if (menuDropdown) menuDropdown.classList.remove("show");
+    state.previewingEntry = null;
+  }
+
+  // ===================================================================
   // Edit Activity Pop-up Modal
   // ===================================================================
+  function updateEditMediaBoxRatio(isPortrait) {
+    var box = document.getElementById("editMediaBox");
+    if (!box) return;
+    box.classList.toggle("ratio-3-4", !!isPortrait);
+    box.classList.toggle("ratio-4-3", !isPortrait);
+  }
+
   function openEditModal(entry) {
     state.editingEntry = entry;
     state.pendingEditMedia = null;
     clearEditErrors_();
 
-    var personInput = document.getElementById("editPersonName");
-    if (personInput) personInput.value = entry.personName || "";
     document.getElementById("editActivityName").value = entry.activity || "";
     document.getElementById("editWhatWentOn").value = entry.name || "";
     document.getElementById("editDate").value = entry.date || todayISO();
@@ -3477,6 +4357,10 @@
     var unitVal = (entry.units && entry.units.toLowerCase().indexOf("km") !== -1) ? "km" : "hours";
     document.getElementById("editUnits").value = unitVal;
 
+    // Reset media box ratio based on entry hint if present
+    var isExplicitPortrait = (entry.aspectRatio === "3:4" || entry.aspectRatio === "portrait");
+    updateEditMediaBoxRatio(isExplicitPortrait);
+
     var imgEl = document.getElementById("editMediaImg");
     var vidEl = document.getElementById("editMediaVideo");
     if (imgEl && vidEl) {
@@ -3487,7 +4371,29 @@
       } else {
         vidEl.style.display = "none";
         imgEl.style.display = "block";
+
+        var checkImgRatio = function () {
+          if (imgEl.naturalWidth && imgEl.naturalHeight) {
+            var isPort = (imgEl.naturalHeight > imgEl.naturalWidth * 1.05);
+            updateEditMediaBoxRatio(isPort);
+          }
+        };
+
+        imgEl.onload = checkImgRatio;
+        imgEl.onerror = function () {
+          if (entry.driveFileId && this.src.indexOf("lh3.googleusercontent.com") !== -1) {
+            this.src = "https://drive.google.com/thumbnail?id=" + encodeURIComponent(entry.driveFileId) + "&sz=w1000";
+          } else if (entry.driveFileId && this.src.indexOf("drive.google.com/thumbnail") !== -1) {
+            this.src = "https://drive.google.com/uc?export=view&id=" + encodeURIComponent(entry.driveFileId);
+          } else {
+            this.onerror = null;
+            this.src = "icons/block-party-2026.svg";
+          }
+        };
         imgEl.src = driveImageUrl(entry.driveFileId) || "icons/block-party-2026.svg";
+        if (imgEl.complete && imgEl.naturalWidth > 0) {
+          checkImgRatio();
+        }
       }
     }
 
@@ -3524,10 +4430,28 @@
     panX: 0,
     panY: 0,
     rotation: 0, // degrees (0, 90, 180, 270)
+    ratio: "4:3", // "4:3" or "3:4"
     pointers: new Map(),
     initialPinchDist: 0,
     initialPinchZoom: 1.0
   };
+
+  function setResizeRatio(ratio) {
+    resizeState.ratio = (ratio === "3:4") ? "3:4" : "4:3";
+    var frame = document.getElementById("resizeCropFrame");
+    if (frame) {
+      frame.classList.toggle("ratio-3-4", resizeState.ratio === "3:4");
+      frame.classList.toggle("ratio-4-3", resizeState.ratio === "4:3");
+    }
+    var btn43 = document.getElementById("resizeRatio43");
+    var btn34 = document.getElementById("resizeRatio34");
+    if (btn43 && btn34) {
+      btn43.classList.toggle("active", resizeState.ratio === "4:3");
+      btn34.classList.toggle("active", resizeState.ratio === "3:4");
+    }
+    setupResizeCanvas();
+    drawResizeCanvas();
+  }
 
   function openResizeModal() {
     var currentImgSrc = "";
@@ -3563,13 +4487,16 @@
 
     var img = new Image();
     img.crossOrigin = "anonymous";
-    img.onload = function () {
-      resizeState.img = img;
+    var onImgLoaded = function (loadedImg) {
+      resizeState.img = loadedImg;
       resizeState.zoom = 1.0;
       resizeState.panX = 0;
       resizeState.panY = 0;
       resizeState.rotation = 0;
       resizeState.pointers.clear();
+
+      var isPortrait = (loadedImg.naturalHeight > loadedImg.naturalWidth * 1.05);
+      setResizeRatio(isPortrait ? "3:4" : "4:3");
 
       var slider = document.getElementById("resizeZoomSlider");
       if (slider) slider.value = "1";
@@ -3580,27 +4507,17 @@
         drawResizeCanvas();
       });
     };
+
+    img.onload = function () {
+      onImgLoaded(img);
+    };
     img.onerror = function () {
-      var img2 = new Image();
-      img2.onload = function () {
-        resizeState.img = img2;
-        resizeState.zoom = 1.0;
-        resizeState.panX = 0;
-        resizeState.panY = 0;
-        resizeState.rotation = 0;
-        resizeState.pointers.clear();
-        var slider = document.getElementById("resizeZoomSlider");
-        if (slider) slider.value = "1";
-        document.getElementById("resizeImageOverlay").classList.add("show");
-        requestAnimationFrame(function () {
-          setupResizeCanvas();
-          drawResizeCanvas();
-        });
-      };
-      img2.onerror = function () {
-        showToast("Could not load image for resizing.", true);
-      };
-      img2.src = currentImgSrc;
+      // The direct Drive URL didn't send CORS headers permissive enough for
+      // canvas export. Apps Script Web Apps can't set custom response
+      // headers on binary output, so there's no way to proxy around this
+      // ourselves without new infrastructure outside Apps Script — fail
+      // cleanly instead of pretending a retry could work.
+      showToast("Could not load this photo for resizing — try again later.", true);
     };
     img.src = currentImgSrc;
   }
@@ -3671,8 +4588,9 @@
       return;
     }
 
-    var exportW = 1200;
-    var exportH = 900;
+    var isPortrait = (resizeState.ratio === "3:4");
+    var exportW = isPortrait ? 900 : 1200;
+    var exportH = isPortrait ? 1200 : 900;
     var canvas = document.createElement("canvas");
     canvas.width = exportW;
     canvas.height = exportH;
@@ -3688,8 +4606,8 @@
     ctx.rotate(rad);
 
     var previewCanvas = document.getElementById("resizeCanvas");
-    var previewW = previewCanvas ? (previewCanvas.width / (window.devicePixelRatio || 1)) : 400;
-    var previewH = previewCanvas ? (previewCanvas.height / (window.devicePixelRatio || 1)) : 300;
+    var previewW = previewCanvas ? (previewCanvas.width / (window.devicePixelRatio || 1)) : (isPortrait ? 300 : 400);
+    var previewH = previewCanvas ? (previewCanvas.height / (window.devicePixelRatio || 1)) : (isPortrait ? 400 : 300);
     var exportRatio = exportW / previewW;
 
     var unrotRad = -rad;
@@ -3732,15 +4650,16 @@
         vidEl.style.display = "none";
         imgEl.style.display = "block";
         imgEl.src = dataUrl;
+        updateEditMediaBoxRatio(isPortrait);
       }
 
       var dropText = document.getElementById("editFileDropText");
-      if (dropText) dropText.textContent = "Photo resized";
+      if (dropText) dropText.textContent = "Photo resized (" + (isPortrait ? "3:4" : "4:3") + ")";
       var dropCard = document.getElementById("editFileDrop");
       if (dropCard) dropCard.classList.add("has-file");
 
       closeResizeModal();
-      showToast("Photo resized.");
+      showToast("Photo cropped to " + (isPortrait ? "3:4 portrait" : "4:3 landscape") + "!");
     } catch (err) {
       console.error("Canvas export failed:", err);
       showToast("Could not export resized image.", true);
@@ -3758,6 +4677,20 @@
     var resetBtn = document.getElementById("resizeResetBtn");
     var cancelBtn = document.getElementById("resizeCancelBtn");
     var applyBtn = document.getElementById("resizeApplyBtn");
+    var ratio43Btn = document.getElementById("resizeRatio43");
+    var ratio34Btn = document.getElementById("resizeRatio34");
+
+    if (ratio43Btn) {
+      ratio43Btn.addEventListener("click", function () {
+        setResizeRatio("4:3");
+      });
+    }
+
+    if (ratio34Btn) {
+      ratio34Btn.addEventListener("click", function () {
+        setResizeRatio("3:4");
+      });
+    }
 
     if (slider) {
       slider.addEventListener("input", function () {
@@ -3886,6 +4819,16 @@
 
       cropFrame.addEventListener("pointerup", endPointer);
       cropFrame.addEventListener("pointercancel", endPointer);
+
+      if (window.ResizeObserver) {
+        var ro = new ResizeObserver(function () {
+          if (document.getElementById("resizeImageOverlay").classList.contains("show")) {
+            setupResizeCanvas();
+            drawResizeCanvas();
+          }
+        });
+        ro.observe(cropFrame);
+      }
     }
 
     window.addEventListener("resize", function () {
@@ -3987,6 +4930,12 @@
         if (imgEl && vidEl) {
           vidEl.style.display = "none";
           imgEl.style.display = "block";
+          imgEl.onload = function () {
+            if (imgEl.naturalWidth && imgEl.naturalHeight) {
+              var isPort = (imgEl.naturalHeight > imgEl.naturalWidth * 1.05);
+              updateEditMediaBoxRatio(isPort);
+            }
+          };
           imgEl.src = url;
         }
       });
@@ -3998,7 +4947,6 @@
     if (!state.editingEntry) return;
     clearEditErrors_();
 
-    var personName = (document.getElementById("editPersonName") ? document.getElementById("editPersonName").value.trim() : "");
     var activity = document.getElementById("editActivityName").value.trim();
     var whatWentOn = document.getElementById("editWhatWentOn").value.trim();
     var date = document.getElementById("editDate").value;
@@ -4017,39 +4965,14 @@
 
     var entryId = state.editingEntry.entryId;
 
-    if (!isConfigured || entryId.indexOf("demo-") === 0 || entryId.indexOf("local-") === 0) {
-      var localEntry = {
-        entryId: entryId,
-        personName: personName,
-        name: whatWentOn,
-        category: category,
-        activity: activity,
-        date: date,
-        amount: amount,
-        units: units,
-        driveFileId: state.pendingEditMedia ? ("data:" + state.pendingEditMedia.mimeType + ";base64," + state.pendingEditMedia.data) : (state.editingEntry.driveFileId || "icons/block-party-2026.svg"),
-        mediaType: (state.pendingEditMedia && state.pendingEditMedia.mimeType.indexOf("video") === 0) ? "video" : (state.editingEntry.mediaType || "image"),
-        createdAt: state.editingEntry.createdAt || new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      var localEntries = loadLocalEntries_();
-      var found = false;
-      localEntries = localEntries.map(function (x) {
-        if (x.entryId === entryId) { found = true; return localEntry; }
-        return x;
-      });
-      if (!found) localEntries.unshift(localEntry);
-      saveLocalEntries_(localEntries);
-      showToast("Changes saved! 🎉");
-      closeEditModal();
-      loadEntries();
+    if (!isConfigured) {
+      showToast("The app isn't connected to your backend yet.", true);
       return;
     }
 
     var payload = {
       action: "update",
       entryId: entryId,
-      personName: personName,
       name: whatWentOn,
       category: category,
       activity: activity,
@@ -4112,8 +5035,6 @@
 
   function populateFormForEdit(entry) {
     state.editingId = entry.entryId;
-    var personEl = document.getElementById("fPersonName");
-    if (personEl) personEl.value = entry.personName || "";
     document.getElementById("fName").value = entry.name;
     document.getElementById("fCategory").value = entry.category;
     document.getElementById("fActivity").value = entry.activity;
@@ -4138,6 +5059,11 @@
     var submitBtn = document.getElementById("submitBtn");
 
     if (isVideo) {
+      var MAX_VIDEO_BYTES = 20 * 1024 * 1024;
+      if (file.size > MAX_VIDEO_BYTES) {
+        showToast("That video is over 20MB and may fail to upload — trim it or pick a shorter clip.", true);
+        return;
+      }
       fileDrop.classList.add("has-file");
       if (fileDropText) fileDropText.textContent = "Converting video to GIF… 0%";
       if (submitBtn) {
@@ -4222,7 +5148,6 @@
     e.preventDefault();
     clearErrors_();
 
-    var personName = (document.getElementById("fPersonName") ? document.getElementById("fPersonName").value.trim() : "");
     var name = document.getElementById("fName").value.trim();
     var category = document.getElementById("fCategory").value;
     var activity = document.getElementById("fActivity").value.trim();
@@ -4242,37 +5167,12 @@
     if (!valid) return;
 
     if (!isConfigured) {
-      var localEntry = {
-        entryId: state.editingId || "local-" + Date.now(),
-        personName: personName,
-        name: name,
-        category: category,
-        activity: activity,
-        date: date,
-        amount: amount,
-        units: units,
-        driveFileId: state.pendingMedia ? ("data:" + state.pendingMedia.mimeType + ";base64," + state.pendingMedia.data) : (state.editingId ? ((state.entries.find(function(x){return x.entryId===state.editingId;}) || {}).driveFileId || "icons/block-party-2026.svg") : "icons/block-party-2026.svg"),
-        mediaType: (state.pendingMedia && state.pendingMedia.mimeType.indexOf("video") === 0) ? "video" : "image",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      var localEntries = loadLocalEntries_();
-      if (state.editingId) {
-        localEntries = localEntries.map(function (x) { return x.entryId === state.editingId ? localEntry : x; });
-      } else {
-        localEntries.unshift(localEntry);
-      }
-      saveLocalEntries_(localEntries);
-      showToast(state.editingId ? "Entry updated (preview)." : "Logged to gallery! 🎉");
-      resetForm(true);
-      switchPanel("home");
-      loadEntries();
+      showToast("The app isn't connected to your backend yet.", true);
       return;
     }
 
     var payload = {
       action: state.editingId ? "update" : "create",
-      personName: personName,
       name: name, category: category, activity: activity, date: date, amount: amount, units: units
     };
     if (state.pendingMedia) payload.media = state.pendingMedia;
@@ -4308,14 +5208,8 @@
   }
   function doDelete() {
     if (!pendingDeleteId) return;
-    if (!isConfigured || pendingDeleteId.indexOf("demo-") === 0 || pendingDeleteId.indexOf("local-") === 0) {
-      var localEntries = loadLocalEntries_().filter(function (x) { return x.entryId !== pendingDeleteId; });
-      saveLocalEntries_(localEntries);
-      document.getElementById("deleteConfirmOverlay").classList.remove("show");
-      showToast("Entry deleted.");
-      closeLightbox();
-      pendingDeleteId = null;
-      loadEntries();
+    if (!isConfigured) {
+      showToast("The app isn't connected to your backend yet.", true);
       return;
     }
     apiWrite({ action: "delete", entryId: pendingDeleteId }).then(function (res) {
@@ -4348,17 +5242,12 @@
   // ===================================================================
   function loadEntries() {
     if (!isConfigured) {
-      var localEntries = loadLocalEntries_();
-      if (!localEntries.length) {
-        localEntries = [DEMO_ENTRY];
-        saveLocalEntries_(localEntries);
-      }
-      state.entries = localEntries;
+      state.entries = [];
       state.loaded = true;
       var totals = computeTotals(state.entries);
       renderProgress(totals, { suppressCelebration: true });
       renderCategoryBreakdown(totals);
-      populateMonthFilter(state.entries);
+      renderFilterCapsule();
       renderGallery();
       return;
     }
@@ -4369,7 +5258,7 @@
         e.date = toSGDateString_(e.date);
         return e;
       });
-      state.entries = backendEntries.length ? backendEntries : loadLocalEntries_();
+      state.entries = backendEntries;
       state.loaded = true;
       var totals = computeTotals(state.entries);
       renderProgress(totals, { suppressCelebration: isFirstLoad });
@@ -4378,18 +5267,19 @@
       var sig = JSON.stringify(state.entries.map(function (e) { return e.entryId + ":" + e.updatedAt; }));
       if (sig !== state.gallerySignature) {
         state.gallerySignature = sig;
-        populateMonthFilter(state.entries);
+        renderFilterCapsule();
         renderGallery();
       }
     }).catch(function () {
       if (!state.loaded) {
-        state.entries = loadLocalEntries_();
+        state.entries = [];
         state.loaded = true;
         var totals = computeTotals(state.entries);
         renderProgress(totals, { suppressCelebration: true });
         renderCategoryBreakdown(totals);
-        populateMonthFilter(state.entries);
+        renderFilterCapsule();
         renderGallery();
+        showToast("Couldn't reach the backend — check your connection and try again.", true);
       }
     });
   }
@@ -4575,46 +5465,26 @@
       if (e.target === this) closePointsInfoModal();
     });
 
-    var filterBtn = document.getElementById("galleryFilterBtn");
-    var filterPopover = document.getElementById("galleryFilterPopover");
-    var filterWrap = document.getElementById("galleryFilterWrap");
-    var filterClearBtn = document.getElementById("filterClearBtn");
-
-    function toggleGalleryFilter(force) {
-      if (!filterPopover || !filterBtn) return;
-      var isOpen = typeof force === "boolean" ? force : !filterPopover.classList.contains("open");
-      filterPopover.classList.toggle("open", isOpen);
-      filterBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
-    }
-
-    if (filterBtn) {
-      filterBtn.addEventListener("click", function (e) {
-        e.stopPropagation();
-        toggleGalleryFilter();
-      });
-    }
-
-    if (filterClearBtn) {
-      filterClearBtn.addEventListener("click", function (e) {
-        e.stopPropagation();
-        var mSelect = document.getElementById("filterMonth");
-        var cSelect = document.getElementById("filterCategory");
-        if (mSelect) mSelect.value = "";
-        if (cSelect) cSelect.value = "";
-        renderGallery();
-      });
-    }
-
+    // Filter Capsule Global Listeners (click outside & escape)
     document.addEventListener("click", function (e) {
-      if (filterWrap && !filterWrap.contains(e.target)) {
-        toggleGalleryFilter(false);
+      var capsuleRoot = document.getElementById("filterCapsuleRoot");
+      if (capsuleRoot && !capsuleRoot.contains(e.target)) {
+        if (filterCapsuleState.open) {
+          filterCapsuleState.open = false;
+          filterCapsuleState.activeSubmenu = null;
+          renderFilterCapsule();
+        }
       }
     });
 
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape") {
-        if (filterPopover && filterPopover.classList.contains("open")) {
-          toggleGalleryFilter(false);
+        closePreviewModal();
+        closeEditModal();
+        if (filterCapsuleState.open) {
+          filterCapsuleState.open = false;
+          filterCapsuleState.activeSubmenu = null;
+          renderFilterCapsule();
         }
         var logPanel = document.getElementById("panel-log");
         if (logPanel && logPanel.classList.contains("active")) {
@@ -4624,8 +5494,48 @@
       }
     });
 
-    document.getElementById("filterMonth").addEventListener("change", renderGallery);
-    document.getElementById("filterCategory").addEventListener("change", renderGallery);
+    // Close preview dropdown if clicked outside
+    document.addEventListener("click", function (e) {
+      var dropdown = document.getElementById("previewDropdownMenu");
+      var menuBtn = document.getElementById("previewMenuBtn");
+      if (dropdown && dropdown.classList.contains("show")) {
+        if (!dropdown.contains(e.target) && !menuBtn.contains(e.target)) {
+          dropdown.classList.remove("show");
+        }
+      }
+    });
+
+    // Post Preview modal bindings
+    var previewMenuBtn = document.getElementById("previewMenuBtn");
+    if (previewMenuBtn) {
+      previewMenuBtn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        var dropdown = document.getElementById("previewDropdownMenu");
+        if (dropdown) dropdown.classList.toggle("show");
+      });
+    }
+
+    var previewEditOption = document.getElementById("previewEditOption");
+    if (previewEditOption) {
+      previewEditOption.addEventListener("click", function (e) {
+        e.stopPropagation();
+        var entryToEdit = state.previewingEntry;
+        closePreviewModal();
+        if (entryToEdit) {
+          openEditModal(entryToEdit);
+        }
+      });
+    }
+
+    var previewCloseBtn = document.getElementById("previewCloseBtn");
+    if (previewCloseBtn) previewCloseBtn.addEventListener("click", closePreviewModal);
+
+    var postPreviewOverlay = document.getElementById("postPreviewOverlay");
+    if (postPreviewOverlay) {
+      postPreviewOverlay.addEventListener("click", function (e) {
+        if (e.target === this) closePreviewModal();
+      });
+    }
 
     // Edit Activity modal bindings
     var editFileDrop = document.getElementById("editFileDrop");
@@ -4662,10 +5572,21 @@
               imgEl.style.display = "none";
               vidEl.style.display = "block";
               vidEl.src = driveVideoEmbedUrl(entry.driveFileId);
+              updateEditMediaBoxRatio(false);
             } else {
               vidEl.style.display = "none";
               imgEl.style.display = "block";
+              var checkOrigRatio = function () {
+                if (imgEl.naturalWidth && imgEl.naturalHeight) {
+                  var isPort = (imgEl.naturalHeight > imgEl.naturalWidth * 1.05);
+                  updateEditMediaBoxRatio(isPort);
+                }
+              };
+              imgEl.onload = checkOrigRatio;
               imgEl.src = driveImageUrl(entry.driveFileId) || "icons/block-party-2026.svg";
+              if (imgEl.complete && imgEl.naturalWidth > 0) {
+                checkOrigRatio();
+              }
             }
           }
         });
@@ -4695,6 +5616,9 @@
 
     var editCancelBtn = document.getElementById("editCancelBtn");
     if (editCancelBtn) editCancelBtn.addEventListener("click", closeEditModal);
+
+    var editTopCloseBtn = document.getElementById("editTopCloseBtn");
+    if (editTopCloseBtn) editTopCloseBtn.addEventListener("click", closeEditModal);
 
     var editDeleteBtn = document.getElementById("editDeleteBtn");
     if (editDeleteBtn) {
