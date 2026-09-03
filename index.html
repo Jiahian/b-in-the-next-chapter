@@ -3320,37 +3320,6 @@
 
   var isConfigured = WEB_APP_URL.indexOf("PASTE_YOUR") === -1 && WEB_APP_URL.length > 10;
 
-  var DEMO_ENTRY = {
-    entryId: "demo-block-party-2026",
-    name: "Celebrated Block Party with friends and CG mates! Reconnected and had a blast.",
-    category: "Relationship",
-    activity: "Block Party 2026",
-    date: "2026-08-19",
-    amount: 3,
-    units: "hours",
-    driveFileId: "icons/block-party-2026.svg",
-    mediaType: "image",
-    createdAt: "2026-08-19T20:30:00.000Z",
-    updatedAt: "2026-08-19T20:30:00.000Z"
-  };
-
-  var LOCAL_STORAGE_KEY = "bnext_local_entries_v2";
-  function loadLocalEntries_() {
-    try {
-      var raw = localStorage.getItem(LOCAL_STORAGE_KEY);
-      if (raw) return JSON.parse(raw);
-    } catch (e) {}
-    return [DEMO_ENTRY];
-  }
-  function saveLocalEntries_(entries) {
-    try {
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(entries));
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
-
   // ===================================================================
   // State
   // ===================================================================
@@ -4160,7 +4129,12 @@
     container.innerHTML = "";
 
     if (!filtered.length) {
-      if (emptyEl) emptyEl.style.display = "block";
+      if (emptyEl) {
+        emptyEl.textContent = (state.entries || []).length
+          ? "No entries match these filters yet."
+          : "No activities logged yet — be the first!";
+        emptyEl.style.display = "block";
+      }
       return;
     }
     if (emptyEl) emptyEl.style.display = "none";
@@ -4991,34 +4965,8 @@
 
     var entryId = state.editingEntry.entryId;
 
-    if (!isConfigured || entryId.indexOf("demo-") === 0 || entryId.indexOf("local-") === 0) {
-      var localEntry = {
-        entryId: entryId,
-        name: whatWentOn,
-        category: category,
-        activity: activity,
-        date: date,
-        amount: amount,
-        units: units,
-        driveFileId: state.pendingEditMedia ? ("data:" + state.pendingEditMedia.mimeType + ";base64," + state.pendingEditMedia.data) : (state.editingEntry.driveFileId || "icons/block-party-2026.svg"),
-        mediaType: (state.pendingEditMedia && state.pendingEditMedia.mimeType.indexOf("video") === 0) ? "video" : (state.editingEntry.mediaType || "image"),
-        createdAt: state.editingEntry.createdAt || new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      var localEntries = loadLocalEntries_();
-      var found = false;
-      localEntries = localEntries.map(function (x) {
-        if (x.entryId === entryId) { found = true; return localEntry; }
-        return x;
-      });
-      if (!found) localEntries.unshift(localEntry);
-      if (!saveLocalEntries_(localEntries)) {
-        showToast("Couldn't save — your device's local storage is full. Try removing an old entry or a smaller photo/video.", true);
-        return;
-      }
-      showToast("Changes saved! 🎉");
-      closeEditModal();
-      loadEntries();
+    if (!isConfigured) {
+      showToast("The app isn't connected to your backend yet.", true);
       return;
     }
 
@@ -5219,33 +5167,7 @@
     if (!valid) return;
 
     if (!isConfigured) {
-      var localEntry = {
-        entryId: state.editingId || "local-" + Date.now(),
-        name: name,
-        category: category,
-        activity: activity,
-        date: date,
-        amount: amount,
-        units: units,
-        driveFileId: state.pendingMedia ? ("data:" + state.pendingMedia.mimeType + ";base64," + state.pendingMedia.data) : (state.editingId ? ((state.entries.find(function(x){return x.entryId===state.editingId;}) || {}).driveFileId || "icons/block-party-2026.svg") : "icons/block-party-2026.svg"),
-        mediaType: (state.pendingMedia && state.pendingMedia.mimeType.indexOf("video") === 0) ? "video" : "image",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      var localEntries = loadLocalEntries_();
-      if (state.editingId) {
-        localEntries = localEntries.map(function (x) { return x.entryId === state.editingId ? localEntry : x; });
-      } else {
-        localEntries.unshift(localEntry);
-      }
-      if (!saveLocalEntries_(localEntries)) {
-        showToast("Couldn't save — your device's local storage is full. Try removing an old entry or a smaller photo/video.", true);
-        return;
-      }
-      showToast(state.editingId ? "Entry updated (preview)." : "Logged to gallery! 🎉");
-      resetForm(true);
-      switchPanel("home");
-      loadEntries();
+      showToast("The app isn't connected to your backend yet.", true);
       return;
     }
 
@@ -5286,14 +5208,8 @@
   }
   function doDelete() {
     if (!pendingDeleteId) return;
-    if (!isConfigured || pendingDeleteId.indexOf("demo-") === 0 || pendingDeleteId.indexOf("local-") === 0) {
-      var localEntries = loadLocalEntries_().filter(function (x) { return x.entryId !== pendingDeleteId; });
-      var deleteSaveOk = saveLocalEntries_(localEntries);
-      document.getElementById("deleteConfirmOverlay").classList.remove("show");
-      showToast(deleteSaveOk ? "Entry deleted." : "Couldn't save that change — your device's local storage is full.", !deleteSaveOk);
-      closeLightbox();
-      pendingDeleteId = null;
-      loadEntries();
+    if (!isConfigured) {
+      showToast("The app isn't connected to your backend yet.", true);
       return;
     }
     apiWrite({ action: "delete", entryId: pendingDeleteId }).then(function (res) {
@@ -5326,12 +5242,7 @@
   // ===================================================================
   function loadEntries() {
     if (!isConfigured) {
-      var localEntries = loadLocalEntries_();
-      if (!localEntries.length) {
-        localEntries = [DEMO_ENTRY];
-        saveLocalEntries_(localEntries);
-      }
-      state.entries = localEntries;
+      state.entries = [];
       state.loaded = true;
       var totals = computeTotals(state.entries);
       renderProgress(totals, { suppressCelebration: true });
@@ -5347,7 +5258,7 @@
         e.date = toSGDateString_(e.date);
         return e;
       });
-      state.entries = backendEntries.length ? backendEntries : loadLocalEntries_();
+      state.entries = backendEntries;
       state.loaded = true;
       var totals = computeTotals(state.entries);
       renderProgress(totals, { suppressCelebration: isFirstLoad });
@@ -5361,13 +5272,14 @@
       }
     }).catch(function () {
       if (!state.loaded) {
-        state.entries = loadLocalEntries_();
+        state.entries = [];
         state.loaded = true;
         var totals = computeTotals(state.entries);
         renderProgress(totals, { suppressCelebration: true });
         renderCategoryBreakdown(totals);
         renderFilterCapsule();
         renderGallery();
+        showToast("Couldn't reach the backend — check your connection and try again.", true);
       }
     });
   }
