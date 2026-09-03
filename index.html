@@ -4482,7 +4482,6 @@
   function openResizeModal() {
     var currentImgSrc = "";
     var isVideo = false;
-    var driveFileId = "";
 
     if (state.pendingEditMedia) {
       if (state.pendingEditMedia.mimeType && state.pendingEditMedia.mimeType.indexOf("video") === 0) {
@@ -4494,8 +4493,7 @@
       if (state.editingEntry.mediaType === "video") {
         isVideo = true;
       } else {
-        driveFileId = state.editingEntry.driveFileId || "";
-        currentImgSrc = driveImageUrl(driveFileId);
+        currentImgSrc = driveImageUrl(state.editingEntry.driveFileId);
       }
     } else {
       var imgEl = document.getElementById("editMediaImg");
@@ -4541,21 +4539,11 @@
     };
     img.onerror = function () {
       // The direct Drive URL didn't send CORS headers permissive enough for
-      // canvas export — retry through our own backend (serveMedia_ in
-      // Code.gs), which re-serves the file from a response we control.
-      if (!driveFileId || !isConfigured) {
-        showToast("Could not load image for resizing.", true);
-        return;
-      }
-      var img2 = new Image();
-      img2.crossOrigin = "anonymous";
-      img2.onload = function () {
-        onImgLoaded(img2);
-      };
-      img2.onerror = function () {
-        showToast("Could not load image for resizing.", true);
-      };
-      img2.src = WEB_APP_URL + "?action=media&fileId=" + encodeURIComponent(driveFileId);
+      // canvas export. Apps Script Web Apps can't set custom response
+      // headers on binary output, so there's no way to proxy around this
+      // ourselves without new infrastructure outside Apps Script — fail
+      // cleanly instead of pretending a retry could work.
+      showToast("Could not load this photo for resizing — try again later.", true);
     };
     img.src = currentImgSrc;
   }
