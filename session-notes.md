@@ -13,15 +13,20 @@ kept up to date as we go.
   deployment)
 - **Hosting**: GitHub Pages, deployed via `.github/workflows/deploy.yml` on
   every push to `master`
-- **Password gate**: enabled, password `BNext2026` (see the "Access
-  control" decision below — this is explicitly a soft gate, not real auth)
+- **Access control**: real, server-verified Google Sign-In — **live as of
+  4 Sep 2026**. The client-side password gate is fully retired, not
+  layered underneath. See decision 8 below.
 - **Gallery/UI overhaul**: live as of 3 Sep 2026 — a community-contributed
   PR (dark mode, masonry gallery layout, post preview modal, photo
   resize/crop, video-to-GIF conversion) was reviewed, hardened, and
   merged. See decision 7 below.
-- **Google Sign-In (Option B)**: built and tested working (against the
-  pre-overhaul UI), but still not merged — needs rebasing onto the new
-  gallery/UI before it can move forward. See decision 6.
+- **User profiles + activity tagging**: live as of 4 Sep 2026 — every
+  friend has a real account (Users sheet, stable Google ID), a Profile
+  page (edit display name, My Posts, Tagged In), and can tag other
+  allowlisted friends on an entry. See decision 8 below.
+- **Sheet now has three tabs**: Entries, Users, and Allowlist (the
+  allowlist moved off a Script Property onto a sheet tab on 4 Sep 2026,
+  for easier editing — see decision 8).
 
 ## Key decisions
 
@@ -60,23 +65,18 @@ kept up to date as we go.
    entries are loaded, so Sheets is free to store the column however it
    wants.
 
-6. **Access control: Option B (Google Sign-In) decided and built, but
-   still not merged.** Of the three paths considered — **(A)** server-side
-   password check, **(B)** Google Sign-In + per-person email allowlist,
-   **(C)** a custom backend with real sessions — **B was chosen**
-   (2026-08-29), specifically because Phase 2's planned badges/
-   character-items/Manna currency (PRD §12) need to know *who* is making
-   a request, not just *that* they know a shared password, and Firebase
-   Authentication pairs natively with the Firestore migration Phase 2
-   already calls for. Built and tested working end-to-end
-   (2026-08-31/09-01) on branch `feature/google-signin-allowlist`:
-   front-end signs in with Google Identity Services, `Code.gs`'s
-   `requireAuth_()` verifies the token and checks an `ALLOWED_EMAILS`
-   Script Property, the free-text name field is replaced by the verified
-   Google identity. **Still not merged** — it was built against the
-   pre-overhaul UI, and the 3 Sep 2026 gallery/UI rewrite (decision 7)
-   changed most of `index.html`, so it now needs a rebase before it can
-   land.
+6. **Access control: Option B (Google Sign-In) decided and built.** Of
+   the three paths considered — **(A)** server-side password check,
+   **(B)** Google Sign-In + per-person email allowlist, **(C)** a custom
+   backend with real sessions — **B was chosen** (2026-08-29),
+   specifically because Phase 2's planned badges/character-items/Manna
+   currency (PRD §12) need to know *who* is making a request, not just
+   *that* they know a shared password. First built and tested working
+   end-to-end (2026-08-31/09-01) against the pre-overhaul UI on branch
+   `feature/google-signin-allowlist`. That version's since been fully
+   superseded — see decision 8, which covers what actually shipped
+   (rebuilt against the new UI, plus user profiles and tagging that
+   weren't part of the original plan).
 
 7. **Gallery/UI overhaul reviewed, hardened, and merged** (3 Sep 2026,
    PR #1 from a collaborator's fork `ozywasborn/b-in-the-next-chapter`).
@@ -143,6 +143,116 @@ kept up to date as we go.
      (`ozywasborn/b-next-2026`, from 2026-08-31) as the going-forward way
      the group's collaborator contributes.
 
+8. **Google Sign-In, real per-person identity, and activity tagging —
+   built and shipped live** (4 Sep 2026, on `feature/google-signin-
+   allowlist`, merged to `master` and deployed).
+   - **Not a mechanical rebase.** Given how much `index.html` changed in
+     the 3 Sep 2026 overhaul, the old branch's diff was used as a
+     reference (extracted from its git stash) rather than replayed —
+     everything was reapplied by hand against the current file, adapted
+     to its structure.
+   - **Real per-person identity, not just a gate.** Mid-build, the scope
+     grew past "just add sign-in" once it became clear Phase 2 needs
+     actual user profiles, not just an access check:
+     - First sign-in prompts for a one-time display name (pre-filled
+       from the Google account's real name, editable), stored in a new
+       **Users** sheet keyed by Google's stable `sub` claim — not email
+       (could change) and not the display name (meant to be freely
+       editable without breaking anything).
+     - **Design call, made before writing code**: considered capturing a
+       *second*, immutable "real name" field alongside the editable
+       username (for reliably identifying people when tagging). Pushed
+       back on this as a PM/designer would — two name-shaped fields on a
+       first-run screen invites confusion, "cannot be changed" creates
+       first-run anxiety and a support burden, and email (already
+       captured, immutable, never shown) already answers "who is this
+       really" if a username ever gets confusing. Kept the single
+       editable field. User agreed, also declined an email hint in the
+       tag-friends list for the same reason — the concern (silly/
+       nonsensical Gmail addresses) doesn't actually leak through to
+       what other people see, since the display name is fully separate
+       from the account's email or Google name.
+     - Username capped at 24 characters (down from an initial 40) —
+       long names could wrap awkwardly in the compact overlapping-avatar
+       gallery view once ellipsis-truncation was deliberately turned off
+       (see below).
+   - **Edit/delete restricted to the entry's owner**, enforced
+     server-side. Entries with no `userId` on record (logged before this
+     system existed) stay open to anyone — a deliberate choice so
+     upgrading the system doesn't strand old data, not an oversight.
+   - **Allowlist moved off a Script Property onto a sheet tab**
+     (requested mid-session, for easier editing — one email per row
+     instead of a comma-separated property value), then to two columns,
+     name + email (name is admin-facing only, for tracking who's who;
+     only email is checked).
+   - **Activity tagging** (`participants`, comma-separated `userId`s on
+     the Entry row, denormalized rather than a join-table tab — the set
+     is small and bounded per entry). A "Tag friends" multi-select
+     (select-all, individual deselect) on both the log and edit forms;
+     tagged friends are credited, not co-owners. Backend
+     `sanitizeParticipants_()` strips unknown IDs and the logger's own
+     ID before storing.
+   - **Profile page**: editable display name, a "My Posts" tab (tap
+     straight into editing — skips the normal preview step, since the
+     profile page is for managing, not browsing) and a "Tagged In" tab
+     (entries logged by someone else that tagged this user — view-only,
+     opens the normal preview since there's no edit right there).
+   - **Gallery attribution**: cards show overlapping avatar initials
+     (poster + up to 2 tagged friends, capped at 3 circles) and a
+     summary line — just the name if no one's tagged, "X and Y were
+     there" for one tag, "X and N friends were there" for more; no
+     "was there" suffix at all for the solo case, per explicit request.
+     Text wraps instead of truncating with an ellipsis (also explicit —
+     avatars centered against the (possibly 2-line) text once wrapping
+     replaced truncation). The expanded preview reveals everyone
+     involved, no cap, avatar + name for each.
+   - **Unrelated UI decisions made alongside**: an earlier full-screen
+     experiment for the gallery preview modal was reverted back to the
+     original popup-card style per request; a real background-scroll
+     lock was added (pinning `body` with `position:fixed`, not just
+     `overflow:hidden` — the latter isn't reliably honored by mobile
+     Chrome, confirmed by the user hitting exactly that); "Delete
+     activity" restyled from a muted text link to a filled red button
+     using the existing `--critical` token.
+   - **Going live — sequencing mattered.** Frontend (GitHub Pages, auto-
+     deploys on push) and backend (Apps Script, manually deployed) update
+     through separate mechanisms, so there's no way to flip both
+     perfectly atomically. Order used: (1) confirm Script Properties/
+     Allowlist already apply project-wide to whatever deployment runs
+     next (they do — same bound Sheet), so no separate prod-specific
+     setup was needed there; (2) add the live GitHub Pages origin to the
+     OAuth client's Authorized JavaScript origins; (3) populate the
+     Allowlist with the real friend group's emails, not just test
+     accounts; (4) push a new version to the *production* Apps Script
+     deployment specifically (a different URL from the test deployment
+     used throughout development); (5) verify the new backend via
+     `curl` (`?action=ping` succeeds, `?action=list` correctly returns
+     `AUTH_REQUIRED` without a token — confirms the new code is actually
+     live, not just saved); (6) merge to `master` and push, triggering
+     the GitHub Pages deploy.
+   - **Two real snags during the go-live, both caught and fixed
+     immediately via `curl` verification against the deployed
+     `config.js`:**
+     - The `GOOGLE_CLIENT_ID` GitHub repository secret was never
+       actually created (only referenced in `deploy.yml`) — first
+       deploy shipped with an empty client ID, silently disabling
+       sign-in (the button just doesn't render). Manually re-triggered
+       the deploy workflow (`workflow_dispatch`, no new commit needed)
+       after the user added the secret.
+     - Second attempt: the user accidentally overwrote the *existing*
+       `WEB_APP_URL` secret's value with the client ID string instead of
+       creating a new secret — broke the backend URL entirely. Caught by
+       the same `curl config.js` check; both secrets were corrected and
+       the workflow re-triggered a second time before it actually
+       worked.
+     - Also hit `[GSI_LOGGER]: The given origin is not allowed for the
+       given client ID` right after the origin was added to the OAuth
+       client — resolved itself after a few minutes plus a hard refresh.
+       Google's own docs note origin changes can take a few minutes to a
+       few hours to propagate; this wasn't a misconfiguration, just
+       needed to wait. Worth remembering if this recurs after any future
+       OAuth client change — don't assume it's broken immediately.
+
 ## Fixed this session (bugs, not design changes)
 
 - iOS Safari's native date input was overflowing the form/viewport
@@ -185,16 +295,23 @@ Full report: [artifact](https://claude.ai/code/artifact/c30fe412-c465-44e8-8c5d-
 
 ## Next steps
 
-- [ ] Rebase `feature/google-signin-allowlist` (Option B, built and
-      tested working) onto the new post-overhaul `index.html` — the
-      auth-gate markup/script, header sign-out button, and removed name
-      field were all built against the old UI and need reapplying
-- [ ] One-time reconciliation of existing free-text-named entries to the
-      correct Google accounts, once Option B lands (deferred — not
-      required by the access-control work itself)
+- [ ] One-time reconciliation of any pre-4-Sep-2026 entries that still
+      show a free-text/no-owner attribution — not required (they stay
+      open to anyone by design), but worth doing if the group wants old
+      entries visibly tied to the right person too
 - [ ] Confirm the iOS Safari date-input fix actually resolved the issue
       on a real device
 - [ ] Decide whether/when to add the collaborator (`ozywasborn`) as a
       full repo collaborator so future work happens on branches here
       directly, instead of continuing the fork+PR dance indefinitely
       (discussed 2026-09-01, not yet decided)
+- [ ] Do a real end-to-end pass with the actual friend group now that
+      sign-in is live: confirm everyone's email is in the Allowlist,
+      everyone can sign in and set a display name, and the app otherwise
+      feels normal day-to-day (not just single-account testing)
+- [ ] Phase 2 (gamification) groundwork is now further along than
+      originally planned — every entry and every user already has a
+      stable ID, which §12.3 of the PRD called out as the main thing
+      Phase 1 needed to get right for a painless Firestore migration
+      later. Worth revisiting Phase 2 scoping sooner than "once the
+      group's used Phase 1 for a while," given this
