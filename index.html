@@ -982,11 +982,11 @@
     padding: 0;
   }
   .filter-capsule-wrap.is-open {
-    width: 228px;
-    min-width: 228px;
+    width: 196px;
+    min-width: 196px;
     background: #ffffff;
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.08), inset 0 1px 2px rgba(0, 0, 0, 0.05);
-    padding: 3px;
+    padding: 2.5px;
     overflow: visible;
   }
   .filter-capsule-idle-box {
@@ -1049,7 +1049,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 3px;
+    gap: 2px;
     width: 100%;
     height: 100%;
     position: relative;
@@ -1073,10 +1073,10 @@
     align-items: center;
     justify-content: center;
     flex: 1 1 0;
-    padding: 6px 12px;
-    font-size: 12px;
+    padding: 4px 6px;
+    font-size: 11px;
     font-weight: 600;
-    letter-spacing: 0.01em;
+    letter-spacing: -0.02em;
     color: #475569;
     background: #ffffff;
     border: none;
@@ -1148,7 +1148,8 @@
   .filter-sub-col-all {
     grid-column: span 4;
   }
-  .filter-sub-list-areas {
+  .filter-sub-list-areas,
+  .filter-sub-list-categories {
     display: flex;
     flex-direction: column;
     gap: 4px;
@@ -1512,14 +1513,14 @@
       height: 25.5px;
     }
     .filter-capsule-wrap.is-open {
-      width: 171px;
-      min-width: 171px;
-      padding: 2px;
+      width: 152px;
+      min-width: 152px;
+      padding: 1.5px;
     }
     .filter-capsule-idle-btn {
       height: 25.5px;
-      padding: 0 11px;
-      font-size: 10px;
+      padding: 0 9px;
+      font-size: 9.5px;
     }
     .filter-capsule-idle-btn.is-icon-btn {
       width: 25.5px;
@@ -1531,30 +1532,59 @@
       height: 12px;
     }
     .filter-capsule-row {
-      gap: 2px;
+      gap: 1.5px;
     }
     .filter-capsule-btn {
-      padding: 3px 5px;
-      font-size: 10px;
+      padding: 2.5px 2px;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: -0.03em;
       line-height: 1.1;
     }
     .filter-capsule-popover {
       top: calc(100% + 5px);
-      padding: 5px;
+      padding: 4px;
       border-radius: 12px;
-      gap: 4px;
+      gap: 3px;
     }
     .filter-sub-grid-months {
-      width: 177px;
-      gap: 3px;
+      width: 160px;
+      gap: 2.5px;
     }
-    .filter-sub-list-areas {
-      width: 109px;
-      gap: 3px;
+    .filter-sub-list-areas,
+    .filter-sub-list-categories {
+      width: 104px;
+      gap: 2.5px;
     }
     .filter-sub-pill {
-      padding: 3.5px 6px;
-      font-size: 9.5px;
+      padding: 3px 5px;
+      font-size: 9px;
+    }
+  }
+
+  @media (max-width: 360px) {
+    .gallery-header-row .section-heading {
+      font-size: 15px;
+    }
+    .filter-capsule-wrap.is-open {
+      width: 138px;
+      min-width: 138px;
+      padding: 1px;
+    }
+    .filter-capsule-row {
+      gap: 1px;
+    }
+    .filter-capsule-btn {
+      padding: 2px 1px;
+      font-size: 8.5px;
+      letter-spacing: -0.035em;
+    }
+    .filter-sub-grid-months {
+      width: 148px;
+    }
+    .filter-sub-list-areas,
+    .filter-sub-list-categories {
+      width: 96px;
     }
 
     .gallery-masonry,
@@ -3076,7 +3106,7 @@
 
         <div class="form-grid-2">
           <div class="field">
-            <label for="fCategory">Area</label>
+            <label for="fCategory">Category</label>
             <div class="select-wrap">
               <select id="fCategory" required>
                 <option value="Spiritual" selected>Spiritual</option>
@@ -3084,7 +3114,7 @@
                 <option value="Others">Others</option>
               </select>
             </div>
-            <div class="field-error" data-for="fCategory">Please choose an area.</div>
+            <div class="field-error" data-for="fCategory">Please choose a category.</div>
           </div>
           <div class="field">
             <label for="fDate">Date</label>
@@ -3290,7 +3320,7 @@
             <div class="field-error" data-for="editDate">Date can't be in the future.</div>
           </div>
           <div class="edit-form-field">
-            <label class="edit-form-label" for="editCategory">Area</label>
+            <label class="edit-form-label" for="editCategory">Category</label>
             <div class="select-wrap">
               <select id="editCategory" required>
                 <option value="Spiritual">Spiritual</option>
@@ -3298,7 +3328,7 @@
                 <option value="Others">Others</option>
               </select>
             </div>
-            <div class="field-error" data-for="editCategory">Please choose an area.</div>
+            <div class="field-error" data-for="editCategory">Please choose a category.</div>
           </div>
         </div>
 
@@ -3979,9 +4009,9 @@
 
   var filterCapsuleState = {
     open: false,
-    activeSubmenu: null, // null | 'month' | 'area'
+    activeSubmenu: null, // null | 'month' | 'category' | 'area'
     selectedOption: {
-      type: "default", // 'default' | 'month' | 'area'
+      type: "default", // 'default' | 'month' | 'category' | 'area'
       value: "Default"  // 'Default' | 'All Months' | 'Jan'..'Dec' | 'Spiritual' | 'Relationship' | 'Others'
     }
   };
@@ -3991,7 +4021,8 @@
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
   ];
 
-  var AREAS_LIST = ["Spiritual", "Relationship", "Others"];
+  var CATEGORIES_LIST = ["Spiritual", "Relationship", "Others"];
+  var AREAS_LIST = CATEGORIES_LIST;
 
   var MONTH_NUM_MAP = {
     "Jan": "01", "Feb": "02", "Mar": "03", "Apr": "04",
@@ -4006,12 +4037,19 @@
   };
 
   function getCapsulePillWidth(text) {
-    if (!text || text === "Default") return 34;
+    var isMobile = (window.innerWidth <= 480);
+    var isNarrow = (window.innerWidth <= 360);
+    if (!text || text === "Default") return (isMobile ? 25.5 : 34);
     var canvas = getCapsulePillWidth._canvas || (getCapsulePillWidth._canvas = document.createElement("canvas"));
     var ctx = canvas.getContext("2d");
-    ctx.font = "700 12px 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif";
+    ctx.font = isNarrow
+      ? "700 9px 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif"
+      : (isMobile
+        ? "700 9.5px 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif"
+        : "700 11px 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif");
     var textWidth = ctx.measureText(text).width;
-    return Math.max(34, Math.ceil(textWidth + 34));
+    var pad = isNarrow ? 14 : (isMobile ? 16 : 22);
+    return Math.max(isMobile ? 25.5 : 34, Math.ceil(textWidth + pad));
   }
 
   function applyCapsuleFilter(type, value) {
@@ -4052,7 +4090,7 @@
           '<div class="filter-capsule-row" id="capsuleRow">' +
             '<button type="button" class="filter-capsule-btn" id="capsuleDefaultBtn">Default</button>' +
             '<button type="button" class="filter-capsule-btn" id="capsuleMonthBtn">Month</button>' +
-            '<button type="button" class="filter-capsule-btn" id="capsuleAreaBtn">Area</button>' +
+            '<button type="button" class="filter-capsule-btn" id="capsuleCategoryBtn">Category</button>' +
           '</div>' +
           '<div class="filter-capsule-popover" id="filterCapsuleSubmenu" role="dialog" aria-hidden="true"></div>' +
         '</div>';
@@ -4094,11 +4132,11 @@
         });
       }
 
-      var areaBtn = wrap.querySelector("#capsuleAreaBtn");
-      if (areaBtn) {
-        areaBtn.addEventListener("click", function (e) {
+      var categoryBtn = wrap.querySelector("#capsuleCategoryBtn") || wrap.querySelector("#capsuleAreaBtn");
+      if (categoryBtn) {
+        categoryBtn.addEventListener("click", function (e) {
           e.stopPropagation();
-          filterCapsuleState.activeSubmenu = (filterCapsuleState.activeSubmenu === "area" ? null : "area");
+          filterCapsuleState.activeSubmenu = (filterCapsuleState.activeSubmenu === "category" || filterCapsuleState.activeSubmenu === "area" ? null : "category");
           renderFilterCapsule();
         });
       }
@@ -4108,12 +4146,16 @@
     wrap.className = "filter-capsule-wrap " +
       (isOpen ? "is-open" : "is-idle" + (isDefault ? " is-circle" : ""));
 
+    var isMobile = (window.innerWidth <= 480);
+    var isNarrow = (window.innerWidth <= 360);
     if (isOpen) {
-      wrap.style.width = "228px";
-      wrap.style.minWidth = "228px";
+      var openW = isNarrow ? 138 : (isMobile ? 152 : 196);
+      wrap.style.width = openW + "px";
+      wrap.style.minWidth = openW + "px";
     } else if (isDefault) {
-      wrap.style.width = "34px";
-      wrap.style.minWidth = "34px";
+      var circleW = isMobile ? 25.5 : 34;
+      wrap.style.width = circleW + "px";
+      wrap.style.minWidth = circleW + "px";
     } else {
       var targetPillW = getCapsulePillWidth(sel.value);
       wrap.style.width = targetPillW + "px";
@@ -4132,14 +4174,14 @@
     // Update segmented active tab buttons
     var isDefaultActive = (activeSubmenu ? false : sel.type === "default");
     var isMonthActive = (activeSubmenu === "month" || (!activeSubmenu && sel.type === "month"));
-    var isAreaActive = (activeSubmenu === "area" || (!activeSubmenu && sel.type === "area"));
+    var isCategoryActive = (activeSubmenu === "category" || activeSubmenu === "area" || (!activeSubmenu && (sel.type === "category" || sel.type === "area")));
 
     var defaultBtn = wrap.querySelector("#capsuleDefaultBtn");
     if (defaultBtn) defaultBtn.className = "filter-capsule-btn " + (isDefaultActive ? "active" : "");
     var monthBtn = wrap.querySelector("#capsuleMonthBtn");
     if (monthBtn) monthBtn.className = "filter-capsule-btn " + (isMonthActive ? "active" : "");
-    var areaBtn = wrap.querySelector("#capsuleAreaBtn");
-    if (areaBtn) areaBtn.className = "filter-capsule-btn " + (isAreaActive ? "active" : "");
+    var categoryBtn = wrap.querySelector("#capsuleCategoryBtn") || wrap.querySelector("#capsuleAreaBtn");
+    if (categoryBtn) categoryBtn.className = "filter-capsule-btn " + (isCategoryActive ? "active" : "");
 
     // Update popover floating submenu with smooth open/close
     var popover = wrap.querySelector("#filterCapsuleSubmenu");
@@ -4167,25 +4209,25 @@
             applyCapsuleFilter("month", chosenMonth);
           });
         });
-      } else if (isOpen && activeSubmenu === "area") {
+      } else if (isOpen && (activeSubmenu === "category" || activeSubmenu === "area")) {
         popover.className = "filter-capsule-popover is-visible";
         popover.setAttribute("aria-hidden", "false");
-        popover.setAttribute("aria-label", "Select Area");
-        var ahtml = '<div class="filter-sub-list-areas">';
-        AREAS_LIST.forEach(function (a) {
-          var isSel = (sel.type === "area" && sel.value === a);
-          ahtml += '<button type="button" class="filter-sub-pill ' + (isSel ? "selected" : "") + '" data-area="' + escapeHtml_(a) + '">' +
+        popover.setAttribute("aria-label", "Select Category");
+        var ahtml = '<div class="filter-sub-list-categories filter-sub-list-areas">';
+        CATEGORIES_LIST.forEach(function (a) {
+          var isSel = ((sel.type === "category" || sel.type === "area") && sel.value === a);
+          ahtml += '<button type="button" class="filter-sub-pill ' + (isSel ? "selected" : "") + '" data-category="' + escapeHtml_(a) + '" data-area="' + escapeHtml_(a) + '">' +
             escapeHtml_(a) +
           '</button>';
         });
         ahtml += '</div>';
         popover.innerHTML = ahtml;
 
-        popover.querySelectorAll("button[data-area]").forEach(function (btn) {
+        popover.querySelectorAll("button[data-category], button[data-area]").forEach(function (btn) {
           btn.addEventListener("click", function (e) {
             e.stopPropagation();
-            var chosenArea = btn.getAttribute("data-area");
-            applyCapsuleFilter("area", chosenArea);
+            var chosenCat = btn.getAttribute("data-category") || btn.getAttribute("data-area");
+            applyCapsuleFilter("category", chosenCat);
           });
         });
       } else {
@@ -4194,6 +4236,14 @@
       }
     }
   }
+
+  var _resizeFilterTimer = null;
+  window.addEventListener("resize", function () {
+    clearTimeout(_resizeFilterTimer);
+    _resizeFilterTimer = setTimeout(function () {
+      renderFilterCapsule();
+    }, 60);
+  });
 
   function renderMasonryGrid(entriesList, parentEl, onItemClick) {
     var masonry = document.createElement("div");
@@ -4371,7 +4421,7 @@
           var eDigits = eDate.slice(5, 7);
           if (targetDigits && eDigits !== targetDigits) return false;
         }
-      } else if (filterType === "area") {
+      } else if (filterType === "category" || filterType === "area") {
         var cat = (e.category || "").trim();
         if (filterVal === "Spiritual") {
           if (cat.toLowerCase() !== "spiritual") return false;
@@ -4448,8 +4498,8 @@
       return;
     }
 
-    // 4. Specific Area chosen (e.g. "Spiritual"):
-    if (filterType === "area") {
+    // 4. Specific Category chosen (e.g. "Spiritual"):
+    if (filterType === "category" || filterType === "area") {
       var groupEl = document.createElement("div");
       groupEl.className = "gallery-category-group";
       groupEl.innerHTML = '<div class="gallery-category-title">' + escapeHtml_(filterVal) + '</div>';
