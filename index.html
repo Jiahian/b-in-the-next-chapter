@@ -163,23 +163,29 @@
   }
   body.log-mode #panel-home,
   body.log-mode header.app-header,
-  body.log-mode #configBanner {
+  body.log-mode #configBanner,
+  body.log-mode .floating-bottom-bar,
+  body.log-mode .bottom-bar-blur-layer,
+  body.profile-mode #panel-home,
+  body.profile-mode header.app-header,
+  body.profile-mode #configBanner,
+  body.profile-mode .floating-bottom-bar,
+  body.profile-mode .bottom-bar-blur-layer {
     filter: blur(7px);
     -webkit-filter: blur(7px);
     pointer-events: none;
     user-select: none;
   }
-  #panel-home, header.app-header, #configBanner {
+  #panel-home, header.app-header, #configBanner, .floating-bottom-bar, .bottom-bar-blur-layer {
     transition: filter 0.22s ease, -webkit-filter 0.22s ease;
   }
   .header-inner {
     max-width: 560px;
     margin: 0 auto;
-    padding: 0 24px;
+    padding: 0 16px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 16px;
+    justify-content: flex-start;
   }
   .header-titles {
     flex: 1;
@@ -194,6 +200,7 @@
     color: #0f172a;
     letter-spacing: -0.025em;
     line-height: 1.2;
+    text-align: left;
   }
   .header-titles p.sub {
     margin: 0;
@@ -203,42 +210,117 @@
     letter-spacing: 0.07em;
     text-transform: uppercase;
     line-height: 1.25;
+    text-align: left;
   }
-  .header-profile-btn {
-    flex-shrink: 0;
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 32px; height: 32px;
-    background: var(--gridline); color: var(--text-primary);
-    border: none; border-radius: 50%; padding: 0;
+
+  /* Floating Bottom Menu Bar Blur Layer & Dock Underlay */
+  .bottom-bar-blur-layer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: calc(88px + max(16px, calc(10px + env(safe-area-inset-bottom))));
+    pointer-events: none;
+    z-index: 30;
+    background: linear-gradient(to top, rgba(248, 250, 252, 0.94) 0%, rgba(248, 250, 252, 0.8) 55%, rgba(248, 250, 252, 0) 100%);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    -webkit-mask-image: linear-gradient(to top, black 0%, black 65%, transparent 100%);
+    mask-image: linear-gradient(to top, black 0%, black 65%, transparent 100%);
+    transition: filter 0.22s ease, -webkit-filter 0.22s ease, background 0.25s ease;
+  }
+
+  /* Floating Bottom Menu Bar */
+  .floating-bottom-bar {
+    position: fixed;
+    bottom: max(16px, calc(10px + env(safe-area-inset-bottom)));
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 32px);
+    max-width: 528px;
+    height: 78px;
+    background: #ffffff;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: none;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 8px 30px -4px rgba(15, 23, 42, 0.12), 0 2px 8px -2px rgba(15, 23, 42, 0.06);
+    z-index: 35;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 8px;
+    box-sizing: border-box;
+    margin: 0 auto;
+    transition: filter 0.22s ease, -webkit-filter 0.22s ease, background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  .bottom-bar-slot {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+  }
+
+  .bottom-bar-log-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    background: var(--accent);
+    color: var(--accent-contrast);
+    border: none;
+    border-radius: 50%;
+    padding: 0;
     cursor: pointer;
-    font-size: 13px; font-weight: 800;
-    align-self: center;
-    margin-top: 15px;
-    transition: background 0.15s ease;
-  }
-  .header-profile-btn:hover {
-    background: var(--border);
-  }
-  .header-log-btn {
-    flex-shrink: 0;
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 32px; height: 32px;
-    background: var(--accent); color: var(--accent-contrast);
-    border: none; border-radius: 50%; padding: 0;
-    cursor: pointer;
-    box-shadow: 0 3px 10px rgba(79, 70, 229, 0.3);
+    box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
     transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
-    align-self: center;
-    margin-top: 15px;
-    transform: none;
   }
-  .header-log-btn:hover {
+  .bottom-bar-log-btn:hover {
     background: var(--accent-hover);
     transform: scale(1.08);
-    box-shadow: 0 5px 14px rgba(79, 70, 229, 0.4);
+    box-shadow: 0 6px 18px rgba(79, 70, 229, 0.45);
   }
-  .header-log-btn:active { transform: scale(0.96); }
-  .header-log-btn svg { display: block; width: 15px; height: 15px; }
+  .bottom-bar-log-btn:active {
+    transform: scale(0.95);
+  }
+  .bottom-bar-log-btn svg {
+    display: block;
+    width: 22px;
+    height: 22px;
+  }
+
+  .bottom-bar-profile-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: #f1f5f9;
+    color: #475569;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 50%;
+    padding: 0;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 800;
+    transition: background 0.15s ease, transform 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  }
+  .bottom-bar-profile-btn:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+    transform: scale(1.06);
+  }
+  .bottom-bar-profile-btn:active {
+    transform: scale(0.95);
+  }
+  .bottom-bar-profile-btn svg {
+    display: block;
+    width: 20px;
+    height: 20px;
+  }
 
   .config-banner {
     display: none;
@@ -255,7 +337,7 @@
   .config-banner.show { display: block; }
   .config-banner code { background: rgba(0,0,0,0.08); padding: 1px 5px; border-radius: 4px; }
 
-  main { padding: 14px 8px 8px; max-width: 560px; margin: 0 auto; }
+  main { padding: 18px 16px calc(112px + env(safe-area-inset-bottom)); max-width: 560px; margin: 0 auto; }
   .panel { display: none; }
   .panel.active { display: block; }
 
@@ -311,8 +393,8 @@
     background: transparent;
     border: none;
     box-shadow: none;
-    padding: 0 0 6px;
-    margin-bottom: 16px;
+    padding: 0;
+    margin-bottom: 18px;
   }
   .countdown-grid {
     display: grid;
@@ -1490,6 +1572,56 @@
   .empty-state { text-align: center; padding: 44px 16px; color: var(--text-muted); font-size: 16px; }
 
   @media (max-width: 480px) {
+    .header-inner {
+      padding: 0 14px;
+    }
+    .header-titles h1 {
+      font-size: clamp(19px, 5.2vw, 22px);
+    }
+    .header-titles p.sub {
+      font-size: 10.5px;
+    }
+    main {
+      padding: 16px 14px calc(112px + env(safe-area-inset-bottom));
+    }
+    .card-countdown {
+      margin-bottom: 16px;
+    }
+    .floating-bottom-bar {
+      width: calc(100% - 28px);
+      max-width: 532px;
+      height: 78px;
+      padding: 0 6px;
+    }
+    .card-points-acc {
+      padding: 22px 16px 24px;
+    }
+    .progress-headline .value {
+      font-size: clamp(52px, 14vw, 68px);
+    }
+    .card-points-category {
+      padding: 18px 16px 18px;
+    }
+    .legend-label {
+      width: 76px;
+      flex: 0 0 76px;
+      font-size: 12.5px;
+    }
+    .countdown-grid {
+      gap: 6px;
+    }
+    .countdown-cell .num-box {
+      padding: 10px 2px 9px;
+      border-radius: 10px;
+    }
+    .countdown-cell .num {
+      font-size: 26px;
+    }
+    .countdown-cell .label {
+      font-size: 10px;
+      margin-top: 6px;
+    }
+
     .gallery-header-row {
       margin: 22px 0 14px;
       gap: 8px;
@@ -1563,6 +1695,41 @@
   }
 
   @media (max-width: 360px) {
+    .header-inner {
+      padding: 0 12px;
+    }
+    .header-titles h1 {
+      font-size: 18px;
+    }
+    main {
+      padding: 14px 12px calc(112px + env(safe-area-inset-bottom));
+    }
+    .card-countdown {
+      margin-bottom: 14px;
+    }
+    .floating-bottom-bar {
+      width: calc(100% - 24px);
+      height: 78px;
+      padding: 0 4px;
+    }
+    .bottom-bar-log-btn {
+      width: 46px;
+      height: 46px;
+    }
+    .bottom-bar-profile-btn {
+      width: 36px;
+      height: 36px;
+    }
+    .countdown-grid {
+      gap: 4px;
+    }
+    .countdown-cell .num-box {
+      padding: 8px 1px 7px;
+      border-radius: 8px;
+    }
+    .countdown-cell .num {
+      font-size: 22px;
+    }
     .gallery-header-row .section-heading {
       font-size: 15px;
     }
@@ -2601,14 +2768,35 @@
   [data-theme="dark"] .header-titles p.sub {
     color: #9aa0a6;
   }
+  [data-theme="dark"] .floating-bottom-bar {
+    background: #1e1f20;
+    border: 1px solid #2d2f31;
+    box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.6), 0 2px 8px -2px rgba(0, 0, 0, 0.4);
+  }
+  [data-theme="dark"] .bottom-bar-blur-layer {
+    background: linear-gradient(to top, rgba(19, 19, 20, 0.94) 0%, rgba(19, 19, 20, 0.8) 55%, rgba(19, 19, 20, 0) 100%);
+  }
+  [data-theme="dark"] .bottom-bar-log-btn,
   [data-theme="dark"] .header-log-btn {
     background: #8ab4f8;
     color: #131314;
-    box-shadow: 0 3px 12px rgba(138, 180, 248, 0.35);
+    box-shadow: 0 4px 14px rgba(138, 180, 248, 0.35);
   }
+  [data-theme="dark"] .bottom-bar-log-btn:hover,
   [data-theme="dark"] .header-log-btn:hover {
     background: #a8c7fa;
-    box-shadow: 0 5px 16px rgba(138, 180, 248, 0.45);
+    box-shadow: 0 6px 18px rgba(138, 180, 248, 0.45);
+  }
+  [data-theme="dark"] .bottom-bar-profile-btn,
+  [data-theme="dark"] .header-profile-btn {
+    background: #2d2f31;
+    color: #e3e3e3;
+    border-color: #3c4043;
+  }
+  [data-theme="dark"] .bottom-bar-profile-btn:hover,
+  [data-theme="dark"] .header-profile-btn:hover {
+    background: #3c4043;
+    color: #ffffff;
   }
   [data-theme="dark"] .config-banner {
     background: #2c2514;
@@ -2991,19 +3179,10 @@
 
 <header class="app-header">
   <div class="header-inner">
-    <button class="header-profile-btn" id="headerProfileBtn" type="button" aria-label="Your profile" title="Your profile" style="display:none;">
-      <span id="headerProfileInitial">?</span>
-    </button>
     <div class="header-titles">
       <h1>B In the Next Chapter!</h1>
       <p class="sub"><span id="targetLabel">1000</span> BY 31 DEC 2026</p>
     </div>
-    <button class="header-log-btn" id="headerLogBtn" type="button" aria-label="Log activity" title="Log activity">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <line x1="12" y1="4" x2="12" y2="20"></line>
-        <line x1="4" y1="12" x2="20" y2="12"></line>
-      </svg>
-    </button>
   </div>
 </header>
 
@@ -3015,29 +3194,6 @@
 
   <!-- HOME (dashboard + gallery) -->
   <section id="panel-home" class="panel active">
-    <div class="theme-toggle-row">
-      <button type="button" class="theme-toggle-switch" id="themeToggleBtn" role="switch" aria-checked="false" aria-label="Toggle dark mode" title="Toggle dark mode">
-        <span class="theme-toggle-slot slot-moon" aria-hidden="true">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="#ffffff" stroke="none">
-            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
-          </svg>
-        </span>
-        <span class="theme-toggle-slot slot-sun" aria-hidden="true">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="#ffffff" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="4" fill="#ffffff"></circle>
-            <path d="M12 2v2.5"></path>
-            <path d="M12 19.5v2.5"></path>
-            <path d="m4.93 4.93 1.77 1.77"></path>
-            <path d="m17.3 17.3 1.77 1.77"></path>
-            <path d="M2 12h2.5"></path>
-            <path d="M19.5 12h2.5"></path>
-            <path d="m6.7 17.3-1.77 1.77"></path>
-            <path d="m19.07 4.93-1.77 1.77"></path>
-          </svg>
-        </span>
-        <span class="theme-toggle-thumb" aria-hidden="true"></span>
-      </button>
-    </div>
 
     <div class="card card-countdown">
       <div id="countdownBody"></div>
@@ -3201,6 +3357,55 @@
   </section>
 
 </main>
+
+<!-- Floating Bottom Menu Bar Blur Layer & Dock Underlay -->
+<div class="bottom-bar-blur-layer" id="bottomBarBlurLayer" aria-hidden="true"></div>
+
+<!-- Floating Bottom Menu Bar -->
+<nav class="floating-bottom-bar" id="floatingBottomBar" aria-label="Bottom Navigation">
+  <div class="bottom-bar-slot bottom-bar-slot-left">
+    <button type="button" class="theme-toggle-switch" id="themeToggleBtn" role="switch" aria-checked="false" aria-label="Toggle dark mode" title="Toggle dark mode">
+      <span class="theme-toggle-slot slot-moon" aria-hidden="true">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="#ffffff" stroke="none">
+          <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+        </svg>
+      </span>
+      <span class="theme-toggle-slot slot-sun" aria-hidden="true">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="#ffffff" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="4" fill="#ffffff"></circle>
+          <path d="M12 2v2.5"></path>
+          <path d="M12 19.5v2.5"></path>
+          <path d="m4.93 4.93 1.77 1.77"></path>
+          <path d="m17.3 17.3 1.77 1.77"></path>
+          <path d="M2 12h2.5"></path>
+          <path d="M19.5 12h2.5"></path>
+          <path d="m6.7 17.3-1.77 1.77"></path>
+          <path d="m19.07 4.93-1.77 1.77"></path>
+        </svg>
+      </span>
+      <span class="theme-toggle-thumb" aria-hidden="true"></span>
+    </button>
+  </div>
+
+  <div class="bottom-bar-slot bottom-bar-slot-center">
+    <button class="bottom-bar-log-btn" id="headerLogBtn" type="button" aria-label="Log activity" title="Log activity">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="12" y1="4" x2="12" y2="20"></line>
+        <line x1="4" y1="12" x2="20" y2="12"></line>
+      </svg>
+    </button>
+  </div>
+
+  <div class="bottom-bar-slot bottom-bar-slot-right">
+    <button class="bottom-bar-profile-btn" id="headerProfileBtn" type="button" aria-label="Your profile" title="Your profile">
+      <span id="headerProfileInitial" style="display:none;">?</span>
+      <svg class="profile-icon-svg" id="headerProfileIconSvg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+        <circle cx="12" cy="7" r="4"></circle>
+      </svg>
+    </button>
+  </div>
+</nav>
 
 <!-- Points info modal -->
 <div class="modal-overlay" id="pointsInfoOverlay" style="align-items:center;justify-content:center;padding:16px;z-index:60;">
@@ -5938,9 +6143,19 @@
   function updateHeaderProfileUI_() {
     var btn = document.getElementById("headerProfileBtn");
     var initialEl = document.getElementById("headerProfileInitial");
-    if (!btn || !profile) return;
+    var iconEl = document.getElementById("headerProfileIconSvg");
+    if (!btn) return;
     btn.style.display = "inline-flex";
-    if (initialEl) initialEl.textContent = (profile.username || "?").trim().charAt(0).toUpperCase() || "?";
+    if (profile && profile.username && profile.username.trim()) {
+      if (initialEl) {
+        initialEl.textContent = profile.username.trim().charAt(0).toUpperCase();
+        initialEl.style.display = "inline";
+      }
+      if (iconEl) iconEl.style.display = "none";
+    } else {
+      if (initialEl) initialEl.style.display = "none";
+      if (iconEl) iconEl.style.display = "block";
+    }
   }
 
   function openProfilePanel_() {
@@ -6118,6 +6333,7 @@
 
   function bindEventListeners_() {
     initTheme_();
+    updateHeaderProfileUI_();
     initTagFriends_(LOG_TAG_FRIENDS_CFG);
     initTagFriends_(EDIT_TAG_FRIENDS_CFG);
 
