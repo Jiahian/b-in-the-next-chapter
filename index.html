@@ -1492,7 +1492,7 @@
     z-index: 2;
   }
   .gallery-item .meta {
-    padding: 13px 14px 14px;
+    padding: 10px 10px 12px;
     background: #ffffff;
     flex: 1;
     display: flex;
@@ -1501,13 +1501,15 @@
     width: 100%;
     box-sizing: border-box;
   }
-  /* "Who was there" — poster + tagged friends, compact card version */
+  /* "Who was there" — poster + tagged friends, compact card version.
+     Avatars float against the text's first line, like an icon leading a
+     paragraph; if the text wraps, later lines run the full width below. */
   .meta-people {
-    display: flex; align-items: center; gap: 6px; margin-bottom: 6px; min-width: 0;
+    display: flow-root; margin-bottom: 6px; min-width: 0;
   }
-  .meta-avatars { display: flex; flex-shrink: 0; }
+  .meta-avatars { display: flex; float: left; flex-shrink: 0; margin-right: 6px; }
   .meta-avatar {
-    width: 20px; height: 20px; border-radius: 50%;
+    width: 22px; height: 22px; border-radius: 50%;
     background: var(--gridline); color: var(--text-primary);
     display: flex; align-items: center; justify-content: center;
     font-size: 9px; font-weight: 800; line-height: 1;
@@ -4721,10 +4723,10 @@
     if (!dateStr || typeof dateStr !== "string") return "";
     var parts = dateStr.slice(0, 10).split("-");
     if (parts.length < 3) return dateStr;
-    var MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+    var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     var year = parts[0];
     var monthIdx = Number(parts[1]) - 1;
-    var day = String(Number(parts[2])).padStart(2, "0");
+    var day = String(Number(parts[2]));
     var monthStr = (monthIdx >= 0 && monthIdx < 12) ? MONTHS[monthIdx] : parts[1];
     return day + " " + monthStr + " " + year;
   }
@@ -5629,6 +5631,11 @@
     if (!listEl) return;
     var others = filteredOtherUsers_(searchEl ? searchEl.value : "");
     var selected = cfg.getSelected();
+    // Re-rendering rebuilds the list's DOM nodes from scratch, which can
+    // otherwise leave the scrollable panel clamped back to the top —
+    // preserve wherever the user had scrolled to.
+    var panelEl = wrap ? wrap.querySelector(".tag-friends-panel") : null;
+    var panelScrollTop = panelEl ? panelEl.scrollTop : 0;
 
     listEl.innerHTML = "";
     if (!otherUsers_().length) {
@@ -5671,6 +5678,7 @@
       });
     }
     if (selectAllBtn) selectAllBtn.textContent = allOthersSelected_(cfg) ? "Deselect all" : "Select all";
+    if (panelEl) panelEl.scrollTop = panelScrollTop;
   }
   function closeTagFriendsPanels_(exceptWrapId) {
     document.querySelectorAll(".tag-friends.open").forEach(function (el) {
