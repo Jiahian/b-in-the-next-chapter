@@ -1529,14 +1529,6 @@
     width: 100%;
     min-width: 0;
   }
-  .gallery-item .meta-date {
-    font-size: 10px;
-    font-weight: 600;
-    color: var(--accent);
-    letter-spacing: 0.02em;
-    white-space: nowrap;
-    margin-bottom: 2px;
-  }
   .gallery-item .meta-cat {
     font-size: 10px;
     font-weight: 600;
@@ -1787,10 +1779,6 @@
     .gallery-item .meta-bottom {
       padding-top: 4px;
       gap: 4px;
-    }
-    .gallery-item .meta-date {
-      font-size: 10px;
-      margin-bottom: 1px;
     }
     .gallery-item .meta-cat {
       font-size: 9px;
@@ -2910,9 +2898,6 @@
   }
   [data-theme="dark"] .gallery-item .meta {
     background: #1e1f20;
-  }
-  [data-theme="dark"] .gallery-item .meta-date {
-    color: #8ab4f8;
   }
   [data-theme="dark"] .gallery-item .meta-title {
     color: #e3e3e3;
@@ -4597,12 +4582,11 @@
         '<span class="pts-pill">+' + formatNum_(entry.amount) + ' pts</span>' +
       '</div>' +
       '<div class="meta">' +
-        '<div class="meta-date">' + formatDateShort_(entry.date) + '</div>' +
         '<div class="meta-title" title="' + altText + '">' + altText + '</div>' +
         descHtml +
         buildPeopleSummaryHtml_(entry) +
         '<div class="meta-bottom">' +
-          '<div class="meta-amount">' + formatNum_(entry.amount) + ' ' + escapeHtml_(unitDisplay) + '</div>' +
+          '<div class="meta-amount">' + escapeHtml_(formatDateShort_(entry.date)) + ' &middot; ' + formatNum_(entry.amount) + ' ' + escapeHtml_(unitDisplay) + '</div>' +
           '<span class="meta-cat ' + catClass + '">' + escapeHtml_(entry.category || 'General') + '</span>' +
         '</div>' +
       '</div>';
@@ -5641,6 +5625,7 @@
     var listEl = document.getElementById(cfg.listId);
     var selectAllBtn = document.getElementById(cfg.selectAllId);
     var searchEl = document.getElementById(cfg.searchId);
+    var wrap = document.getElementById(cfg.wrapId);
     if (!listEl) return;
     var others = filteredOtherUsers_(searchEl ? searchEl.value : "");
     var selected = cfg.getSelected();
@@ -5664,7 +5649,19 @@
           if (!checkbox.checked && idx !== -1) current.splice(idx, 1);
           cfg.setSelected(current);
           renderTagFriendsPills_(cfg);
-          if (selectAllBtn) selectAllBtn.textContent = allOthersSelected_(cfg) ? "Deselect all" : "Select all";
+          if (checkbox.checked && searchEl) {
+            // Clear the search text on select so the list resets to
+            // everyone, ready to search for the next friend to tag.
+            // Re-render directly rather than relying on the "focus"
+            // listener to do it — focus() is a no-op event-wise when
+            // the input is already the active element.
+            searchEl.value = "";
+            renderTagFriendsList_(cfg);
+            if (wrap) wrap.classList.add("open");
+            searchEl.focus();
+          } else if (selectAllBtn) {
+            selectAllBtn.textContent = allOthersSelected_(cfg) ? "Deselect all" : "Select all";
+          }
         });
         var span = document.createElement("span");
         span.textContent = u.username || u.email || "Someone";
