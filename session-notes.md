@@ -140,8 +140,10 @@ kept up to date as we go.
    - **Collaboration channel**: this PR came through a proper GitHub fork
      (`ozywasborn/b-in-the-next-chapter`, maintainer-edit-enabled),
      superseding the earlier one-off manual mirror to a separate repo
-     (`ozywasborn/b-next-2026`, from 2026-08-31) as the going-forward way
-     the group's collaborator contributes.
+     (`ozywasborn/b-next-2026`, from 2026-08-31). **Superseded again
+     (2026-09-05)**: `ozywasborn` is now a full repo collaborator, so
+     future work happens on branches in this repo directly rather than
+     via fork+PR.
 
 8. **Google Sign-In, real per-person identity, and activity tagging —
    built and shipped live** (4 Sep 2026, on `feature/google-signin-
@@ -185,12 +187,13 @@ kept up to date as we go.
      instead of a comma-separated property value), then to two columns,
      name + email (name is admin-facing only, for tracking who's who;
      only email is checked).
-   - **Activity tagging** (`participants`, comma-separated `userId`s on
-     the Entry row, denormalized rather than a join-table tab — the set
-     is small and bounded per entry). A "Tag friends" multi-select
-     (select-all, individual deselect) on both the log and edit forms;
-     tagged friends are credited, not co-owners. Backend
-     `sanitizeParticipants_()` strips unknown IDs and the logger's own
+   - **Activity tagging** (`tagged_friends`, renamed from `participants`
+     on 2026-09-05, comma-separated `userId`s on the Entry row,
+     denormalized rather than a join-table tab — the set is small and
+     bounded per entry). A "Tag friends" multi-select (select-all,
+     individual deselect) on both the log and edit forms; tagged
+     friends are credited, not co-owners. Backend
+     `sanitizeTaggedFriends_()` strips unknown IDs and the logger's own
      ID before storing.
    - **Profile page**: editable display name, a "My Posts" tab (tap
      straight into editing — skips the normal preview step, since the
@@ -258,7 +261,7 @@ kept up to date as we go.
 - iOS Safari's native date input was overflowing the form/viewport
   (WebKit-specific shadow-DOM sizing bug, not reproducible in Chromium) —
   fixed with `appearance: none` plus defensive `overflow-x: hidden`.
-  **Not yet confirmed working on a real iOS device.**
+  **Confirmed resolved on a real iOS device (2026-09-05).**
 - Gallery photos/videos were visibly flashing every ~20 seconds — the poll
   loop was unconditionally rebuilding the entire gallery grid (destroying
   and recreating every `<img>`) even when nothing had changed. Now skips
@@ -267,6 +270,51 @@ kept up to date as we go.
 - A manual edit had removed the `#totalPoints`/`#targetPoints` markup
   while the JS still wrote to those ids on every render, throwing and
   silently breaking the progress bar. Restored.
+- **Tagging 2+ friends corrupted the stored `participants` value**
+  (found 2026-09-05, user-reported: an entry's userId recorded as
+  `111,866,889,883,005,000,000,000,000,000,000,000,000,000`). Root
+  cause: `Code.gs` writes `userId`/`participants` to the Sheet as raw
+  JS strings (`appendRow`/`setValues`, `createEntry_`/`updateEntry_`),
+  and Sheets auto-detects digit-only strings and silently coerces them
+  to `Number` cells. A lone `userId` (Google's ~21-digit `sub` claim)
+  already risked quiet float64 precision loss past ~15-17 significant
+  digits; with 2+ tagged friends, `participants.join(',')` (e.g.
+  `"111866889883005337,118668898830053380"`) got read back with the
+  comma as a *thousands separator*, merging multiple ids into one
+  garbled number. **Fixed**: added `forcePlainTextColumns_()`, called
+  from `setup()`, which sets the `userId`/`tagged_friends` columns
+  (Entries sheet) and `userId` column (Users sheet) to plain-text
+  format (`'@'`) up front so Sheets never reinterprets them — covers
+  existing and future rows in range. Cell capacity was never actually
+  a risk here regardless of friend-group size — a Sheets cell holds up
+  to 50,000 characters, and even 30 userIds joined with commas is only
+  ~650 characters.
+  - **Deploy steps**: paste updated `Code.gs` into the Apps Script
+    editor, save, re-run `setup()` once (function dropdown > Run) on
+    the *production* bound Sheet, then push a new version to the
+    production Web App deployment (Deploy > Manage deployments >
+    pencil icon > New version > Deploy) — editing the script alone
+    doesn't update the live URL.
+  - **Does not repair already-corrupted rows** — `setNumberFormat`
+    only changes how a cell is parsed going forward; the precision on
+    already-mangled `participants`/`userId` values is genuinely gone,
+    not just mis-displayed. Any entry tagged with 2+ friends before
+    this fix needs its "Tag friends" re-selected and the entry re-
+    saved once the fix is live, to overwrite the cell with a correctly
+    text-formatted value. **Not yet done.**
+  - **Renamed `participants` → `tagged_friends`** (2026-09-05, same
+    session, for clarity) across `Code.gs` (the `HEADERS` column,
+    `sanitizeParticipants_()` → `sanitizeTaggedFriends_()`, and every
+    read/write site) and `index.html` (the JSON payload field sent on
+    create/edit, `entry.tagged_friends` on read, and the
+    `pendingParticipants`/`pendingEditParticipants` state vars →
+    `pendingTaggedFriends`/`pendingEditTaggedFriends`). **The Entries
+    sheet's actual header-row cell (column O) still literally reads
+    "participants"** — `ensureHeaders_()` only appends headers for
+    newly-added columns, it doesn't rename existing ones, so the label
+    needs a one-time manual edit in the Sheet UI. Purely cosmetic: the
+    code addresses columns by position, not by matching the header
+    cell text, so nothing breaks if this is left as-is.
 
 ## Stress test findings — not yet acted on
 
@@ -295,16 +343,15 @@ Full report: [artifact](https://claude.ai/code/artifact/c30fe412-c465-44e8-8c5d-
 
 ## Next steps
 
-- [ ] One-time reconciliation of any pre-4-Sep-2026 entries that still
-      show a free-text/no-owner attribution — not required (they stay
-      open to anyone by design), but worth doing if the group wants old
-      entries visibly tied to the right person too
-- [ ] Confirm the iOS Safari date-input fix actually resolved the issue
-      on a real device
-- [ ] Decide whether/when to add the collaborator (`ozywasborn`) as a
-      full repo collaborator so future work happens on branches here
-      directly, instead of continuing the fork+PR dance indefinitely
-      (discussed 2026-09-01, not yet decided)
+- [x] ~~One-time reconciliation of any pre-4-Sep-2026 entries that still
+      show a free-text/no-owner attribution~~ — decided (2026-09-05) not
+      to do this; old entries stay open to anyone by design, and that's
+      fine as-is
+- [x] Confirm the iOS Safari date-input fix actually resolved the issue
+      on a real device — **confirmed 2026-09-05**
+- [x] Add the collaborator (`ozywasborn`) as a full repo collaborator —
+      **done**; future work happens on branches here directly instead
+      of the fork+PR dance
 - [ ] Do a real end-to-end pass with the actual friend group now that
       sign-in is live: confirm everyone's email is in the Allowlist,
       everyone can sign in and set a display name, and the app otherwise

@@ -30,16 +30,16 @@ var UNITS = ['km', 'hours'];
 // 'userId' (Google's stable 'sub' claim) was added after launch — legacy
 // rows predating it are left blank, which updateEntry_/deleteEntry_ treat
 // as "no owner, anyone may edit" rather than orphaning them.
-// 'participants' is a comma-separated list of OTHER users' userIds tagged
-// as having done the activity together — the logger (userId) is always
-// the sole owner/editor; participants are along for the record, not
-// co-owners. Stored denormalized (not a join-table sheet) since the set
-// is small and bounded per entry — mirrors how this'd be a plain array
-// field on a Firestore document (see PRD §12.3).
+// 'tagged_friends' is a comma-separated list of OTHER users' userIds
+// tagged as having done the activity together — the logger (userId) is
+// always the sole owner/editor; tagged friends are along for the
+// record, not co-owners. Stored denormalized (not a join-table sheet)
+// since the set is small and bounded per entry — mirrors how this'd be
+// a plain array field on a Firestore document (see PRD §12.3).
 var HEADERS = [
   'entryId', 'name', 'category', 'activity', 'date', 'amount', 'units',
   'driveFileId', 'mediaUrl', 'mediaType', 'createdAt', 'updatedAt', 'deleted',
-  'userId', 'participants'
+  'userId', 'tagged_friends'
 ];
 
 var USER_HEADERS = ['userId', 'email', 'username', 'createdAt', 'updatedAt'];
@@ -58,6 +58,8 @@ function setup() {
   var usersSheet = getUsersSheet_();
   var allowlistSheet = getAllowlistSheet_();
   var folder = getFolder_();
+  forcePlainTextColumns_(sheet, ['userId', 'tagged_friends'], HEADERS);
+  forcePlainTextColumns_(usersSheet, ['userId'], USER_HEADERS);
   Logger.log('Sheet ready: ' + sheet.getParent().getUrl());
   Logger.log('Users sheet ready (tab: ' + usersSheet.getName() + ').');
   Logger.log('Allowlist sheet ready (tab: ' + allowlistSheet.getName() + ') — add one approved person per row (name, email), under the header.');
@@ -112,6 +114,23 @@ function ensureHeaders_(sheet, headers) {
   if (existingCount < headers.length) {
     sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
   }
+}
+
+// Google Sheets auto-detects numeric-looking strings on write and
+// silently converts them to Number cells. A Google account's 'sub'
+// claim (userId) is a long all-digit string, so without this it
+// quietly loses precision past float64's ~15-17 significant digits;
+// worse, a comma-joined 'tagged_friends' list gets read back as ONE
+// number with the commas treated as thousands separators, merging
+// several tagged friends' ids into a single garbled value. Formatting
+// these columns as plain text up front stops Sheets from ever
+// reinterpreting them, for both existing and future rows in range.
+function forcePlainTextColumns_(sheet, fieldNames, headers) {
+  var rows = Math.max(sheet.getMaxRows() - 1, 5000);
+  fieldNames.forEach(function (field) {
+    var col = headers.indexOf(field) + 1;
+    if (col > 0) sheet.getRange(2, col, rows, 1).setNumberFormat('@');
+  });
 }
 
 function getFolder_() {
@@ -295,17 +314,17 @@ function rowToEntry_(row) {
   });
   entry.amount = Number(entry.amount) || 0;
   entry.deleted = entry.deleted === true || entry.deleted === 'TRUE';
-  entry.participants = String(entry.participants || '')
+  entry.tagged_friends = String(entry.tagged_friends || '')
     .split(',')
     .map(function (s) { return s.trim(); })
     .filter(Boolean);
   return entry;
 }
 
-// Cleans a client-supplied participants list down to valid, deduplicated
+// Cleans a client-supplied tagged_friends list down to valid, deduplicated
 // userIds: strings only, the logger's own id stripped out (they're the
-// owner already, not a "participant"), duplicates and unknowns removed.
-function sanitizeParticipants_(rawList, ownerUserId) {
+// owner already, not a tagged friend), duplicates and unknowns removed.
+function sanitizeTaggedFriends_(rawList, ownerUserId) {
   if (!Array.isArray(rawList)) return [];
   var knownIds = listUsers_().map(function (u) { return u.userId; });
   var seen = {};
@@ -400,7 +419,7 @@ function createEntry_(body, auth) {
   var sheet = getSheet_();
   var now = new Date().toISOString();
   var entryId = Utilities.getUuid();
-  var participants = sanitizeParticipants_(body.participants, auth.userId);
+  var taggedFriends = sanitizeTaggedFriends_(body.tagged_friends, auth.userId);
 
   var row = HEADERS.map(function (field) {
     switch (field) {
@@ -418,7 +437,7 @@ function createEntry_(body, auth) {
       case 'updatedAt': return now;
       case 'deleted': return false;
       case 'userId': return auth.userId;
-      case 'participants': return participants.join(',');
+      case 'tagged_friends': return taggedFriends.join(',');
       default: return '';
     }
   });
@@ -445,9 +464,9 @@ function updateEntry_(body, auth) {
   var validation = validateEntryFields_(body, /*requireMedia*/ false);
   if (validation.error) return { ok: false, error: validation.error };
 
-  var participants = (body.participants !== undefined)
-    ? sanitizeParticipants_(body.participants, existing.userId || auth.userId)
-    : existing.participants;
+  var taggedFriends = (body.tagged_friends !== undefined)
+    ? sanitizeTaggedFriends_(body.tagged_friends, existing.userId || auth.userId)
+    : existing.tagged_friends;
 
   var updated = {
     name: validation.value.name,
@@ -460,7 +479,7 @@ function updateEntry_(body, auth) {
     mediaUrl: existing.mediaUrl,
     mediaType: existing.mediaType,
     userId: existing.userId, // never reassigned by an edit
-    participants: participants.join(',')
+    tagged_friends: taggedFriends.join(',')
   };
 
   if (body.media) {

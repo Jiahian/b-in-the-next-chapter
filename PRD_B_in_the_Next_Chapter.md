@@ -207,7 +207,7 @@ Not in the original scope — added after the app went live, once the group want
 
 ## 9. Data model (indicative)
 
-*Updated 4 Sep 2026 — Entry gained `userId`/`participants`, and two new tables (Users, Allowlist) were added alongside it. `name`'s meaning changed earlier (3 Sep 2026 gallery overhaul): it's the "What went on?" narrative, not who logged it — see §6.6's note.*
+*Updated 4 Sep 2026 — Entry gained `userId`/`tagged_friends`, and two new tables (Users, Allowlist) were added alongside it. `name`'s meaning changed earlier (3 Sep 2026 gallery overhaul): it's the "What went on?" narrative, not who logged it — see §6.6's note. `participants` was renamed to `tagged_friends` (2026-09-05) for clarity.*
 
 **Entry — one row per entry, in the Sheet's "Entries" tab**
 
@@ -227,7 +227,7 @@ Not in the original scope — added after the app went live, once the group want
 | updatedAt | timestamp | Set by Apps Script on edit |
 | deleted | boolean | Soft-delete flag — deleted rows are excluded from totals/gallery; the Apps Script also removes the matching Drive file when a delete is confirmed |
 | userId | string | **Added 4 Sep 2026.** The logger's Google account ID (stable `sub` claim, not email). The entry's owner — only this account can edit/delete it. Blank on entries logged before this system existed; those stay editable by anyone (§6.8). |
-| participants | string | **Added 4 Sep 2026.** Comma-separated userIds of other people tagged as having done the activity too (§6.8). Never includes the logger's own userId. Denormalized (not a separate join-table tab) since the set is small and bounded per entry. |
+| tagged_friends | string | **Added 4 Sep 2026** as `participants`, renamed to `tagged_friends` 5 Sep 2026. Comma-separated userIds of other people tagged as having done the activity too (§6.8). Never includes the logger's own userId. Denormalized (not a separate join-table tab) since the set is small and bounded per entry. |
 
 Total points = SUM(amount) across all entries where `deleted = false`. Category totals = SUM(amount) grouped by category, same filter.
 
@@ -235,7 +235,7 @@ Total points = SUM(amount) across all entries where `deleted = false`. Category 
 
 | Field | Type | Notes |
 |---|---|---|
-| userId | string | Google account's stable `sub` claim — matches Entry.userId/participants |
+| userId | string | Google account's stable `sub` claim — matches Entry.userId/tagged_friends |
 | email | string | Captured at sign-in, never user-editable |
 | username | string | Display name, editable any time from the Profile page; max 24 characters |
 | createdAt | timestamp | Set on first sign-in (profile creation) |
@@ -269,7 +269,7 @@ Total points = SUM(amount) across all entries where `deleted = false`. Category 
 | Hosting + deploy pipeline | Done — GitHub Pages via GitHub Actions, secrets kept out of the repo |
 | Access-control hardening (password gate) | Superseded — see the Google Sign-In row below; the password gate has been fully retired |
 | Load/stress testing | Done — found and partly acted on (see §8.2's upload-size and write-concurrency notes) |
-| Testing across friends' phones | In progress — an iOS Safari-specific rendering bug was found and fixed, not yet confirmed resolved on a real device |
+| Testing across friends' phones | Done — an iOS Safari-specific rendering bug was found, fixed, and confirmed resolved on a real device |
 | Gallery/UI overhaul (masonry layout, dark mode, resize/crop, GIF conversion) | Done — 3 Sep 2026, merged via community-contributed PR #1 after code review found and fixed a stored-XSS issue, a missing video size limit, a transparent-PNG-to-black bug, two service-worker caching bugs, and a GIF-frame-capture race; also removed a fake "demo/offline" mode that silently no-op'd saves |
 | Google Sign-In access control + user profiles + activity tagging (§6.7, §6.8, §8.3) | **Done and live — 4 Sep 2026.** Production Apps Script backend and OAuth client both updated ahead of the frontend going out, to minimize the window where the two could mismatch. |
 | Launch to the group | Not yet confirmed |

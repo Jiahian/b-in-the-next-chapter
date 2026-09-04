@@ -3768,8 +3768,8 @@
     loaded: false,
     editingId: null,
     pendingMedia: null, // {data, filename, mimeType}
-    pendingParticipants: [], // userIds tagged on the log form (new entry)
-    pendingEditParticipants: [], // userIds tagged on the edit form
+    pendingTaggedFriends: [], // userIds tagged on the log form (new entry)
+    pendingEditTaggedFriends: [], // userIds tagged on the edit form
     lightboxEntry: null,
     celebrated: false, // becomes true once we've shown the modal this session
     prevTotal: null,
@@ -4497,8 +4497,8 @@
   // Legacy entries (no owner on record) render nothing here.
   function buildPeopleSummaryHtml_(entry) {
     if (!entry.userId) return "";
-    var participantIds = entry.participants || [];
-    var avatarIds = [entry.userId].concat(participantIds).slice(0, 3);
+    var taggedFriendIds = entry.tagged_friends || [];
+    var avatarIds = [entry.userId].concat(taggedFriendIds).slice(0, 3);
 
     var avatarsHtml = avatarIds.map(function (id, idx) {
       return '<span class="meta-avatar" style="z-index:' + (avatarIds.length - idx) + ';">' +
@@ -4507,12 +4507,12 @@
 
     var posterName = escapeHtml_(userDisplayName_(entry.userId));
     var text;
-    if (participantIds.length === 0) {
+    if (taggedFriendIds.length === 0) {
       text = posterName;
-    } else if (participantIds.length === 1) {
-      text = posterName + " and " + escapeHtml_(userDisplayName_(participantIds[0])) + " were there";
+    } else if (taggedFriendIds.length === 1) {
+      text = posterName + " and " + escapeHtml_(userDisplayName_(taggedFriendIds[0])) + " were there";
     } else {
-      text = posterName + " and " + participantIds.length + " friends were there";
+      text = posterName + " and " + taggedFriendIds.length + " friends were there";
     }
 
     return '<div class="meta-people">' +
@@ -4526,7 +4526,7 @@
     var container = document.getElementById("previewPeople");
     if (!container) return;
     if (!entry.userId) { container.innerHTML = ""; return; }
-    var allIds = [entry.userId].concat(entry.participants || []);
+    var allIds = [entry.userId].concat(entry.tagged_friends || []);
     container.innerHTML = allIds.map(function (id) {
       return '<div class="preview-person">' +
         '<span class="preview-person-avatar">' + escapeHtml_(userInitial_(id)) + '</span>' +
@@ -4881,7 +4881,7 @@
   function openEditModal(entry) {
     state.editingEntry = entry;
     state.pendingEditMedia = null;
-    state.pendingEditParticipants = (entry.participants || []).slice();
+    state.pendingEditTaggedFriends = (entry.tagged_friends || []).slice();
     updateTagFriendsSummary_(EDIT_TAG_FRIENDS_CFG);
     var editTagFriendsWrap = document.getElementById("editTagFriends");
     if (editTagFriendsWrap) editTagFriendsWrap.classList.remove("open");
@@ -5522,7 +5522,7 @@
       date: date,
       amount: amount,
       units: units,
-      participants: state.pendingEditParticipants
+      tagged_friends: state.pendingEditTaggedFriends
     };
     if (state.pendingEditMedia) payload.media = state.pendingEditMedia;
 
@@ -5656,14 +5656,14 @@
   var LOG_TAG_FRIENDS_CFG = {
     wrapId: "tagFriends", toggleId: "tagFriendsToggle",
     summaryId: "tagFriendsSummary", listId: "tagFriendsList", selectAllId: "tagFriendsSelectAll",
-    getSelected: function () { return state.pendingParticipants; },
-    setSelected: function (arr) { state.pendingParticipants = arr; }
+    getSelected: function () { return state.pendingTaggedFriends; },
+    setSelected: function (arr) { state.pendingTaggedFriends = arr; }
   };
   var EDIT_TAG_FRIENDS_CFG = {
     wrapId: "editTagFriends", toggleId: "editTagFriendsToggle",
     summaryId: "editTagFriendsSummary", listId: "editTagFriendsList", selectAllId: "editTagFriendsSelectAll",
-    getSelected: function () { return state.pendingEditParticipants; },
-    setSelected: function (arr) { state.pendingEditParticipants = arr; }
+    getSelected: function () { return state.pendingEditTaggedFriends; },
+    setSelected: function (arr) { state.pendingEditTaggedFriends = arr; }
   };
 
   // ===================================================================
@@ -5676,7 +5676,7 @@
     document.getElementById("fDate").value = todayISO();
     document.getElementById("fDate").max = todayISO();
     state.pendingMedia = null;
-    state.pendingParticipants = [];
+    state.pendingTaggedFriends = [];
     updateTagFriendsSummary_(LOG_TAG_FRIENDS_CFG);
     var tagFriendsWrap = document.getElementById("tagFriends");
     if (tagFriendsWrap) tagFriendsWrap.classList.remove("open");
@@ -5843,7 +5843,7 @@
     var payload = {
       action: state.editingId ? "update" : "create",
       name: name, category: category, activity: activity, date: date, amount: amount, units: units,
-      participants: state.pendingParticipants
+      tagged_friends: state.pendingTaggedFriends
     };
     if (state.pendingMedia) payload.media = state.pendingMedia;
     if (state.editingId) payload.entryId = state.editingId;
@@ -6186,7 +6186,7 @@
     // modal (view-only — openPreviewModal already hides edit for
     // entries you don't own).
     var taggedEntries = state.entries.filter(function (en) {
-      return en.userId !== profile.userId && (en.participants || []).indexOf(profile.userId) !== -1;
+      return en.userId !== profile.userId && (en.tagged_friends || []).indexOf(profile.userId) !== -1;
     });
     var taggedGrid = document.getElementById("profileTaggedGrid");
     var taggedEmptyEl = document.getElementById("profileTaggedEmpty");
