@@ -30,6 +30,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
   :root {
     color-scheme: light;
@@ -147,6 +148,19 @@
   body.log-mode {
     overflow: hidden;
   }
+  /* Plain overflow:hidden on body isn't reliably honored by mobile Chrome's
+     touch-scroll — pinning body out of the document flow entirely (so
+     there's nothing behind the overlay for a touch gesture to scroll) is
+     the technique that actually works across mobile browsers. The JS side
+     sets `top` to the negative scroll offset so nothing visually jumps,
+     and restores real scroll position on close. */
+  body.gallery-preview-open {
+    position: fixed;
+    left: 0;
+    right: 0;
+    width: 100%;
+    overflow: hidden;
+  }
   body.log-mode #panel-home,
   body.log-mode header.app-header,
   body.log-mode #configBanner {
@@ -190,6 +204,21 @@
     text-transform: uppercase;
     line-height: 1.25;
   }
+  .header-profile-btn {
+    flex-shrink: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px;
+    background: var(--gridline); color: var(--text-primary);
+    border: none; border-radius: 50%; padding: 0;
+    cursor: pointer;
+    font-size: 13px; font-weight: 800;
+    align-self: center;
+    margin-top: 15px;
+    transition: background 0.15s ease;
+  }
+  .header-profile-btn:hover {
+    background: var(--border);
+  }
   .header-log-btn {
     flex-shrink: 0;
     display: inline-flex; align-items: center; justify-content: center;
@@ -226,12 +255,12 @@
   .config-banner.show { display: block; }
   .config-banner code { background: rgba(0,0,0,0.08); padding: 1px 5px; border-radius: 4px; }
 
-  main { padding: 14px 16px 8px; max-width: 560px; margin: 0 auto; }
+  main { padding: 14px 8px 8px; max-width: 560px; margin: 0 auto; }
   .panel { display: none; }
   .panel.active { display: block; }
 
-  /* Log panel modal overlay */
-  #panel-log.active {
+  /* Log panel modal overlay (shared with the Profile panel) */
+  #panel-log.active, #panel-profile.active {
     position: fixed; inset: 0; z-index: 50;
     background: rgba(0, 0, 0, 0.48);
     backdrop-filter: blur(6px);
@@ -538,6 +567,55 @@
     gap: 12px;
     margin-bottom: 15px;
   }
+
+  /* Tag friends — multi-select dropdown (log + edit forms) */
+  .tag-friends { position: relative; }
+  .tag-friends-toggle {
+    width: 100%; display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 12px; font-size: 13px; border-radius: 9px;
+    border: 1px solid var(--input-border); background: var(--input-bg); color: var(--input-text);
+    font-family: inherit; cursor: pointer; text-align: left;
+  }
+  .tag-friends-toggle svg { flex-shrink: 0; color: var(--text-muted); transition: transform 0.15s ease; }
+  .tag-friends.open .tag-friends-toggle svg { transform: rotate(180deg); }
+  .tag-friends-panel {
+    display: none;
+    position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 15;
+    background: var(--modal-card-bg); border: 1px solid var(--input-border); border-radius: 10px;
+    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.2), 0 4px 10px -2px rgba(15, 23, 42, 0.08);
+    padding: 6px; max-height: 220px; overflow-y: auto;
+  }
+  .tag-friends.open .tag-friends-panel { display: block; }
+  .tag-friends-selectall {
+    display: block; width: 100%; text-align: left; padding: 8px 10px; margin-bottom: 4px;
+    border: none; border-bottom: 1px solid var(--input-border); background: none;
+    color: var(--accent); font-size: 12.5px; font-weight: 700; font-family: inherit; cursor: pointer;
+  }
+  .tag-friend-item {
+    display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: 7px;
+    font-size: 13px; color: var(--text-primary); cursor: pointer;
+  }
+  .tag-friend-item:hover { background: var(--gridline); }
+  .tag-friend-item input { margin: 0; flex-shrink: 0; }
+  .tag-friends-empty { padding: 8px 10px; font-size: 12.5px; color: var(--text-muted); }
+
+  /* Profile page tabs (My Posts / Tagged In) */
+  .profile-tabs {
+    position: relative; display: flex; border-bottom: 1px solid var(--input-border); margin-bottom: 14px;
+  }
+  .profile-tab {
+    flex: 1; padding: 10px 4px; background: none; border: none; cursor: pointer;
+    font-family: inherit; font-size: 13.5px; font-weight: 700; color: var(--text-muted);
+    transition: color 0.15s ease;
+  }
+  .profile-tab.active { color: var(--accent); }
+  .profile-tab-indicator {
+    position: absolute; bottom: -1px; left: 0; width: 50%; height: 2px;
+    background: var(--accent); transition: transform 0.2s ease; transform: translateX(0);
+  }
+  .profile-tabs.tagged-active .profile-tab-indicator { transform: translateX(100%); }
+  .profile-tab-panel { display: none; }
+  .profile-tab-panel.active { display: block; }
   .form-grid-2 .field {
     margin-bottom: 0;
   }
@@ -1323,6 +1401,24 @@
     width: 100%;
     box-sizing: border-box;
   }
+  /* "Who was there" — poster + tagged friends, compact card version */
+  .meta-people {
+    display: flex; align-items: center; gap: 6px; margin-bottom: 6px; min-width: 0;
+  }
+  .meta-avatars { display: flex; flex-shrink: 0; }
+  .meta-avatar {
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--gridline); color: var(--text-primary);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 800; line-height: 1;
+    border: 2px solid var(--surface-1);
+    margin-left: -7px;
+  }
+  .meta-avatar:first-child { margin-left: 0; }
+  .meta-people-text {
+    font-size: 11px; font-weight: 600; color: var(--text-secondary);
+    min-width: 0;
+  }
   .gallery-item .meta-bottom {
     display: flex;
     align-items: center;
@@ -1334,8 +1430,8 @@
     min-width: 0;
   }
   .gallery-item .meta-date {
-    font-size: 11.5px;
-    font-weight: 700;
+    font-size: 10px;
+    font-weight: 600;
     color: var(--accent);
     letter-spacing: 0.02em;
     white-space: nowrap;
@@ -1343,7 +1439,7 @@
   }
   .gallery-item .meta-cat {
     font-size: 10px;
-    font-weight: 700;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.03em;
     padding: 2px 6px;
@@ -1357,7 +1453,7 @@
     flex-shrink: 0;
   }
   .gallery-item .meta-title {
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 700;
     color: var(--text-primary);
     line-height: 1.35;
@@ -1381,8 +1477,8 @@
     width: 100%;
   }
   .gallery-item .meta-amount {
-    font-size: 12.5px;
-    font-weight: 600;
+    font-size: 10px;
+    font-weight: 400;
     color: var(--text-muted);
     white-space: nowrap;
     overflow: hidden;
@@ -1463,10 +1559,10 @@
 
     .gallery-masonry,
     .gallery-grid {
-      gap: 7px;
+      gap: 8px;
     }
     .gallery-masonry-col {
-      gap: 7px;
+      gap: 8px;
     }
     .gallery-item {
       border-radius: 10px;
@@ -1479,7 +1575,7 @@
       gap: 4px;
     }
     .gallery-item .meta-date {
-      font-size: 10.5px;
+      font-size: 10px;
       margin-bottom: 1px;
     }
     .gallery-item .meta-cat {
@@ -1488,7 +1584,7 @@
       letter-spacing: 0.02em;
     }
     .gallery-item .meta-title {
-      font-size: 13.5px;
+      font-size: 12px;
       line-height: 1.3;
       margin: 1px 0 3px;
     }
@@ -1500,11 +1596,11 @@
       white-space: pre-wrap;
     }
     .gallery-item .meta-amount {
-      font-size: 11.5px;
+      font-size: 10px;
     }
     .gallery-item .pts-pill {
       font-size: 10px;
-      font-weight: 700;
+      font-weight: 600;
       padding: 2.5px 6px;
       right: 5px;
       bottom: 5px;
@@ -1525,7 +1621,7 @@
     }
 
     /* Log New Activity Mobile Optimization */
-    #panel-log.active {
+    #panel-log.active, #panel-profile.active {
       padding: max(8px, env(safe-area-inset-top)) 12px max(8px, env(safe-area-inset-bottom));
     }
     .log-modal-card {
@@ -1586,7 +1682,7 @@
   }
 
   @media (max-height: 640px) {
-    #panel-log.active {
+    #panel-log.active, #panel-profile.active {
       padding: 6px 10px;
     }
     .log-modal-card {
@@ -1748,6 +1844,23 @@
     gap: 8px;
     width: 100%;
     min-width: 0;
+  }
+  /* "Who was there" — poster + tagged friends, fully revealed in the preview */
+  .preview-people {
+    display: flex; flex-wrap: wrap; gap: 14px 22px; margin-bottom: 12px;
+  }
+  .preview-person {
+    display: flex; flex-direction: column; align-items: center; gap: 4px; width: 64px;
+  }
+  .preview-person-avatar {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--gridline); color: var(--text-primary);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 800; line-height: 1;
+  }
+  .preview-person-name {
+    font-size: 10.5px; font-weight: 600; color: var(--text-secondary);
+    text-align: center; max-width: 100%; word-break: break-word;
   }
   .post-preview-sheet .meta-date {
     font-size: 12px;
@@ -1993,20 +2106,21 @@
     background: #cbd5e1;
   }
   .btn-edit-delete {
-    background: none;
+    background: var(--critical);
+    color: #ffffff;
     border: none;
-    color: #94a3b8;
-    font-size: 13px;
-    font-weight: 600;
+    border-radius: 12px;
+    width: 100%;
+    padding: 13px 16px;
+    font-size: 15px;
+    font-weight: 700;
     cursor: pointer;
-    margin-top: 4px;
+    margin-top: 10px;
     text-align: center;
-    transition: color 0.15s ease;
-    padding: 6px;
+    transition: filter 0.15s ease;
   }
   .btn-edit-delete:hover {
-    color: #ef4444;
-    text-decoration: underline;
+    filter: brightness(0.92);
   }
 
   /* Resize Image Modal */
@@ -2307,6 +2421,11 @@
     box-shadow: var(--card-shadow);
   }
   .modal-sheet.center { border-radius: var(--radius-lg); margin-bottom: 10vh; text-align: center; padding: 28px 24px 26px; }
+  /* The auth gate is a true center-screen dialog, not a bottom sheet —
+     override just this one overlay rather than the shared .center class
+     used by the celebration/delete-confirm modals. */
+  #authGateOverlay, #usernameSetupOverlay { align-items: center; }
+  #authGateOverlay .modal-sheet.center, #usernameSetupOverlay .modal-sheet.center { margin-bottom: 0; }
   .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
   .modal-header h3 { margin: 0; font-size: 18px; font-weight: 800; }
   .modal-close { background: none; border: none; font-size: 20px; color: var(--text-muted); cursor: pointer; padding: 4px; }
@@ -2578,7 +2697,8 @@
   }
 
   /* Modals in Dark Mode */
-  [data-theme="dark"] #panel-log.active {
+  [data-theme="dark"] #panel-log.active,
+  [data-theme="dark"] #panel-profile.active {
     background: rgba(0, 0, 0, 0.72);
   }
   [data-theme="dark"] .log-modal-card {
@@ -2750,12 +2870,6 @@
   [data-theme="dark"] .btn-edit-cancel:hover {
     background: #303134;
   }
-  [data-theme="dark"] .btn-edit-delete {
-    color: #9aa0a6;
-  }
-  [data-theme="dark"] .btn-edit-delete:hover {
-    color: #f28b82;
-  }
   [data-theme="dark"] .resize-image-card {
     background: #1e1f20;
     border: 1px solid #3c4043;
@@ -2847,6 +2961,9 @@
 
 <header class="app-header">
   <div class="header-inner">
+    <button class="header-profile-btn" id="headerProfileBtn" type="button" aria-label="Your profile" title="Your profile" style="display:none;">
+      <span id="headerProfileInitial">?</span>
+    </button>
     <div class="header-titles">
       <h1>B In the Next Chapter!</h1>
       <p class="sub"><span id="targetLabel">1000</span> BY 31 DEC 2026</p>
@@ -2934,13 +3051,27 @@
         <div class="field">
           <label for="fActivity">Activity Name</label>
           <input type="text" id="fActivity" maxlength="200" placeholder="Pray, Exercise, Serve..." required />
-          <div class="field-error" data-for="fActivity">Please enter an activity name.</div>
+          <div class="field-error" data-for="fActivity">Please write an activity name.</div>
         </div>
 
         <div class="field">
-          <label for="fName">What went on!</label>
-          <input type="text" id="fName" maxlength="200" placeholder="Share what went on!" required />
-          <div class="field-error" data-for="fName">Please share what went on!</div>
+          <label for="fName">What went on?</label>
+          <input type="text" id="fName" maxlength="200" placeholder="What made it memorable?" required />
+          <div class="field-error" data-for="fName">Please describe the activity</div>
+        </div>
+
+        <div class="field">
+          <label>Tag friends <span style="font-weight:400;color:var(--text-muted);">(optional)</span></label>
+          <div class="tag-friends" id="tagFriends">
+            <button type="button" class="tag-friends-toggle" id="tagFriendsToggle">
+              <span id="tagFriendsSummary">No one tagged</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg>
+            </button>
+            <div class="tag-friends-panel" id="tagFriendsPanel">
+              <button type="button" class="tag-friends-selectall" id="tagFriendsSelectAll">Select all</button>
+              <div class="tag-friends-list" id="tagFriendsList"></div>
+            </div>
+          </div>
         </div>
 
         <div class="form-grid-2">
@@ -2948,9 +3079,9 @@
             <label for="fCategory">Area</label>
             <div class="select-wrap">
               <select id="fCategory" required>
-                <option value="Others" selected>Others</option>
-                <option value="Spiritual">Spiritual</option>
+                <option value="Spiritual" selected>Spiritual</option>
                 <option value="Relationship">Relationship</option>
+                <option value="Others">Others</option>
               </select>
             </div>
             <div class="field-error" data-for="fCategory">Please choose an area.</div>
@@ -2974,8 +3105,8 @@
           <div class="field align-end">
             <div class="select-wrap">
               <select id="fUnits" required>
-                <option value="km" selected>Kilometres (km)</option>
-                <option value="hours">Hours (hrs)</option>
+                <option value="hours" selected>Hours (hrs)</option>
+                <option value="km">Kilometres (km)</option>
               </select>
             </div>
           </div>
@@ -2985,7 +3116,7 @@
           <label class="field-label">Upload Media (Required)</label>
           <div class="file-drop-card" id="fileDrop">
             <span class="upload-badge-btn">Upload</span>
-            <span class="upload-drop-text" id="fileDropText">or drag and drop files here</span>
+            <span class="upload-drop-text" id="fileDropText">or drag & drop files here</span>
             <button type="button" class="file-remove-btn" id="fileRemoveBtn" aria-label="Remove media" title="Remove media">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -3004,6 +3135,40 @@
     </div>
   </section>
 
+  <!-- Profile panel: display name, sign out, and the signed-in user's own posts -->
+  <section id="panel-profile" class="panel">
+    <div class="log-modal-card">
+      <div class="log-modal-header">
+        <h2>Your Profile</h2>
+        <button type="button" class="log-close-btn" id="profileCloseBtn" aria-label="Close">✕</button>
+      </div>
+
+      <div class="field">
+        <label for="profileUsernameInput">Display name</label>
+        <input type="text" id="profileUsernameInput" maxlength="24" required />
+        <div class="field-error" data-for="profileUsernameInput">Please enter a display name.</div>
+      </div>
+      <p style="color:var(--text-muted);font-size:12.5px;margin:-6px 0 14px;" id="profileEmailDisplay"></p>
+      <button type="button" class="btn btn-primary" id="profileSaveBtn">Save changes</button>
+
+      <div class="profile-tabs" id="profileTabs" style="margin-top:24px;">
+        <button type="button" class="profile-tab active" id="profileTabMine" data-tab="mine">My Posts</button>
+        <button type="button" class="profile-tab" id="profileTabTagged" data-tab="tagged">Tagged In</button>
+        <span class="profile-tab-indicator" id="profileTabIndicator"></span>
+      </div>
+
+      <div class="profile-tab-panel active" id="profileTabPanelMine">
+        <div id="profilePostsGrid"></div>
+        <div class="empty-state" id="profilePostsEmpty" style="display:none;">You haven't logged anything yet.</div>
+      </div>
+      <div class="profile-tab-panel" id="profileTabPanelTagged">
+        <div id="profileTaggedGrid"></div>
+        <div class="empty-state" id="profileTaggedEmpty" style="display:none;">No one's tagged you in an activity yet.</div>
+      </div>
+
+      <button type="button" class="btn btn-secondary" id="profileSignOutBtn" style="margin-top:20px;">Sign out</button>
+    </div>
+  </section>
 
 </main>
 
@@ -3037,32 +3202,33 @@
     <div class="thumb" id="previewMediaBox">
       <img id="previewMediaImg" referrerpolicy="no-referrer" src="icons/block-party-2026.svg" alt="Activity media" onerror="this.onerror=null;this.src='icons/block-party-2026.svg';" />
       <iframe id="previewMediaVideo" style="display:none;width:100%;height:100%;border:none;" allow="autoplay"></iframe>
-      
+
       <div class="preview-top-actions">
-        <div class="preview-menu-wrapper">
-          <button type="button" class="preview-menu-btn" id="previewMenuBtn" title="More options" aria-label="More options">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
-              <circle cx="12" cy="5" r="2"></circle>
-              <circle cx="12" cy="12" r="2"></circle>
-              <circle cx="12" cy="19" r="2"></circle>
+      <div class="preview-menu-wrapper">
+        <button type="button" class="preview-menu-btn" id="previewMenuBtn" title="More options" aria-label="More options">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="12" cy="5" r="2"></circle>
+            <circle cx="12" cy="12" r="2"></circle>
+            <circle cx="12" cy="19" r="2"></circle>
+          </svg>
+        </button>
+        <div class="preview-dropdown-menu" id="previewDropdownMenu">
+          <button type="button" class="preview-dropdown-item" id="previewEditOption">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 20h9"></path>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
             </svg>
+            <span>Edit</span>
           </button>
-          <div class="preview-dropdown-menu" id="previewDropdownMenu">
-            <button type="button" class="preview-dropdown-item" id="previewEditOption">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 20h9"></path>
-                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-              </svg>
-              <span>Edit</span>
-            </button>
-          </div>
         </div>
       </div>
+    </div>
 
       <span class="pts-pill" id="previewPointsPill">+0 pts</span>
     </div>
 
     <div class="meta">
+      <div class="preview-people" id="previewPeople"></div>
       <div class="meta-date" id="previewDate"></div>
       <div class="meta-title" id="previewTitle"></div>
       <div class="meta-desc" id="previewFullDesc"></div>
@@ -3098,9 +3264,23 @@
         </div>
 
         <div class="edit-form-field">
-          <label class="edit-form-label" for="editWhatWentOn">What went on!</label>
-          <input type="text" id="editWhatWentOn" maxlength="200" placeholder="Share what went on!" required />
-          <div class="field-error" data-for="editWhatWentOn">Please share what went on!</div>
+          <label class="edit-form-label" for="editWhatWentOn">What went on?</label>
+          <input type="text" id="editWhatWentOn" maxlength="200" placeholder="What made it memorable?" required />
+          <div class="field-error" data-for="editWhatWentOn">Please describe the activity</div>
+        </div>
+
+        <div class="edit-form-field">
+          <label class="edit-form-label">Tag friends <span style="font-weight:400;">(optional)</span></label>
+          <div class="tag-friends" id="editTagFriends">
+            <button type="button" class="tag-friends-toggle" id="editTagFriendsToggle">
+              <span id="editTagFriendsSummary">No one tagged</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg>
+            </button>
+            <div class="tag-friends-panel" id="editTagFriendsPanel">
+              <button type="button" class="tag-friends-selectall" id="editTagFriendsSelectAll">Select all</button>
+              <div class="tag-friends-list" id="editTagFriendsList"></div>
+            </div>
+          </div>
         </div>
 
         <div class="edit-form-grid-2">
@@ -3257,18 +3437,29 @@
   </div>
 </div>
 
-<!-- Password gate -->
-<div class="modal-overlay" id="passwordGateOverlay" style="z-index:100;">
+<!-- Auth gate -->
+<div class="modal-overlay" id="authGateOverlay" style="z-index:100;">
   <div class="modal-sheet center">
     <div class="confetti-emoji">🔒</div>
     <h3>This app is private</h3>
-    <p>Enter the group password to continue.</p>
-    <form id="gateForm" novalidate>
+    <p id="authPrompt">Sign in with the Google account you use with the group to continue.</p>
+    <p class="field-error" id="authForbidden">That Google account isn't on the group's list yet — ask the organizer to add it, then try signing in again.</p>
+    <div id="googleSignInBtn" style="display:flex;justify-content:center;margin-top:6px;"></div>
+  </div>
+</div>
+
+<!-- One-time username setup, shown right after a brand-new sign-in -->
+<div class="modal-overlay" id="usernameSetupOverlay" style="z-index:100;">
+  <div class="modal-sheet center">
+    <div class="confetti-emoji">👋</div>
+    <h3>Welcome!</h3>
+    <p>Pick a display name the group will see on your activities.</p>
+    <form id="usernameSetupForm" novalidate>
       <div class="field" style="text-align:left;">
-        <input type="password" id="gatePassword" placeholder="Password" autocomplete="off" required />
-        <div class="field-error" id="gateError">That password isn't right — try again.</div>
+        <input type="text" id="usernameSetupInput" placeholder="Display name" maxlength="24" autocomplete="off" required />
+        <div class="field-error" id="usernameSetupError">Please enter a display name.</div>
       </div>
-      <button type="submit" class="btn btn-primary" id="gateSubmitBtn">Enter</button>
+      <button type="submit" class="btn btn-primary" id="usernameSetupSubmitBtn">Continue</button>
     </form>
   </div>
 </div>
@@ -3298,12 +3489,12 @@
   "use strict";
 
   // ===================================================================
-  // CONFIG — WEB_APP_URL/SITE_PASSWORD come from config.js (see comment
+  // CONFIG — WEB_APP_URL/GOOGLE_CLIENT_ID come from config.js (see comment
   // above), never hardcoded here. TARGET_POINTS/DEADLINE_ISO/
   // POLL_INTERVAL_MS are plain config, not secrets, so they stay in source.
   // ===================================================================
   var WEB_APP_URL = (typeof window.WEB_APP_URL === "string" && window.WEB_APP_URL) || "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
-  var SITE_PASSWORD = (typeof window.SITE_PASSWORD === "string" && window.SITE_PASSWORD) || "";
+  var GOOGLE_CLIENT_ID = (typeof window.GOOGLE_CLIENT_ID === "string" && window.GOOGLE_CLIENT_ID) || "";
   var TARGET_POINTS = 1000;
   var DEADLINE_ISO = "2026-12-31T23:59:59+08:00"; // Asia/Singapore
   var POLL_INTERVAL_MS = 20000;
@@ -3321,13 +3512,29 @@
   var isConfigured = WEB_APP_URL.indexOf("PASTE_YOUR") === -1 && WEB_APP_URL.length > 10;
 
   // ===================================================================
+  // Auth + profile state — Google Sign-In. idToken is short-lived (~1hr);
+  // the backend re-verifies it (and the allowlist) on every request, this
+  // client-side copy is only for deciding when to show the sign-in gate.
+  // profile is this device's signed-in user's own row from the Users
+  // sheet (userId/email/username) — null until fetched, since a brand-new
+  // sign-in has no row yet (see checkProfileAndProceed_).
+  // ===================================================================
+  var AUTH_STORAGE_KEY = "bnext_auth_v1";
+  var auth = { idToken: null, email: null, name: null, userId: null, exp: 0 };
+  var profile = null; // { userId, email, username, createdAt, updatedAt }
+  var pollTimer = null; // set by initApp_(); cleared whenever auth is lost so a stale poll doesn't keep firing
+
+  // ===================================================================
   // State
   // ===================================================================
   var state = {
     entries: [],
+    users: [],
     loaded: false,
     editingId: null,
     pendingMedia: null, // {data, filename, mimeType}
+    pendingParticipants: [], // userIds tagged on the log form (new entry)
+    pendingEditParticipants: [], // userIds tagged on the edit form
     lightboxEntry: null,
     celebrated: false, // becomes true once we've shown the modal this session
     prevTotal: null,
@@ -3399,15 +3606,20 @@
   // API
   // ===================================================================
   function apiList() {
-    return fetch(WEB_APP_URL + "?action=list", { method: "GET" })
+    return fetch(WEB_APP_URL + "?action=list&idToken=" + encodeURIComponent(auth.idToken || ""), { method: "GET" })
+      .then(function (r) { return r.json(); });
+  }
+  function apiGetProfile() {
+    return fetch(WEB_APP_URL + "?action=profile&idToken=" + encodeURIComponent(auth.idToken || ""), { method: "GET" })
       .then(function (r) { return r.json(); });
   }
   function apiWrite(payload) {
+    var body = Object.assign({}, payload, { idToken: auth.idToken });
     return fetch(WEB_APP_URL, {
       method: "POST",
       // text/plain avoids a CORS preflight that Apps Script doesn't handle.
       headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(body)
     }).then(function (r) { return r.json(); });
   }
 
@@ -3983,7 +4195,7 @@
     }
   }
 
-  function renderMasonryGrid(entriesList, parentEl) {
+  function renderMasonryGrid(entriesList, parentEl, onItemClick) {
     var masonry = document.createElement("div");
     masonry.className = "gallery-masonry";
 
@@ -4000,7 +4212,7 @@
     var hRight = 0;
 
     entriesList.forEach(function (entry) {
-      var itemEl = createGalleryItemEl(entry);
+      var itemEl = createGalleryItemEl(entry, onItemClick);
       var isPortrait = (entry.aspectRatio === "3:4" || entry.aspectRatio === "portrait");
       var itemWeight = (isPortrait ? 1.333 : 0.75) + 0.35;
 
@@ -4016,7 +4228,59 @@
     parentEl.appendChild(masonry);
   }
 
-  function createGalleryItemEl(entry) {
+  function userDisplayName_(userId) {
+    var match = (state.users || []).find(function (u) { return u.userId === userId; });
+    return (match && (match.username || match.email)) || "Someone";
+  }
+  function userInitial_(userId) {
+    var name = userDisplayName_(userId);
+    return (name || "?").trim().charAt(0).toUpperCase() || "?";
+  }
+
+  // Compact "who was there" row for a gallery card: poster + up to 2 tagged
+  // friends as overlapping avatar circles (3 max), plus a one-line summary.
+  // Legacy entries (no owner on record) render nothing here.
+  function buildPeopleSummaryHtml_(entry) {
+    if (!entry.userId) return "";
+    var participantIds = entry.participants || [];
+    var avatarIds = [entry.userId].concat(participantIds).slice(0, 3);
+
+    var avatarsHtml = avatarIds.map(function (id, idx) {
+      return '<span class="meta-avatar" style="z-index:' + (avatarIds.length - idx) + ';">' +
+        escapeHtml_(userInitial_(id)) + '</span>';
+    }).join("");
+
+    var posterName = escapeHtml_(userDisplayName_(entry.userId));
+    var text;
+    if (participantIds.length === 0) {
+      text = posterName;
+    } else if (participantIds.length === 1) {
+      text = posterName + " and " + escapeHtml_(userDisplayName_(participantIds[0])) + " were there";
+    } else {
+      text = posterName + " and " + participantIds.length + " friends were there";
+    }
+
+    return '<div class="meta-people">' +
+      '<div class="meta-avatars">' + avatarsHtml + '</div>' +
+      '<span class="meta-people-text">' + text + '</span>' +
+    '</div>';
+  }
+
+  // Full reveal for the preview modal: every person involved, avatar + name.
+  function renderPreviewPeople_(entry) {
+    var container = document.getElementById("previewPeople");
+    if (!container) return;
+    if (!entry.userId) { container.innerHTML = ""; return; }
+    var allIds = [entry.userId].concat(entry.participants || []);
+    container.innerHTML = allIds.map(function (id) {
+      return '<div class="preview-person">' +
+        '<span class="preview-person-avatar">' + escapeHtml_(userInitial_(id)) + '</span>' +
+        '<span class="preview-person-name">' + escapeHtml_(userDisplayName_(id)) + '</span>' +
+      '</div>';
+    }).join("");
+  }
+
+  function createGalleryItemEl(entry, onClick) {
     var item = document.createElement("div");
     item.className = "gallery-item";
     var catKey = String(entry.category || "others").toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -4059,6 +4323,7 @@
         '<span class="pts-pill">+' + formatNum_(entry.amount) + ' pts</span>' +
       '</div>' +
       '<div class="meta">' +
+        buildPeopleSummaryHtml_(entry) +
         '<div class="meta-date">' + formatDateShort_(entry.date) + '</div>' +
         '<div class="meta-title" title="' + altText + '">' + altText + '</div>' +
         descHtml +
@@ -4085,7 +4350,9 @@
       }
     }
 
-    item.addEventListener("click", function () { openPreviewModal(entry); });
+    item.addEventListener("click", function () {
+      (onClick || openPreviewModal)(entry);
+    });
     return item;
   }
 
@@ -4221,12 +4488,23 @@
     box.classList.toggle("ratio-4-3", !isPortrait);
   }
 
+  var galleryPreviewScrollY = 0;
   function openPreviewModal(entry) {
     state.previewingEntry = entry;
     
     // Close dropdown menu if previously open
     var menuDropdown = document.getElementById("previewDropdownMenu");
     if (menuDropdown) menuDropdown.classList.remove("show");
+
+    // Legacy entries (logged before userId existed) have no owner and stay
+    // editable by anyone; entries with a real owner can only be edited by
+    // that owner. The backend enforces this for real — this just avoids
+    // showing an edit affordance that would be rejected anyway.
+    var canEdit = !entry.userId || (profile && entry.userId === profile.userId);
+    var menuWrapper = document.querySelector("#postPreviewOverlay .preview-menu-wrapper");
+    if (menuWrapper) menuWrapper.style.display = canEdit ? "" : "none";
+
+    renderPreviewPeople_(entry);
 
     // Area badge & color class
     var catKey = String(entry.category || "others").toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -4317,6 +4595,9 @@
 
     var overlay = document.getElementById("postPreviewOverlay");
     if (overlay) overlay.classList.add("show");
+    galleryPreviewScrollY = window.scrollY || window.pageYOffset || 0;
+    document.body.style.top = "-" + galleryPreviewScrollY + "px";
+    document.body.classList.add("gallery-preview-open");
   }
 
   function closePreviewModal() {
@@ -4327,6 +4608,9 @@
     var menuDropdown = document.getElementById("previewDropdownMenu");
     if (menuDropdown) menuDropdown.classList.remove("show");
     state.previewingEntry = null;
+    document.body.classList.remove("gallery-preview-open");
+    document.body.style.top = "";
+    window.scrollTo(0, galleryPreviewScrollY);
   }
 
   // ===================================================================
@@ -4342,6 +4626,10 @@
   function openEditModal(entry) {
     state.editingEntry = entry;
     state.pendingEditMedia = null;
+    state.pendingEditParticipants = (entry.participants || []).slice();
+    updateTagFriendsSummary_(EDIT_TAG_FRIENDS_CFG);
+    var editTagFriendsWrap = document.getElementById("editTagFriends");
+    if (editTagFriendsWrap) editTagFriendsWrap.classList.remove("open");
     clearEditErrors_();
 
     document.getElementById("editActivityName").value = entry.activity || "";
@@ -4978,7 +5266,8 @@
       activity: activity,
       date: date,
       amount: amount,
-      units: units
+      units: units,
+      participants: state.pendingEditParticipants
     };
     if (state.pendingEditMedia) payload.media = state.pendingEditMedia;
 
@@ -4990,9 +5279,24 @@
     apiWrite(payload).then(function (res) {
       btn.disabled = false;
       btn.textContent = originalLabel;
-      if (!res.ok) { showToast(res.error || "Something went wrong.", true); return; }
+      if (!res.ok) {
+        if (handleAuthError_(res)) return;
+        showToast(res.error || "Something went wrong.", true);
+        return;
+      }
       showToast("Changes saved! 🎉");
+      if (res.entry) {
+        var normalized = Object.assign({}, res.entry, { date: toSGDateString_(res.entry.date) });
+        state.entries = state.entries.map(function (en) { return en.entryId === normalized.entryId ? normalized : en; });
+      }
       closeEditModal();
+      // Re-render "My posts" immediately with the entry we already have,
+      // rather than waiting on the next loadEntries() poll — otherwise the
+      // profile page would keep showing the pre-edit version until then.
+      var profilePanel = document.getElementById("panel-profile");
+      if (profilePanel && profilePanel.classList.contains("active")) {
+        openProfilePanel_();
+      }
       loadEntries();
     }).catch(function () {
       btn.disabled = false;
@@ -5000,6 +5304,112 @@
       showToast("Network error — check connection and try again.", true);
     });
   }
+
+  // ===================================================================
+  // Tag friends — reusable multi-select dropdown, used on both the log
+  // form (new entry) and the edit form. cfg identifies which instance:
+  // { wrapId, toggleId, summaryId, listId, selectAllId, getSelected, setSelected }
+  // ===================================================================
+  function otherUsers_() {
+    return (state.users || []).filter(function (u) { return !profile || u.userId !== profile.userId; });
+  }
+  function allOthersSelected_(cfg) {
+    var others = otherUsers_();
+    var selected = cfg.getSelected();
+    return others.length > 0 && others.every(function (u) { return selected.indexOf(u.userId) !== -1; });
+  }
+  function updateTagFriendsSummary_(cfg) {
+    var summaryEl = document.getElementById(cfg.summaryId);
+    if (!summaryEl) return;
+    var others = otherUsers_();
+    var byId = {};
+    others.forEach(function (u) { byId[u.userId] = u.username || u.email || "Someone"; });
+    var names = cfg.getSelected().map(function (id) { return byId[id]; }).filter(Boolean);
+    if (!names.length) {
+      summaryEl.textContent = "No one tagged";
+    } else if (names.length <= 2) {
+      summaryEl.textContent = names.join(", ") + " tagged";
+    } else {
+      summaryEl.textContent = names.length + " people tagged";
+    }
+  }
+  function renderTagFriendsList_(cfg) {
+    var listEl = document.getElementById(cfg.listId);
+    var selectAllBtn = document.getElementById(cfg.selectAllId);
+    if (!listEl) return;
+    var others = otherUsers_();
+    var selected = cfg.getSelected();
+
+    listEl.innerHTML = "";
+    if (!others.length) {
+      listEl.innerHTML = '<div class="tag-friends-empty">No one else has signed in yet.</div>';
+    } else {
+      others.forEach(function (u) {
+        var label = document.createElement("label");
+        label.className = "tag-friend-item";
+        var checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = selected.indexOf(u.userId) !== -1;
+        checkbox.addEventListener("change", function () {
+          var current = cfg.getSelected().slice();
+          var idx = current.indexOf(u.userId);
+          if (checkbox.checked && idx === -1) current.push(u.userId);
+          if (!checkbox.checked && idx !== -1) current.splice(idx, 1);
+          cfg.setSelected(current);
+          updateTagFriendsSummary_(cfg);
+          if (selectAllBtn) selectAllBtn.textContent = allOthersSelected_(cfg) ? "Deselect all" : "Select all";
+        });
+        var span = document.createElement("span");
+        span.textContent = u.username || u.email || "Someone";
+        label.appendChild(checkbox);
+        label.appendChild(span);
+        listEl.appendChild(label);
+      });
+    }
+    if (selectAllBtn) selectAllBtn.textContent = allOthersSelected_(cfg) ? "Deselect all" : "Select all";
+    updateTagFriendsSummary_(cfg);
+  }
+  function initTagFriends_(cfg) {
+    var wrap = document.getElementById(cfg.wrapId);
+    var toggle = document.getElementById(cfg.toggleId);
+    var selectAllBtn = document.getElementById(cfg.selectAllId);
+    if (!wrap || !toggle) return;
+
+    toggle.addEventListener("click", function (e) {
+      e.stopPropagation();
+      var isOpen = wrap.classList.contains("open");
+      document.querySelectorAll(".tag-friends.open").forEach(function (el) { el.classList.remove("open"); });
+      if (!isOpen) {
+        renderTagFriendsList_(cfg);
+        wrap.classList.add("open");
+      }
+    });
+    if (selectAllBtn) {
+      selectAllBtn.addEventListener("click", function () {
+        var others = otherUsers_();
+        cfg.setSelected(allOthersSelected_(cfg) ? [] : others.map(function (u) { return u.userId; }));
+        renderTagFriendsList_(cfg);
+      });
+    }
+  }
+  document.addEventListener("click", function (e) {
+    document.querySelectorAll(".tag-friends.open").forEach(function (el) {
+      if (!el.contains(e.target)) el.classList.remove("open");
+    });
+  });
+
+  var LOG_TAG_FRIENDS_CFG = {
+    wrapId: "tagFriends", toggleId: "tagFriendsToggle",
+    summaryId: "tagFriendsSummary", listId: "tagFriendsList", selectAllId: "tagFriendsSelectAll",
+    getSelected: function () { return state.pendingParticipants; },
+    setSelected: function (arr) { state.pendingParticipants = arr; }
+  };
+  var EDIT_TAG_FRIENDS_CFG = {
+    wrapId: "editTagFriends", toggleId: "editTagFriendsToggle",
+    summaryId: "editTagFriendsSummary", listId: "editTagFriendsList", selectAllId: "editTagFriendsSelectAll",
+    getSelected: function () { return state.pendingEditParticipants; },
+    setSelected: function (arr) { state.pendingEditParticipants = arr; }
+  };
 
   // ===================================================================
   // Form (create / edit)
@@ -5011,6 +5421,10 @@
     document.getElementById("fDate").value = todayISO();
     document.getElementById("fDate").max = todayISO();
     state.pendingMedia = null;
+    state.pendingParticipants = [];
+    updateTagFriendsSummary_(LOG_TAG_FRIENDS_CFG);
+    var tagFriendsWrap = document.getElementById("tagFriends");
+    if (tagFriendsWrap) tagFriendsWrap.classList.remove("open");
     document.getElementById("filePreviewImg").classList.remove("show");
     document.getElementById("filePreviewVideo").classList.remove("show");
     var fileDrop = document.getElementById("fileDrop");
@@ -5173,7 +5587,8 @@
 
     var payload = {
       action: state.editingId ? "update" : "create",
-      name: name, category: category, activity: activity, date: date, amount: amount, units: units
+      name: name, category: category, activity: activity, date: date, amount: amount, units: units,
+      participants: state.pendingParticipants
     };
     if (state.pendingMedia) payload.media = state.pendingMedia;
     if (state.editingId) payload.entryId = state.editingId;
@@ -5186,7 +5601,11 @@
     apiWrite(payload).then(function (res) {
       btn.disabled = false;
       btn.textContent = originalLabel;
-      if (!res.ok) { showToast(res.error || "Something went wrong.", true); return; }
+      if (!res.ok) {
+        if (handleAuthError_(res)) return;
+        showToast(res.error || "Something went wrong.", true);
+        return;
+      }
       showToast(state.editingId ? "Entry updated." : "Logged! 🎉");
       resetForm(true);
       switchPanel("home");
@@ -5214,7 +5633,11 @@
     }
     apiWrite({ action: "delete", entryId: pendingDeleteId }).then(function (res) {
       document.getElementById("deleteConfirmOverlay").classList.remove("show");
-      if (!res.ok) { showToast(res.error || "Couldn't delete that entry.", true); return; }
+      if (!res.ok) {
+        if (handleAuthError_(res)) return;
+        showToast(res.error || "Couldn't delete that entry.", true);
+        return;
+      }
       showToast("Entry deleted.");
       closeLightbox();
       pendingDeleteId = null;
@@ -5226,14 +5649,16 @@
   // Tabs
   // ===================================================================
   function switchPanel(name) {
+    document.getElementById("panel-log").classList.remove("active");
+    document.getElementById("panel-profile").classList.remove("active");
+    document.body.classList.remove("log-mode");
+    document.getElementById("panel-home").classList.add("active");
     if (name === "log") {
-      document.getElementById("panel-home").classList.add("active");
       document.getElementById("panel-log").classList.add("active");
       document.body.classList.add("log-mode");
-    } else {
-      document.getElementById("panel-log").classList.remove("active");
-      document.body.classList.remove("log-mode");
-      document.getElementById("panel-home").classList.add("active");
+    } else if (name === "profile") {
+      document.getElementById("panel-profile").classList.add("active");
+      document.body.classList.add("log-mode");
     }
   }
 
@@ -5251,14 +5676,20 @@
       renderGallery();
       return;
     }
+    if (!auth.idToken) return;
     var isFirstLoad = !state.loaded;
     apiList().then(function (res) {
-      if (!res.ok) { showToast(res.error || "Couldn't load entries.", true); return; }
+      if (!res.ok) {
+        if (handleAuthError_(res)) return;
+        showToast(res.error || "Couldn't load entries.", true);
+        return;
+      }
       var backendEntries = (res.entries || []).map(function (e) {
         e.date = toSGDateString_(e.date);
         return e;
       });
       state.entries = backendEntries;
+      state.users = res.users || [];
       state.loaded = true;
       var totals = computeTotals(state.entries);
       renderProgress(totals, { suppressCelebration: isFirstLoad });
@@ -5285,24 +5716,272 @@
   }
 
   // ===================================================================
-  // Password gate — a soft deterrent only (see the comment above the
-  // config.js <script> tag). Nothing in initApp_() runs, and no backend
-  // data is fetched, until this passes.
+  // Auth gate — Google Sign-In. The backend (Code.gs) is the real
+  // enforcement point (verifies the token + checks the Allowlist sheet on
+  // every request); this just decides when to show the sign-in UI vs. app.
+  // Nothing in initApp_() runs, and no backend data is fetched, until a
+  // valid token is in hand AND a profile (display name) exists for it.
   // ===================================================================
-  var UNLOCK_KEY = "bnext_unlocked_v1";
-  function isUnlocked_() {
-    return !SITE_PASSWORD || localStorage.getItem(UNLOCK_KEY) === "1";
+  function decodeJwt_(token) {
+    var parts = token.split(".");
+    if (parts.length < 2) return null;
+    try {
+      var json = decodeURIComponent(
+        atob(parts[1].replace(/-/g, "+").replace(/_/g, "/"))
+          .split("")
+          .map(function (c) { return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2); })
+          .join("")
+      );
+      return JSON.parse(json);
+    } catch (err) {
+      return null;
+    }
   }
-  function tryUnlock_(e) {
-    e.preventDefault();
-    var entered = document.getElementById("gatePassword").value;
-    if (entered === SITE_PASSWORD) {
-      localStorage.setItem(UNLOCK_KEY, "1");
-      document.getElementById("passwordGateOverlay").classList.remove("show");
+
+  function loadStoredAuth_() {
+    try {
+      var raw = sessionStorage.getItem(AUTH_STORAGE_KEY);
+      if (!raw) return null;
+      var parsed = JSON.parse(raw);
+      if (!parsed.idToken || !parsed.exp || parsed.exp * 1000 <= Date.now()) return null;
+      return parsed;
+    } catch (err) {
+      return null;
+    }
+  }
+  function storeAuth_() {
+    try { sessionStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(auth)); } catch (err) { /* ignore */ }
+  }
+  function clearAuth_() {
+    auth = { idToken: null, email: null, name: null, userId: null, exp: 0 };
+    profile = null;
+    try { sessionStorage.removeItem(AUTH_STORAGE_KEY); } catch (err) { /* ignore */ }
+  }
+
+  function showAuthGate_(forbidden) {
+    document.getElementById("authGateOverlay").classList.add("show");
+    document.getElementById("authForbidden").classList.toggle("show", !!forbidden);
+    document.getElementById("authPrompt").style.display = forbidden ? "none" : "block";
+  }
+  function hideAuthGate_() {
+    document.getElementById("authGateOverlay").classList.remove("show");
+  }
+
+  // Distinguishes "sign in (again)" from "signed in, but not allowlisted" —
+  // returns true if it handled the response (caller should stop).
+  function handleAuthError_(res) {
+    if (!res) return false;
+    if (res.code === "AUTH_REQUIRED") {
+      clearAuth_();
+      if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+      showAuthGate_(false);
+      return true;
+    }
+    if (res.code === "FORBIDDEN") {
+      showAuthGate_(true);
+      return true;
+    }
+    return false;
+  }
+
+  function handleCredentialResponse_(response) {
+    var payload = decodeJwt_(response.credential);
+    if (!payload) { showToast("Sign-in failed — try again.", true); return; }
+    auth = { idToken: response.credential, email: payload.email, name: payload.name || payload.email, userId: payload.sub, exp: payload.exp };
+    storeAuth_();
+    hideAuthGate_();
+    checkProfileAndProceed_();
+  }
+
+  function waitForGis_(cb, attempts) {
+    attempts = attempts || 0;
+    if (window.google && window.google.accounts && window.google.accounts.id) { cb(); return; }
+    if (attempts > 50) return; // ~5s — give up quietly, the sign-in button just won't render
+    setTimeout(function () { waitForGis_(cb, attempts + 1); }, 100);
+  }
+  function initGoogleSignIn_() {
+    if (!GOOGLE_CLIENT_ID) return;
+    google.accounts.id.initialize({
+      client_id: GOOGLE_CLIENT_ID,
+      callback: handleCredentialResponse_,
+      auto_select: true
+    });
+    google.accounts.id.renderButton(document.getElementById("googleSignInBtn"), { theme: "outline", size: "large", shape: "pill" });
+  }
+  function signOut_() {
+    clearAuth_();
+    if (window.google && window.google.accounts && window.google.accounts.id) {
+      google.accounts.id.disableAutoSelect();
+    }
+    location.reload();
+  }
+
+  // ===================================================================
+  // Profile — first-time display-name setup, then normal profile page use.
+  // A profile row (Users sheet) is created the first time someone signs
+  // in; after that, checkProfileAndProceed_ finds it and skips setup.
+  // ===================================================================
+  function checkProfileAndProceed_() {
+    apiGetProfile().then(function (res) {
+      if (!res.ok) {
+        if (handleAuthError_(res)) return;
+        showToast(res.error || "Couldn't load your profile.", true);
+        return;
+      }
+      if (res.profile) {
+        profile = res.profile;
+        updateHeaderProfileUI_();
       initApp_();
     } else {
-      document.getElementById("gateError").classList.add("show");
+        showUsernameSetup_();
+      }
+    }).catch(function () {
+      showToast("Couldn't reach the backend — check your connection and try again.", true);
+    });
+  }
+
+  function showUsernameSetup_() {
+    document.getElementById("usernameSetupOverlay").classList.add("show");
+    var input = document.getElementById("usernameSetupInput");
+    if (input) {
+      input.value = auth.name || "";
+      input.focus();
     }
+  }
+  function hideUsernameSetup_() {
+    document.getElementById("usernameSetupOverlay").classList.remove("show");
+  }
+
+  function submitUsernameSetup_(e) {
+    e.preventDefault();
+    var input = document.getElementById("usernameSetupInput");
+    var username = (input.value || "").trim();
+    var errorEl = document.getElementById("usernameSetupError");
+    if (errorEl) errorEl.classList.remove("show");
+    if (!username) {
+      if (errorEl) errorEl.classList.add("show");
+      return;
+    }
+    var btn = document.getElementById("usernameSetupSubmitBtn");
+    btn.disabled = true;
+    var originalLabel = btn.textContent;
+    btn.innerHTML = '<span class="spinner"></span> Saving…';
+    apiWrite({ action: "setUsername", username: username }).then(function (res) {
+      btn.disabled = false;
+      btn.textContent = originalLabel;
+      if (!res.ok) {
+        if (handleAuthError_(res)) return;
+        if (errorEl) { errorEl.textContent = res.error || "Couldn't save that — try again."; errorEl.classList.add("show"); }
+        return;
+      }
+      profile = res.user;
+      hideUsernameSetup_();
+      updateHeaderProfileUI_();
+      initApp_();
+    }).catch(function () {
+      btn.disabled = false;
+      btn.textContent = originalLabel;
+      if (errorEl) { errorEl.textContent = "Network error — check your connection and try again."; errorEl.classList.add("show"); }
+    });
+  }
+
+  function updateHeaderProfileUI_() {
+    var btn = document.getElementById("headerProfileBtn");
+    var initialEl = document.getElementById("headerProfileInitial");
+    if (!btn || !profile) return;
+    btn.style.display = "inline-flex";
+    if (initialEl) initialEl.textContent = (profile.username || "?").trim().charAt(0).toUpperCase() || "?";
+  }
+
+  function openProfilePanel_() {
+    if (!profile) return;
+    var usernameInput = document.getElementById("profileUsernameInput");
+    if (usernameInput) usernameInput.value = profile.username || "";
+    var emailEl = document.getElementById("profileEmailDisplay");
+    if (emailEl) emailEl.textContent = profile.email || auth.email || "";
+
+    var myEntries = state.entries.filter(function (en) { return en.userId === profile.userId; });
+    var grid = document.getElementById("profilePostsGrid");
+    var emptyEl = document.getElementById("profilePostsEmpty");
+    if (grid) {
+      grid.innerHTML = "";
+      if (myEntries.length) {
+        // Tapping a post here goes straight into editing it — the profile
+        // page is for managing your own posts, not browsing, so skip the
+        // full preview modal (with its own edit-via-menu detour).
+        renderMasonryGrid(myEntries, grid, function (entry) { openEditModal(entry); });
+        if (emptyEl) emptyEl.style.display = "none";
+      } else if (emptyEl) {
+        emptyEl.style.display = "block";
+      }
+    }
+
+    // "Tagged In": entries someone else logged but tagged this user in.
+    // Not owned by this user, so tapping one opens the normal preview
+    // modal (view-only — openPreviewModal already hides edit for
+    // entries you don't own).
+    var taggedEntries = state.entries.filter(function (en) {
+      return en.userId !== profile.userId && (en.participants || []).indexOf(profile.userId) !== -1;
+    });
+    var taggedGrid = document.getElementById("profileTaggedGrid");
+    var taggedEmptyEl = document.getElementById("profileTaggedEmpty");
+    if (taggedGrid) {
+      taggedGrid.innerHTML = "";
+      if (taggedEntries.length) {
+        renderMasonryGrid(taggedEntries, taggedGrid);
+        if (taggedEmptyEl) taggedEmptyEl.style.display = "none";
+      } else if (taggedEmptyEl) {
+        taggedEmptyEl.style.display = "block";
+      }
+    }
+
+    switchProfileTab_("mine");
+    switchPanel("profile");
+  }
+
+  function switchProfileTab_(tab) {
+    var tabs = document.getElementById("profileTabs");
+    var mineBtn = document.getElementById("profileTabMine");
+    var taggedBtn = document.getElementById("profileTabTagged");
+    var minePanel = document.getElementById("profileTabPanelMine");
+    var taggedPanel = document.getElementById("profileTabPanelTagged");
+    var isTagged = tab === "tagged";
+    if (tabs) tabs.classList.toggle("tagged-active", isTagged);
+    if (mineBtn) mineBtn.classList.toggle("active", !isTagged);
+    if (taggedBtn) taggedBtn.classList.toggle("active", isTagged);
+    if (minePanel) minePanel.classList.toggle("active", !isTagged);
+    if (taggedPanel) taggedPanel.classList.toggle("active", isTagged);
+  }
+
+  function saveProfileUsername_() {
+    var input = document.getElementById("profileUsernameInput");
+    var username = (input.value || "").trim();
+    var errorEl = document.querySelector('.field-error[data-for="profileUsernameInput"]');
+    if (errorEl) errorEl.classList.remove("show");
+    if (!username) {
+      if (errorEl) errorEl.classList.add("show");
+      return;
+    }
+    var btn = document.getElementById("profileSaveBtn");
+    btn.disabled = true;
+    var originalLabel = btn.textContent;
+    btn.innerHTML = '<span class="spinner"></span> Saving…';
+    apiWrite({ action: "setUsername", username: username }).then(function (res) {
+      btn.disabled = false;
+      btn.textContent = originalLabel;
+      if (!res.ok) {
+        if (handleAuthError_(res)) return;
+        showToast(res.error || "Couldn't save that — try again.", true);
+        return;
+      }
+      profile = res.user;
+      updateHeaderProfileUI_();
+      showToast("Profile updated.");
+    }).catch(function () {
+      btn.disabled = false;
+      btn.textContent = originalLabel;
+      showToast("Network error — check your connection and try again.", true);
+    });
   }
 
   // ===================================================================
@@ -5313,12 +5992,14 @@
     // touches the network — so an unconfigured backend can never leave the
     // app half-wired (buttons that silently do nothing).
     bindEventListeners_();
+    waitForGis_(initGoogleSignIn_);
 
-    if (isUnlocked_()) {
-      initApp_();
+    var stored = loadStoredAuth_();
+    if (stored) {
+      auth = stored;
+      checkProfileAndProceed_();
     } else {
-      document.getElementById("passwordGateOverlay").classList.add("show");
-      document.getElementById("gatePassword").focus();
+      showAuthGate_(false);
     }
   });
 
@@ -5345,7 +6026,7 @@
     }
 
     loadEntries();
-    setInterval(loadEntries, POLL_INTERVAL_MS);
+    pollTimer = setInterval(loadEntries, POLL_INTERVAL_MS);
   }
 
   // ===================================================================
@@ -5387,11 +6068,26 @@
 
   function bindEventListeners_() {
     initTheme_();
+    initTagFriends_(LOG_TAG_FRIENDS_CFG);
+    initTagFriends_(EDIT_TAG_FRIENDS_CFG);
 
-    document.getElementById("gateForm").addEventListener("submit", tryUnlock_);
-    document.getElementById("gatePassword").addEventListener("input", function () {
-      document.getElementById("gateError").classList.remove("show");
+    document.getElementById("usernameSetupForm").addEventListener("submit", submitUsernameSetup_);
+    document.getElementById("usernameSetupInput").addEventListener("input", function () {
+      document.getElementById("usernameSetupError").classList.remove("show");
     });
+
+    document.getElementById("headerProfileBtn").addEventListener("click", openProfilePanel_);
+    document.getElementById("profileCloseBtn").addEventListener("click", function () {
+      switchPanel("home");
+    });
+    document.getElementById("profileSaveBtn").addEventListener("click", saveProfileUsername_);
+    document.getElementById("profileUsernameInput").addEventListener("input", function () {
+      var errorEl = document.querySelector('.field-error[data-for="profileUsernameInput"]');
+      if (errorEl) errorEl.classList.remove("show");
+    });
+    document.getElementById("profileSignOutBtn").addEventListener("click", signOut_);
+    document.getElementById("profileTabMine").addEventListener("click", function () { switchProfileTab_("mine"); });
+    document.getElementById("profileTabTagged").addEventListener("click", function () { switchProfileTab_("tagged"); });
 
     document.getElementById("headerLogBtn").addEventListener("click", function () {
       resetForm(true);

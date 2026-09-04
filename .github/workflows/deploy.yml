@@ -24,15 +24,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Assemble site (inject backend URL + site password from repo secrets)
+      - name: Assemble site (inject backend URL + Google OAuth client ID from repo secrets)
         env:
           WEB_APP_URL: ${{ secrets.WEB_APP_URL }}
-          SITE_PASSWORD: ${{ secrets.SITE_PASSWORD }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
         run: |
           mkdir -p _site
           cp index.html manifest.json sw.js gifenc.browser.js _site/
           cp -r icons _site/icons
-          printf 'window.WEB_APP_URL = "%s";\nwindow.SITE_PASSWORD = "%s";\n' "$WEB_APP_URL" "$SITE_PASSWORD" > _site/config.js
+          printf 'window.WEB_APP_URL = "%s";\nwindow.GOOGLE_CLIENT_ID = "%s";\n' "$WEB_APP_URL" "$GOOGLE_CLIENT_ID" > _site/config.js
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
