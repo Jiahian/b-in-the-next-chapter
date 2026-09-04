@@ -650,16 +650,33 @@
     margin-bottom: 15px;
   }
 
-  /* Tag friends — multi-select dropdown (log + edit forms) */
+  /* Tag friends — searchable multi-select (log + edit forms) */
   .tag-friends { position: relative; }
-  .tag-friends-toggle {
-    width: 100%; display: flex; align-items: center; justify-content: space-between;
-    padding: 8px 12px; font-size: 13px; border-radius: 9px;
-    border: 1px solid var(--input-border); background: var(--input-bg); color: var(--input-text);
-    font-family: inherit; cursor: pointer; text-align: left;
+  .tag-friends-pills {
+    display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px;
   }
-  .tag-friends-toggle svg { flex-shrink: 0; color: var(--text-muted); transition: transform 0.15s ease; }
-  .tag-friends.open .tag-friends-toggle svg { transform: rotate(180deg); }
+  .tag-friends-pills:empty { display: none; }
+  .tag-friend-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 6px 4px 10px; border-radius: 999px;
+    background: var(--gridline); color: var(--text-primary);
+    font-size: 12.5px; font-weight: 600; line-height: 1.2; max-width: 100%;
+  }
+  .tag-friend-pill-name { overflow-wrap: break-word; word-break: break-word; }
+  .tag-friend-pill-remove {
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    width: 16px; height: 16px; border-radius: 50%; border: none;
+    background: rgba(0, 0, 0, 0.08); color: inherit; cursor: pointer;
+    font-size: 12px; line-height: 1; padding: 0;
+  }
+  .tag-friend-pill-remove:hover { background: rgba(0, 0, 0, 0.18); }
+  .tag-friends-search-wrap { position: relative; }
+  .tag-friends-search {
+    width: 100%; padding: 8px 12px; font-size: 13px; border-radius: 9px;
+    border: 1px solid var(--input-border); background: var(--input-bg); color: var(--input-text);
+    font-family: inherit; box-sizing: border-box;
+  }
+  .tag-friends-search:focus { outline: none; border-color: var(--accent); }
   .tag-friends-panel {
     display: none;
     position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 15;
@@ -3251,13 +3268,13 @@
         <div class="field">
           <label>Tag friends <span style="font-weight:400;color:var(--text-muted);">(optional)</span></label>
           <div class="tag-friends" id="tagFriends">
-            <button type="button" class="tag-friends-toggle" id="tagFriendsToggle">
-              <span id="tagFriendsSummary">No one tagged</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg>
-            </button>
-            <div class="tag-friends-panel" id="tagFriendsPanel">
-              <button type="button" class="tag-friends-selectall" id="tagFriendsSelectAll">Select all</button>
-              <div class="tag-friends-list" id="tagFriendsList"></div>
+            <div class="tag-friends-pills" id="tagFriendsPills"></div>
+            <div class="tag-friends-search-wrap">
+              <input type="text" class="tag-friends-search" id="tagFriendsSearch" placeholder="Search friends to tag&hellip;" autocomplete="off" />
+              <div class="tag-friends-panel" id="tagFriendsPanel">
+                <button type="button" class="tag-friends-selectall" id="tagFriendsSelectAll">Select all</button>
+                <div class="tag-friends-list" id="tagFriendsList"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -3509,13 +3526,13 @@
         <div class="edit-form-field">
           <label class="edit-form-label">Tag friends <span style="font-weight:400;">(optional)</span></label>
           <div class="tag-friends" id="editTagFriends">
-            <button type="button" class="tag-friends-toggle" id="editTagFriendsToggle">
-              <span id="editTagFriendsSummary">No one tagged</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg>
-            </button>
-            <div class="tag-friends-panel" id="editTagFriendsPanel">
-              <button type="button" class="tag-friends-selectall" id="editTagFriendsSelectAll">Select all</button>
-              <div class="tag-friends-list" id="editTagFriendsList"></div>
+            <div class="tag-friends-pills" id="editTagFriendsPills"></div>
+            <div class="tag-friends-search-wrap">
+              <input type="text" class="tag-friends-search" id="editTagFriendsSearch" placeholder="Search friends to tag&hellip;" autocomplete="off" />
+              <div class="tag-friends-panel" id="editTagFriendsPanel">
+                <button type="button" class="tag-friends-selectall" id="editTagFriendsSelectAll">Select all</button>
+                <div class="tag-friends-list" id="editTagFriendsList"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -4884,7 +4901,7 @@
     state.editingEntry = entry;
     state.pendingEditMedia = null;
     state.pendingEditTaggedFriends = (entry.tagged_friends || []).slice();
-    updateTagFriendsSummary_(EDIT_TAG_FRIENDS_CFG);
+    renderTagFriendsPills_(EDIT_TAG_FRIENDS_CFG);
     var editTagFriendsWrap = document.getElementById("editTagFriends");
     if (editTagFriendsWrap) editTagFriendsWrap.classList.remove("open");
     clearEditErrors_();
@@ -5563,9 +5580,11 @@
   }
 
   // ===================================================================
-  // Tag friends — reusable multi-select dropdown, used on both the log
-  // form (new entry) and the edit form. cfg identifies which instance:
-  // { wrapId, toggleId, summaryId, listId, selectAllId, getSelected, setSelected }
+  // Tag friends — searchable multi-select, used on both the log form
+  // (new entry) and the edit form. Selected friends render as removable
+  // pills above a search input; the dropdown list below the input stays
+  // in sync via the same cfg.getSelected()/setSelected() pair. cfg:
+  // { wrapId, searchId, pillsId, listId, selectAllId, getSelected, setSelected }
   // ===================================================================
   function otherUsers_() {
     return (state.users || []).filter(function (u) { return !profile || u.userId !== profile.userId; });
@@ -5575,31 +5594,62 @@
     var selected = cfg.getSelected();
     return others.length > 0 && others.every(function (u) { return selected.indexOf(u.userId) !== -1; });
   }
-  function updateTagFriendsSummary_(cfg) {
-    var summaryEl = document.getElementById(cfg.summaryId);
-    if (!summaryEl) return;
+  function filteredOtherUsers_(term) {
+    var others = otherUsers_();
+    var t = (term || "").trim().toLowerCase();
+    if (!t) return others;
+    return others.filter(function (u) {
+      return (u.username || u.email || "").toLowerCase().indexOf(t) !== -1;
+    });
+  }
+  function renderTagFriendsPills_(cfg) {
+    var pillsEl = document.getElementById(cfg.pillsId);
+    if (!pillsEl) return;
     var others = otherUsers_();
     var byId = {};
     others.forEach(function (u) { byId[u.userId] = u.username || u.email || "Someone"; });
-    var names = cfg.getSelected().map(function (id) { return byId[id]; }).filter(Boolean);
-    if (!names.length) {
-      summaryEl.textContent = "No one tagged";
-    } else if (names.length <= 2) {
-      summaryEl.textContent = names.join(", ") + " tagged";
-    } else {
-      summaryEl.textContent = names.length + " people tagged";
-    }
+
+    pillsEl.innerHTML = "";
+    cfg.getSelected().forEach(function (id) {
+      var name = byId[id];
+      if (!name) return;
+      var pill = document.createElement("span");
+      pill.className = "tag-friend-pill";
+      var nameSpan = document.createElement("span");
+      nameSpan.className = "tag-friend-pill-name";
+      nameSpan.textContent = name;
+      var removeBtn = document.createElement("button");
+      removeBtn.type = "button";
+      removeBtn.className = "tag-friend-pill-remove";
+      removeBtn.setAttribute("aria-label", "Remove " + name);
+      removeBtn.textContent = "×";
+      removeBtn.addEventListener("click", function () {
+        var current = cfg.getSelected().slice();
+        var idx = current.indexOf(id);
+        if (idx !== -1) current.splice(idx, 1);
+        cfg.setSelected(current);
+        renderTagFriendsPills_(cfg);
+        var wrap = document.getElementById(cfg.wrapId);
+        if (wrap && wrap.classList.contains("open")) renderTagFriendsList_(cfg);
+      });
+      pill.appendChild(nameSpan);
+      pill.appendChild(removeBtn);
+      pillsEl.appendChild(pill);
+    });
   }
   function renderTagFriendsList_(cfg) {
     var listEl = document.getElementById(cfg.listId);
     var selectAllBtn = document.getElementById(cfg.selectAllId);
+    var searchEl = document.getElementById(cfg.searchId);
     if (!listEl) return;
-    var others = otherUsers_();
+    var others = filteredOtherUsers_(searchEl ? searchEl.value : "");
     var selected = cfg.getSelected();
 
     listEl.innerHTML = "";
-    if (!others.length) {
+    if (!otherUsers_().length) {
       listEl.innerHTML = '<div class="tag-friends-empty">No one else has signed in yet.</div>';
+    } else if (!others.length) {
+      listEl.innerHTML = '<div class="tag-friends-empty">No matches.</div>';
     } else {
       others.forEach(function (u) {
         var label = document.createElement("label");
@@ -5613,7 +5663,7 @@
           if (checkbox.checked && idx === -1) current.push(u.userId);
           if (!checkbox.checked && idx !== -1) current.splice(idx, 1);
           cfg.setSelected(current);
-          updateTagFriendsSummary_(cfg);
+          renderTagFriendsPills_(cfg);
           if (selectAllBtn) selectAllBtn.textContent = allOthersSelected_(cfg) ? "Deselect all" : "Select all";
         });
         var span = document.createElement("span");
@@ -5624,46 +5674,60 @@
       });
     }
     if (selectAllBtn) selectAllBtn.textContent = allOthersSelected_(cfg) ? "Deselect all" : "Select all";
-    updateTagFriendsSummary_(cfg);
+  }
+  function closeTagFriendsPanels_(exceptWrapId) {
+    document.querySelectorAll(".tag-friends.open").forEach(function (el) {
+      if (el.id === exceptWrapId) return;
+      el.classList.remove("open");
+      var input = el.querySelector(".tag-friends-search");
+      if (input) input.value = "";
+    });
   }
   function initTagFriends_(cfg) {
     var wrap = document.getElementById(cfg.wrapId);
-    var toggle = document.getElementById(cfg.toggleId);
+    var searchEl = document.getElementById(cfg.searchId);
     var selectAllBtn = document.getElementById(cfg.selectAllId);
-    if (!wrap || !toggle) return;
+    if (!wrap || !searchEl) return;
 
-    toggle.addEventListener("click", function (e) {
-      e.stopPropagation();
-      var isOpen = wrap.classList.contains("open");
-      document.querySelectorAll(".tag-friends.open").forEach(function (el) { el.classList.remove("open"); });
-      if (!isOpen) {
-        renderTagFriendsList_(cfg);
-        wrap.classList.add("open");
-      }
+    var openPanel = function () {
+      closeTagFriendsPanels_(cfg.wrapId);
+      renderTagFriendsList_(cfg);
+      wrap.classList.add("open");
+    };
+    searchEl.addEventListener("focus", openPanel);
+    searchEl.addEventListener("input", function () { renderTagFriendsList_(cfg); });
+    searchEl.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") { wrap.classList.remove("open"); searchEl.blur(); }
     });
     if (selectAllBtn) {
       selectAllBtn.addEventListener("click", function () {
         var others = otherUsers_();
         cfg.setSelected(allOthersSelected_(cfg) ? [] : others.map(function (u) { return u.userId; }));
         renderTagFriendsList_(cfg);
+        renderTagFriendsPills_(cfg);
       });
     }
+    renderTagFriendsPills_(cfg);
   }
   document.addEventListener("click", function (e) {
     document.querySelectorAll(".tag-friends.open").forEach(function (el) {
-      if (!el.contains(e.target)) el.classList.remove("open");
+      if (!el.contains(e.target)) {
+        el.classList.remove("open");
+        var input = el.querySelector(".tag-friends-search");
+        if (input) input.value = "";
+      }
     });
   });
 
   var LOG_TAG_FRIENDS_CFG = {
-    wrapId: "tagFriends", toggleId: "tagFriendsToggle",
-    summaryId: "tagFriendsSummary", listId: "tagFriendsList", selectAllId: "tagFriendsSelectAll",
+    wrapId: "tagFriends", searchId: "tagFriendsSearch",
+    pillsId: "tagFriendsPills", listId: "tagFriendsList", selectAllId: "tagFriendsSelectAll",
     getSelected: function () { return state.pendingTaggedFriends; },
     setSelected: function (arr) { state.pendingTaggedFriends = arr; }
   };
   var EDIT_TAG_FRIENDS_CFG = {
-    wrapId: "editTagFriends", toggleId: "editTagFriendsToggle",
-    summaryId: "editTagFriendsSummary", listId: "editTagFriendsList", selectAllId: "editTagFriendsSelectAll",
+    wrapId: "editTagFriends", searchId: "editTagFriendsSearch",
+    pillsId: "editTagFriendsPills", listId: "editTagFriendsList", selectAllId: "editTagFriendsSelectAll",
     getSelected: function () { return state.pendingEditTaggedFriends; },
     setSelected: function (arr) { state.pendingEditTaggedFriends = arr; }
   };
@@ -5679,7 +5743,7 @@
     document.getElementById("fDate").max = todayISO();
     state.pendingMedia = null;
     state.pendingTaggedFriends = [];
-    updateTagFriendsSummary_(LOG_TAG_FRIENDS_CFG);
+    renderTagFriendsPills_(LOG_TAG_FRIENDS_CFG);
     var tagFriendsWrap = document.getElementById("tagFriends");
     if (tagFriendsWrap) tagFriendsWrap.classList.remove("open");
     document.getElementById("filePreviewImg").classList.remove("show");
