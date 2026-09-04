@@ -2442,6 +2442,7 @@
   .confetti-emoji { font-size: 46px; margin-bottom: 10px; }
   .modal-sheet.center h3 { margin: 0 0 10px; font-size: 18px; font-weight: 800; color: #0f172a; }
   .modal-sheet.center p { color: var(--text-secondary); font-size: 14px; margin: 0 0 20px; line-height: 1.55; }
+  .username-setup-subtext { font-size: 12px !important; margin-top: -10px !important; }
   .spinner { width: 16px; height: 16px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; animation: spin 0.7s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
   /* Theme Toggle Switch */
@@ -3145,11 +3146,10 @@
 
       <div class="field">
         <label for="profileUsernameInput">Display name</label>
-        <input type="text" id="profileUsernameInput" maxlength="24" required />
-        <div class="field-error" data-for="profileUsernameInput">Please enter a display name.</div>
+        <input type="text" id="profileUsernameInput" maxlength="24" readonly aria-readonly="true" />
       </div>
       <p style="color:var(--text-muted);font-size:12.5px;margin:-6px 0 14px;" id="profileEmailDisplay"></p>
-      <button type="button" class="btn btn-primary" id="profileSaveBtn">Save changes</button>
+      <p style="color:var(--text-muted);font-size:12.5px;margin:-6px 0 14px;">Please contact the devs to change username.</p>
 
       <div class="profile-tabs" id="profileTabs" style="margin-top:24px;">
         <button type="button" class="profile-tab active" id="profileTabMine" data-tab="mine">My Posts</button>
@@ -3453,7 +3453,8 @@
   <div class="modal-sheet center">
     <div class="confetti-emoji">👋</div>
     <h3>Welcome!</h3>
-    <p>Pick a display name the group will see on your activities.</p>
+    <p>What do friends call you?</p>
+    <p class="username-setup-subtext">P.S. Choose a name so everyone can tag you :)</p>
     <form id="usernameSetupForm" novalidate>
       <div class="field" style="text-align:left;">
         <input type="text" id="usernameSetupInput" placeholder="Display name" maxlength="24" autocomplete="off" required />
@@ -6079,11 +6080,6 @@
     document.getElementById("headerProfileBtn").addEventListener("click", openProfilePanel_);
     document.getElementById("profileCloseBtn").addEventListener("click", function () {
       switchPanel("home");
-    });
-    document.getElementById("profileSaveBtn").addEventListener("click", saveProfileUsername_);
-    document.getElementById("profileUsernameInput").addEventListener("input", function () {
-      var errorEl = document.querySelector('.field-error[data-for="profileUsernameInput"]');
-      if (errorEl) errorEl.classList.remove("show");
     });
     document.getElementById("profileSignOutBtn").addEventListener("click", signOut_);
     document.getElementById("profileTabMine").addEventListener("click", function () { switchProfileTab_("mine"); });

@@ -350,9 +350,9 @@ function getUserProfile_(userId) {
 // Profile writes
 // ---------------------------------------------------------------------
 /**
- * Creates the caller's profile row on first sign-in, or updates their
- * username on later calls — same upsert endpoint for both, keyed by the
- * verified userId (Google's 'sub' claim), never client-supplied.
+ * Creates the caller's profile row on first sign-in. Display names are
+ * intentionally immutable after selection, keyed by the verified userId
+ * (Google's 'sub' claim), never client-supplied.
  */
 function upsertUserProfile_(auth, username) {
   username = String(username || '').trim();
@@ -367,10 +367,7 @@ function upsertUserProfile_(auth, username) {
     var values = sheet.getRange(2, 1, lastRow - 1, USER_HEADERS.length).getValues();
     for (var i = 0; i < values.length; i++) {
       if (values[i][userIndexOf_('userId')] === auth.userId) {
-        var rowIndex = i + 2;
-        sheet.getRange(rowIndex, userIndexOf_('username') + 1).setValue(username);
-        sheet.getRange(rowIndex, userIndexOf_('updatedAt') + 1).setValue(now);
-        return { ok: true, user: { userId: auth.userId, email: auth.email, username: username } };
+        return { ok: false, error: 'Display name has already been selected' };
       }
     }
   }
