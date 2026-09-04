@@ -2042,9 +2042,11 @@
     width: 100%;
     min-width: 0;
   }
-  /* "Who was there" — poster + tagged friends, fully revealed in the preview */
+  /* "Who was there" — poster + tagged friends, fully revealed in the preview.
+     Grid caps rows at 5 people; a 6th+ tagged friend wraps to the next row. */
   .preview-people {
-    display: flex; flex-wrap: wrap; gap: 14px 22px; margin-bottom: 12px;
+    display: grid; grid-template-columns: repeat(5, minmax(64px, 1fr));
+    gap: 10px; margin-bottom: 12px;
   }
   .preview-person {
     display: flex; flex-direction: column; align-items: center; gap: 4px; width: 64px;
@@ -3463,10 +3465,10 @@
     </div>
 
     <div class="meta">
-      <div class="preview-people" id="previewPeople"></div>
       <div class="meta-date" id="previewDate"></div>
       <div class="meta-title" id="previewTitle"></div>
       <div class="meta-desc" id="previewFullDesc"></div>
+      <div class="preview-people" id="previewPeople"></div>
       <div class="meta-bottom">
         <div class="meta-amount" id="previewAmount"></div>
         <span class="meta-cat" id="previewAreaBadge">General</span>
@@ -4578,10 +4580,10 @@
         '<span class="pts-pill">+' + formatNum_(entry.amount) + ' pts</span>' +
       '</div>' +
       '<div class="meta">' +
-        buildPeopleSummaryHtml_(entry) +
         '<div class="meta-date">' + formatDateShort_(entry.date) + '</div>' +
         '<div class="meta-title" title="' + altText + '">' + altText + '</div>' +
         descHtml +
+        buildPeopleSummaryHtml_(entry) +
         '<div class="meta-bottom">' +
           '<div class="meta-amount">' + formatNum_(entry.amount) + ' ' + escapeHtml_(unitDisplay) + '</div>' +
           '<span class="meta-cat ' + catClass + '">' + escapeHtml_(entry.category || 'General') + '</span>' +
