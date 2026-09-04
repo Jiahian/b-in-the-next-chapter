@@ -219,7 +219,7 @@
     bottom: 0;
     left: 0;
     right: 0;
-    height: calc(88px + max(16px, calc(10px + env(safe-area-inset-bottom))));
+    height: calc(78px + max(11px, calc(5px + env(safe-area-inset-bottom))));
     pointer-events: none;
     z-index: 30;
     background: linear-gradient(to top, rgba(248, 250, 252, 0.94) 0%, rgba(248, 250, 252, 0.8) 55%, rgba(248, 250, 252, 0) 100%);
@@ -233,12 +233,12 @@
   /* Floating Bottom Menu Bar */
   .floating-bottom-bar {
     position: fixed;
-    bottom: max(16px, calc(10px + env(safe-area-inset-bottom)));
+    bottom: max(11px, calc(5px + env(safe-area-inset-bottom)));
     left: 50%;
     transform: translateX(-50%);
     width: calc(100% - 32px);
     max-width: 528px;
-    height: 78px;
+    height: 68px;
     background: #ffffff;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
@@ -337,7 +337,7 @@
   .config-banner.show { display: block; }
   .config-banner code { background: rgba(0,0,0,0.08); padding: 1px 5px; border-radius: 4px; }
 
-  main { padding: 18px 16px calc(112px + env(safe-area-inset-bottom)); max-width: 560px; margin: 0 auto; }
+  main { padding: 18px 16px calc(100px + env(safe-area-inset-bottom)); max-width: 560px; margin: 0 auto; }
   .panel { display: none; }
   .panel.active { display: block; }
 
@@ -1582,7 +1582,7 @@
       font-size: 10.5px;
     }
     main {
-      padding: 16px 14px calc(112px + env(safe-area-inset-bottom));
+      padding: 16px 14px calc(100px + env(safe-area-inset-bottom));
     }
     .card-countdown {
       margin-bottom: 16px;
@@ -1590,7 +1590,7 @@
     .floating-bottom-bar {
       width: calc(100% - 28px);
       max-width: 532px;
-      height: 78px;
+      height: 68px;
       padding: 0 6px;
     }
     .card-points-acc {
@@ -1702,14 +1702,14 @@
       font-size: 18px;
     }
     main {
-      padding: 14px 12px calc(112px + env(safe-area-inset-bottom));
+      padding: 14px 12px calc(100px + env(safe-area-inset-bottom));
     }
     .card-countdown {
       margin-bottom: 14px;
     }
     .floating-bottom-bar {
       width: calc(100% - 24px);
-      height: 78px;
+      height: 68px;
       padding: 0 4px;
     }
     .bottom-bar-log-btn {
