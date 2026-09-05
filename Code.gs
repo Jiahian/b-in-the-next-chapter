@@ -451,12 +451,8 @@ function updateEntry_(body, auth) {
   var range = sheet.getRange(rowIndex, 1, 1, HEADERS.length);
   var existing = rowToEntry_(range.getValues()[0]);
 
-  // Legacy entries (logged before userId existed) have no owner and stay
-  // editable by anyone, matching the original trust-based design. Entries
-  // with a real owner can only be edited by that owner.
-  if (existing.userId && existing.userId !== auth.userId) {
-    return { ok: false, error: 'You can only edit your own entries' };
-  }
+  // Community trust-based design: all entries (old and new) can be edited.
+  // The original creator's userId is preserved on write.
 
   var validation = validateEntryFields_(body, /*requireMedia*/ false);
   if (validation.error) return { ok: false, error: validation.error };

@@ -5222,13 +5222,9 @@
     var menuDropdown = document.getElementById("previewDropdownMenu");
     if (menuDropdown) menuDropdown.classList.remove("show");
 
-    // Legacy entries (logged before userId existed) have no owner and stay
-    // editable by anyone; entries with a real owner can only be edited by
-    // that owner. The backend enforces this for real — this just avoids
-    // showing an edit affordance that would be rejected anyway.
-    var canEdit = !entry.userId || (profile && entry.userId === profile.userId);
+    // Ensure the 3-dot Edit icon appears on every expanded preview card, for old and new posts
     var menuWrapper = document.querySelector("#postPreviewOverlay .preview-menu-wrapper");
-    if (menuWrapper) menuWrapper.style.display = canEdit ? "" : "none";
+    if (menuWrapper) menuWrapper.style.display = "";
 
     renderPreviewPeople_(entry);
 
@@ -5338,6 +5334,8 @@
     document.body.style.top = "";
     window.scrollTo(0, galleryPreviewScrollY);
   }
+
+  window.openPreviewModal = openPreviewModal;
 
   // ===================================================================
   // Edit Activity Pop-up Modal
