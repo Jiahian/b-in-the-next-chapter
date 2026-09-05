@@ -421,9 +421,11 @@ function upsertUserProfile_(auth, username) {
       default: return '';
     }
   });
-  // Must run before appendRow — see forcePlainTextRow_.
-  forcePlainTextRow_(sheet, sheet.getLastRow() + 1, ['userId'], USER_HEADERS);
-  sheet.appendRow(row);
+  // See createEntry_ — write to the exact row we formatted rather than
+  // letting appendRow() resolve its own target row.
+  var newUserRow = sheet.getLastRow() + 1;
+  forcePlainTextRow_(sheet, newUserRow, ['userId'], USER_HEADERS);
+  sheet.getRange(newUserRow, 1, 1, row.length).setValues([row]);
   return { ok: true, user: { userId: auth.userId, email: auth.email, username: username } };
 }
 
@@ -460,9 +462,15 @@ function createEntry_(body, auth) {
       default: return '';
     }
   });
-  // Must run before appendRow — see forcePlainTextRow_.
-  forcePlainTextRow_(sheet, sheet.getLastRow() + 1, ['userId', 'tagged_friends'], HEADERS);
-  sheet.appendRow(row);
+  // appendRow() resolves its own target row internally, independently of
+  // whatever row we just pre-formatted — on a brand new row that can race
+  // against (or simply disagree with) our own getLastRow() lookup, so the
+  // format silently doesn't apply before the value lands. Writing via
+  // getRange().setValues() on the exact row we formatted removes that
+  // ambiguity — same mechanism updateEntry_ already uses reliably below.
+  var newRow = sheet.getLastRow() + 1;
+  forcePlainTextRow_(sheet, newRow, ['userId', 'tagged_friends'], HEADERS);
+  sheet.getRange(newRow, 1, 1, row.length).setValues([row]);
   return { ok: true, entry: rowToEntry_(row) };
 }
 
