@@ -337,22 +337,16 @@
   .config-banner.show { display: block; }
   .config-banner code { background: rgba(0,0,0,0.08); padding: 1px 5px; border-radius: 4px; }
 
-  main { padding: 18px 16px calc(100px + env(safe-area-inset-bottom)); max-width: 560px; margin: 0 auto; }
+  main { padding: 18px 0 calc(100px + env(safe-area-inset-bottom)); max-width: 560px; margin: 0 auto; }
   .panel { display: none; }
   .panel.active { display: block; }
 
-  /* Log panel modal overlay (shared with the Profile panel) */
+  /* Log panel fullscreen page (shared with the Profile panel) */
   #panel-log.active, #panel-profile.active {
     position: fixed; inset: 0; z-index: 50;
-    background: rgba(0, 0, 0, 0.48);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    overflow-y: auto;
-    overflow-x: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: max(8px, env(safe-area-inset-top)) 12px max(8px, env(safe-area-inset-bottom));
+    background: var(--surface-1, #ffffff);
+    overflow: hidden;
+    padding: 0;
     box-sizing: border-box;
     animation: fadeInOverlay 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
@@ -370,7 +364,6 @@
     border-radius: var(--radius-lg);
     box-shadow: var(--card-shadow);
     padding: 20px 20px 22px;
-    margin-bottom: 16px;
   }
   .card h2 {
     margin: 0 0 16px;
@@ -386,15 +379,14 @@
     box-shadow: none;
   }
   .card-plain h2 { text-align: center; }
-  .card-bare { background: transparent; border: none; box-shadow: none; padding: 0; margin-bottom: 0; }
+  .card-bare { background: transparent; border: none; box-shadow: none; padding: 0 4px; margin-bottom: 0; }
 
   /* Countdown */
   .card-countdown {
     background: transparent;
     border: none;
     box-shadow: none;
-    padding: 0;
-    margin-bottom: 18px;
+    margin: 0 16px 18px;
   }
   .countdown-grid {
     display: grid;
@@ -466,7 +458,8 @@
   /* Progress */
   .card-points-acc {
     border-radius: var(--radius-md);
-    padding: 30px 24px 32px;
+    padding: 30px 16px 32px;
+    margin: 0 16px 16px;
   }
   .points-acc-title {
     text-align: center;
@@ -524,7 +517,8 @@
   /* Category legend */
   .card-points-category {
     border-radius: var(--radius-md);
-    padding: 24px 24px 22px;
+    padding: 24px 16px 22px;
+    margin: 0 16px 16px;
   }
   .card-points-category h2 {
     margin: 0 0 14px;
@@ -586,48 +580,68 @@
   .log-modal-card {
     background: var(--surface-1);
     border: none;
-    border-radius: 20px;
-    box-shadow: 0 16px 36px rgba(15, 23, 42, 0.16);
-    padding: 22px 24px 24px;
-    margin: auto;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+    margin: 0 auto;
     width: 100%;
-    max-width: 480px;
-    max-height: 90vh;
-    overflow-y: auto;
+    max-width: 560px;
+    height: 100vh;
+    height: 100dvh;
+    max-height: none;
+    overflow: hidden;
     box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
     animation: modalPopIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .log-modal-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    flex-shrink: 0;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    margin-bottom: 16px;
+    gap: 10px;
+    height: 50px;
+    padding: 0 8px;
+    margin-bottom: 0;
+    background: var(--surface-1, #ffffff);
+    border-bottom: 1px solid var(--gridline, #e2e8f0);
   }
   .log-modal-header h2 {
     margin: 0;
-    font-size: 19px;
+    font-size: 17px;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--text-primary, #0f172a);
     letter-spacing: -0.02em;
     text-transform: none;
+  }
+  .log-modal-content {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding: 20px 16px 24px;
+    box-sizing: border-box;
   }
   .log-close-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 30px;
-    height: 30px;
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
     border: none;
-    background: #f1f5f9;
-    color: #64748b;
-    font-size: 14px;
+    background: transparent;
+    color: var(--text-primary, #1e293b);
     cursor: pointer;
-    transition: all 0.15s ease;
+    padding: 0;
+    transition: background 0.15s ease;
   }
   .log-close-btn:hover {
-    background: #e2e8f0;
-    color: #0f172a;
+    background: var(--gridline, rgba(15, 23, 42, 0.08));
   }
 
   .field { margin-bottom: 15px; }
@@ -1357,6 +1371,7 @@
     justify-content: space-between;
     gap: 12px;
     margin: 36px 0 24px;
+    padding: 0 16px;
     position: relative;
   }
   .gallery-header-row .section-heading {
@@ -1715,7 +1730,7 @@
   }
   .gallery-masonry {
     display: flex;
-    gap: 9px;
+    gap: 4px;
     width: 100%;
     align-items: flex-start;
   }
@@ -1724,12 +1739,12 @@
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 9px;
+    gap: 4px;
   }
   .gallery-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 9px;
+    gap: 4px;
     width: 100%;
     align-items: start;
   }
@@ -1815,8 +1830,8 @@
     bottom: 7px;
     background: #10b981;
     color: #ffffff;
-    font-size: 11.5px;
-    font-weight: 800;
+    font-size: 10px;
+    font-weight: 600;
     padding: 3px 9px;
     border-radius: 999px;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
@@ -1825,7 +1840,7 @@
     z-index: 2;
   }
   .gallery-item .meta {
-    padding: 10px 10px 12px;
+    padding: 8px 8px 10px;
     background: #ffffff;
     flex: 1;
     display: flex;
@@ -1851,7 +1866,8 @@
   }
   .meta-avatar:first-child { margin-left: 0; }
   .meta-people-text {
-    font-size: 11px; font-weight: 600; color: var(--text-secondary);
+    font-size: 10px; font-weight: 400; color: var(--text-secondary);
+    line-height: 1.2;
     min-width: 0;
   }
   .gallery-item .meta-bottom {
@@ -1865,11 +1881,11 @@
     min-width: 0;
   }
   .gallery-item .meta-cat {
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.03em;
-    padding: 2px 6px;
+    letter-spacing: 0.02em;
+    padding: 1.5px 2.5px;
     border-radius: 6px;
     white-space: nowrap;
     max-width: 55%;
@@ -1880,8 +1896,8 @@
     flex-shrink: 0;
   }
   .gallery-item .meta-title {
-    font-size: 14px;
-    font-weight: 700;
+    font-size: 12px;
+    font-weight: 600;
     color: var(--text-primary);
     line-height: 1.35;
     margin: 2px 0 4px;
@@ -1892,7 +1908,7 @@
     width: 100%;
   }
   .gallery-item .meta-desc {
-    font-size: 13px;
+    font-size: 12px;
     color: var(--text-secondary, #475569);
     line-height: 1.5;
     margin: 4px 0 8px;
@@ -1926,10 +1942,10 @@
       font-size: 10.5px;
     }
     main {
-      padding: 16px 14px calc(100px + env(safe-area-inset-bottom));
+      padding: 16px 0 calc(100px + env(safe-area-inset-bottom));
     }
     .card-countdown {
-      margin-bottom: 16px;
+      margin: 0 16px 16px;
     }
     .floating-bottom-bar {
       width: calc(100% - 28px);
@@ -2046,10 +2062,10 @@
       font-size: 18px;
     }
     main {
-      padding: 14px 12px calc(100px + env(safe-area-inset-bottom));
+      padding: 14px 0 calc(100px + env(safe-area-inset-bottom));
     }
     .card-countdown {
-      margin-bottom: 14px;
+      margin: 0 16px 14px;
     }
     .floating-bottom-bar {
       width: calc(100% - 24px);
@@ -2100,16 +2116,16 @@
 
     .gallery-masonry,
     .gallery-grid {
-      gap: 8px;
+      gap: 4px;
     }
     .gallery-masonry-col {
-      gap: 8px;
+      gap: 4px;
     }
     .gallery-item {
       border-radius: 10px;
     }
     .gallery-item .meta {
-      padding: 10px 10px 12px;
+      padding: 8px 8px 10px;
     }
     .gallery-item .meta-bottom {
       padding-top: 4px;
@@ -2117,7 +2133,7 @@
     }
     .gallery-item .meta-cat {
       font-size: 9px;
-      padding: 1.5px 5px;
+      padding: 1.5px 2.5px;
       letter-spacing: 0.02em;
     }
     .gallery-item .meta-title {
@@ -2158,18 +2174,8 @@
     }
 
     /* Log New Activity Mobile Optimization */
-    #panel-log.active, #panel-profile.active {
-      padding: max(8px, env(safe-area-inset-top)) 12px max(8px, env(safe-area-inset-bottom));
-    }
-    .log-modal-card {
-      padding: 18px 18px 20px;
-      border-radius: 18px;
-      max-width: 100%;
-      max-height: 92vh;
-      overflow-y: auto;
-    }
-    .log-modal-header {
-      margin-bottom: 14px;
+    .log-modal-content {
+      padding: 18px 16px 20px;
     }
     .log-modal-header h2 {
       font-size: 17px;
@@ -2219,17 +2225,8 @@
   }
 
   @media (max-height: 640px) {
-    #panel-log.active, #panel-profile.active {
-      padding: 6px 10px;
-    }
-    .log-modal-card {
+    .log-modal-content {
       padding: 14px 16px 16px;
-      border-radius: 16px;
-      max-height: 94vh;
-      overflow-y: auto;
-    }
-    .log-modal-header {
-      margin-bottom: 10px;
     }
     .log-modal-header h2 {
       font-size: 16px;
@@ -2274,29 +2271,67 @@
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.52);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
+    background: var(--surface-1, #ffffff);
     z-index: 50;
-    align-items: center;
-    justify-content: center;
-    padding: 16px;
-    overflow-y: auto;
+    align-items: stretch;
+    justify-content: stretch;
+    padding: 0;
+    overflow: hidden;
   }
   .post-preview-overlay.show {
     display: flex;
   }
   .post-preview-sheet.gallery-item {
     width: 100%;
-    max-width: 380px;
-    border-radius: 14px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
-    max-height: 92vh;
-    overflow-y: auto;
-    overflow-x: hidden;
+    max-width: 560px;
+    margin: 0 auto;
+    height: 100vh;
+    height: 100dvh;
+    max-height: none;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
     animation: modalPopIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     cursor: default;
     transform: none !important;
+  }
+  .post-preview-sheet .preview-navbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    height: 50px;
+    padding: 0 8px;
+    background: var(--surface-1, #ffffff);
+    border-bottom: 1px solid var(--gridline, #e2e8f0);
+  }
+  .post-preview-sheet .preview-back-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: var(--text-primary, #1e293b);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    transition: background 0.15s ease;
+  }
+  .post-preview-sheet .preview-back-btn:hover {
+    background: var(--gridline, rgba(15, 23, 42, 0.08));
+  }
+  .post-preview-sheet .preview-scroll-content {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
   }
   .post-preview-sheet .thumb .preview-top-actions {
     position: absolute;
@@ -2401,10 +2436,6 @@
     font-size: 10.5px; font-weight: 600; color: var(--text-secondary);
     text-align: center; max-width: 100%; word-break: break-word;
   }
-  .post-preview-sheet .meta-date {
-    font-size: 12px;
-    margin-bottom: 2px;
-  }
   .post-preview-sheet .meta-cat {
     font-size: 10.5px;
     padding: 2.5px 7px;
@@ -2437,14 +2468,6 @@
   }
 
   @media (max-width: 480px), (max-height: 750px) {
-    .post-preview-overlay {
-      padding: 12px 10px;
-    }
-    .post-preview-sheet.gallery-item {
-      max-width: min(340px, calc(100vw - 20px));
-      max-height: calc(100vh - 24px);
-      border-radius: 12px;
-    }
     .post-preview-sheet .thumb {
       max-height: 32vh;
     }
@@ -3248,7 +3271,7 @@
     color: #ffffff;
     border: none;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
-    font-weight: 800;
+    font-weight: 600;
   }
   [data-theme="dark"] .empty-state {
     color: #9aa0a6;
@@ -3257,7 +3280,7 @@
   /* Modals in Dark Mode */
   [data-theme="dark"] #panel-log.active,
   [data-theme="dark"] #panel-profile.active {
-    background: rgba(0, 0, 0, 0.72);
+    background: #131314;
   }
   [data-theme="dark"] .log-modal-card {
     background: #1e1f20;
@@ -3452,8 +3475,6 @@
   }
   [data-theme="dark"] .post-preview-sheet.gallery-item {
     background: #1e1f20;
-    border: 1px solid #3c4043;
-    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
   }
   [data-theme="dark"] .post-preview-sheet .preview-dropdown-menu {
     background: #282a2c;
@@ -3540,7 +3561,6 @@
     background: #a8c7fa;
   }
   [data-theme="dark"] .modal-overlay,
-  [data-theme="dark"] .post-preview-overlay,
   [data-theme="dark"] .edit-activity-overlay {
     background: rgba(0, 0, 0, 0.72);
     backdrop-filter: blur(8px);
@@ -3633,9 +3653,15 @@
   <section id="panel-log" class="panel">
     <div class="log-modal-card">
       <div class="log-modal-header">
+        <button type="button" class="log-close-btn" id="logCloseBtn" aria-label="Back" title="Back">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5"></path>
+            <path d="M12 19l-7-7 7-7"></path>
+          </svg>
+        </button>
         <h2 id="formHeading">Log New Activity</h2>
-        <button type="button" class="log-close-btn" id="logCloseBtn" aria-label="Close">✕</button>
       </div>
+      <div class="log-modal-content">
       <form id="entryForm" novalidate>
         <div class="field">
           <label for="fActivity">Activity Name</label>
@@ -3721,17 +3747,24 @@
 
         <button type="submit" class="btn-submit-log" id="submitBtn">Post It & Clock It</button>
       </form>
+      </div>
     </div>
   </section>
 
   <!-- Profile panel: display name, sign out, and the signed-in user's own posts -->
   <section id="panel-profile" class="panel">
     <div class="log-modal-card">
-      <div class="log-modal-header" style="margin-bottom: 12px;">
+      <div class="log-modal-header">
+        <button type="button" class="log-close-btn" id="profileCloseBtn" aria-label="Back" title="Back">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5"></path>
+            <path d="M12 19l-7-7 7-7"></path>
+          </svg>
+        </button>
         <h2>Your Profile</h2>
-        <button type="button" class="log-close-btn" id="profileCloseBtn" aria-label="Close">✕</button>
       </div>
 
+      <div class="log-modal-content">
       <div class="profile-header-card">
         <div class="profile-avatar-wrap">
           <div class="profile-avatar-inner">
@@ -3766,6 +3799,7 @@
       </div>
 
       <button type="button" class="btn btn-secondary" id="profileSignOutBtn" style="margin-top:20px;">Sign out</button>
+      </div>
     </div>
   </section>
 
@@ -3905,6 +3939,15 @@
 <!-- Post Preview Modal (Exact gallery post card layout with expanded full text) -->
 <div class="post-preview-overlay" id="postPreviewOverlay">
   <div class="post-preview-sheet gallery-item" id="postPreviewSheet">
+    <div class="preview-navbar">
+      <button type="button" class="preview-back-btn" id="previewCloseBtn" title="Back" aria-label="Back">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5"></path>
+          <path d="M12 19l-7-7 7-7"></path>
+        </svg>
+      </button>
+    </div>
+    <div class="preview-scroll-content">
     <div class="thumb" id="previewMediaBox">
       <img id="previewMediaImg" referrerpolicy="no-referrer" src="icons/block-party-2026.svg" alt="Activity media" onerror="this.onerror=null;this.src='icons/block-party-2026.svg';" />
       <iframe id="previewMediaVideo" style="display:none;width:100%;height:100%;border:none;" allow="autoplay"></iframe>
@@ -3934,7 +3977,6 @@
     </div>
 
     <div class="meta">
-      <div class="meta-date" id="previewDate"></div>
       <div class="meta-title" id="previewTitle"></div>
       <div class="meta-desc" id="previewFullDesc"></div>
       <div class="preview-people" id="previewPeople"></div>
@@ -3942,6 +3984,7 @@
         <div class="meta-amount" id="previewAmount"></div>
         <span class="meta-cat" id="previewAreaBadge">General</span>
       </div>
+    </div>
     </div>
   </div>
 </div>
@@ -5241,9 +5284,6 @@
       areaBadge.textContent = entry.category || "General";
     }
 
-    var dateEl = document.getElementById("previewDate");
-    if (dateEl) dateEl.textContent = formatDateShort_(entry.date);
-
     var ptsPill = document.getElementById("previewPointsPill");
     if (ptsPill) ptsPill.textContent = "+" + formatNum_(entry.amount) + " pts";
 
@@ -5276,7 +5316,7 @@
 
     var amountEl = document.getElementById("previewAmount");
     if (amountEl) {
-      amountEl.textContent = formatNum_(entry.amount) + " " + unitDisplay;
+      amountEl.textContent = formatDateShort_(entry.date) + " · " + formatNum_(entry.amount) + " " + unitDisplay;
     }
 
     // Media handling
