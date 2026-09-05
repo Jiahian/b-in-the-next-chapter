@@ -886,6 +886,34 @@
     border: 2px solid rgba(255, 255, 255, 0.85);
     margin: 15px;
   }
+  .avatar-crop-upload-btn {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--surface-1);
+    border: 2px solid rgba(255, 255, 255, 0.85);
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.35);
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    z-index: 6;
+    transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .avatar-crop-upload-btn:hover {
+    transform: scale(1.1);
+    background: var(--surface-2);
+    color: var(--accent);
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.45);
+  }
+  .avatar-crop-upload-btn:active {
+    transform: scale(0.95);
+  }
   .avatar-crop-hint {
     margin: 10px 0 14px;
     font-size: 12px;
@@ -3301,6 +3329,17 @@
     border-color: #8ab4f8;
     color: #8ab4f8;
   }
+  [data-theme="dark"] .avatar-crop-upload-btn {
+    background: #282a2c;
+    border-color: rgba(255, 255, 255, 0.4);
+    color: #e3e3e3;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+  }
+  [data-theme="dark"] .avatar-crop-upload-btn:hover {
+    background: #3c4043;
+    color: #93c5fd;
+    border-color: #93c5fd;
+  }
   [data-theme="dark"] .avatar-zoom-slider {
     background: #3c4043;
   }
@@ -3709,12 +3748,11 @@
             <img class="profile-avatar-img" id="profileAvatarImg" alt="Profile picture" style="display:none;" />
             <span class="profile-avatar-initial" id="profileAvatarInitial">?</span>
           </div>
-          <button type="button" class="profile-avatar-edit-btn" id="profileAvatarEditBtn" aria-label="Upload or edit profile picture" title="Upload or edit profile picture">
+          <button type="button" class="profile-avatar-edit-btn" id="profileAvatarEditBtn" aria-label="Edit profile photo" title="Edit profile photo">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
             </svg>
           </button>
-          <input type="file" id="profileAvatarFileInput" accept="image/*" style="display:none;" />
         </div>
         <div class="profile-info">
           <h3 class="profile-name" id="profileDisplayName"></h3>
@@ -3804,6 +3842,14 @@
     <div class="avatar-crop-viewport" id="avatarCropViewport">
       <canvas id="avatarCropCanvas" width="260" height="260"></canvas>
       <div class="avatar-crop-mask-circle" aria-hidden="true"></div>
+      <button type="button" class="avatar-crop-upload-btn" id="avatarCropUploadBtn" aria-label="Upload photo" title="Upload new photo">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="17 8 12 3 7 8"></polyline>
+          <line x1="12" y1="3" x2="12" y2="15"></line>
+        </svg>
+      </button>
+      <input type="file" id="avatarCropFileInput" accept="image/*" style="display:none;" />
     </div>
     <p class="avatar-crop-hint">Drag to arrange · Scroll or pinch to zoom</p>
 
@@ -6711,9 +6757,45 @@
     canvasSize: 260
   };
 
+  function createFallbackAvatarImage_() {
+    var canvas = document.createElement("canvas");
+    canvas.width = 400;
+    canvas.height = 400;
+    var ctx = canvas.getContext("2d");
+    
+    var grad = ctx.createLinearGradient(0, 0, 400, 400);
+    grad.addColorStop(0, "#2563eb");
+    grad.addColorStop(1, "#1d4ed8");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 400, 400);
+
+    var nameForInitial = (profile && profile.username) || (auth && auth.name) || (profile && profile.email) || (auth && auth.email) || "";
+    var initial = nameForInitial.trim() ? nameForInitial.trim().charAt(0).toUpperCase() : "";
+
+    if (initial) {
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 170px Inter, system-ui, -apple-system, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(initial, 200, 205);
+    } else {
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(200, 150, 60, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(200, 360, 120, Math.PI, Math.PI * 2);
+      ctx.fill();
+    }
+    var img = new Image();
+    img.src = canvas.toDataURL("image/png");
+    return img;
+  }
+
   function initAvatarCropper_() {
-    var fileInput = document.getElementById("profileAvatarFileInput");
     var editBtn = document.getElementById("profileAvatarEditBtn");
+    var uploadBtn = document.getElementById("avatarCropUploadBtn");
+    var fileInput = document.getElementById("avatarCropFileInput");
     var closeBtn = document.getElementById("avatarCropCloseBtn");
     var cancelBtn = document.getElementById("avatarCropCancelBtn");
     var applyBtn = document.getElementById("avatarCropApplyBtn");
@@ -6724,8 +6806,15 @@
     var resetBtn = document.getElementById("avatarResetBtn");
     var viewport = document.getElementById("avatarCropViewport");
 
-    if (editBtn && fileInput) {
+    if (editBtn) {
       editBtn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        openAvatarCropper_();
+      });
+    }
+
+    if (uploadBtn && fileInput) {
+      uploadBtn.addEventListener("click", function (e) {
         e.stopPropagation();
         fileInput.value = "";
         fileInput.click();
@@ -6808,6 +6897,9 @@
 
     if (viewport) {
       viewport.addEventListener("pointerdown", function (e) {
+        if (e.target.closest("#avatarCropUploadBtn") || e.target.closest("button") || e.target.closest("input")) {
+          return;
+        }
         avatarCropState.isDragging = true;
         avatarCropState.dragStartX = e.clientX;
         avatarCropState.dragStartY = e.clientY;
@@ -6860,6 +6952,34 @@
   }
 
   function openAvatarCropper_(img) {
+    if (!img) {
+      var picUrl = getActiveAvatarUrl_();
+      if (picUrl) {
+        var existingImg = new Image();
+        existingImg.onload = function () {
+          openAvatarCropper_(existingImg);
+        };
+        existingImg.onerror = function () {
+          var fallbackImg = createFallbackAvatarImage_();
+          if (fallbackImg.complete) {
+            openAvatarCropper_(fallbackImg);
+          } else {
+            fallbackImg.onload = function () { openAvatarCropper_(fallbackImg); };
+          }
+        };
+        existingImg.src = picUrl;
+        return;
+      } else {
+        var fallbackImg = createFallbackAvatarImage_();
+        if (fallbackImg.complete) {
+          openAvatarCropper_(fallbackImg);
+        } else {
+          fallbackImg.onload = function () { openAvatarCropper_(fallbackImg); };
+        }
+        return;
+      }
+    }
+
     avatarCropState.image = img;
     avatarCropState.zoom = 1;
     avatarCropState.rotation = 0;
