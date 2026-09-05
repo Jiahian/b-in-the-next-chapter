@@ -780,6 +780,235 @@
     word-break: break-all;
     overflow-wrap: anywhere;
   }
+  .profile-avatar-edit-btn {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 2px solid var(--surface-1);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.18);
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease;
+    z-index: 3;
+  }
+  .profile-avatar-edit-btn:hover {
+    transform: scale(1.12);
+    background: #f8fafc;
+    color: var(--accent);
+  }
+  .profile-avatar-edit-btn:active {
+    transform: scale(0.95);
+  }
+
+  /* Avatar Crop Modal */
+  .avatar-crop-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: max(12px, env(safe-area-inset-top)) 16px max(12px, env(safe-area-inset-bottom));
+    box-sizing: border-box;
+    animation: fadeInOverlay 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .avatar-crop-overlay.show {
+    display: flex;
+  }
+  .avatar-crop-card {
+    background: var(--surface-1);
+    border-radius: 20px;
+    box-shadow: 0 20px 48px rgba(15, 23, 42, 0.24);
+    padding: 22px 22px 24px;
+    width: 100%;
+    max-width: 360px;
+    box-sizing: border-box;
+    animation: modalPopIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .avatar-crop-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .avatar-crop-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+  }
+  .avatar-crop-viewport {
+    position: relative;
+    width: 260px;
+    height: 260px;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #0f172a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: none;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .avatar-crop-viewport:active {
+    cursor: grabbing;
+  }
+  #avatarCropCanvas {
+    display: block;
+    width: 260px;
+    height: 260px;
+    pointer-events: none;
+  }
+  .avatar-crop-mask-circle {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.55);
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.85);
+    margin: 15px;
+  }
+  .avatar-crop-hint {
+    margin: 10px 0 14px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-align: center;
+  }
+  .avatar-crop-controls {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .avatar-zoom-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+  }
+  .avatar-zoom-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid var(--input-border);
+    background: var(--surface-2);
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    padding: 0;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+  .avatar-zoom-btn:hover {
+    background: var(--gridline);
+    border-color: var(--accent);
+  }
+  .avatar-zoom-slider {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--input-border);
+    outline: none;
+    cursor: pointer;
+  }
+  .avatar-zoom-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  }
+  .avatar-zoom-slider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  }
+  .avatar-crop-actions-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+  .btn-crop-tool {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--input-border);
+    background: var(--surface-2);
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .btn-crop-tool:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--gridline);
+  }
+  .avatar-crop-footer {
+    width: 100%;
+    display: flex;
+    gap: 10px;
+  }
+  .avatar-crop-footer .btn {
+    flex: 1;
+    padding: 10px 14px;
+    font-size: 14px;
+    font-weight: 700;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .avatar-crop-footer .btn-primary {
+    background: var(--accent);
+    color: #ffffff;
+    border: none;
+  }
+  .avatar-crop-footer .btn-primary:hover {
+    background: var(--accent-hover);
+  }
+  .avatar-crop-footer .btn-secondary {
+    background: var(--surface-2);
+    color: var(--text-primary);
+    border: 1px solid var(--input-border);
+  }
 
   /* Profile page tabs (My Posts / Tagged In) */
   .profile-tabs {
@@ -3039,6 +3268,47 @@
     background: #282a2c;
     color: #93c5fd;
   }
+  [data-theme="dark"] .profile-avatar-edit-btn {
+    background: #282a2c;
+    border-color: #1e1f20;
+    color: #e3e3e3;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  }
+  [data-theme="dark"] .profile-avatar-edit-btn:hover {
+    background: #3c4043;
+    color: #93c5fd;
+  }
+  [data-theme="dark"] .avatar-crop-overlay {
+    background: rgba(0, 0, 0, 0.82);
+  }
+  [data-theme="dark"] .avatar-crop-card {
+    background: #1e1f20;
+    border: 1px solid #3c4043;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.75);
+  }
+  [data-theme="dark"] .avatar-crop-header h3 {
+    color: #e3e3e3;
+  }
+  [data-theme="dark"] .avatar-zoom-btn,
+  [data-theme="dark"] .btn-crop-tool {
+    background: #282a2c;
+    border-color: #3c4043;
+    color: #e3e3e3;
+  }
+  [data-theme="dark"] .avatar-zoom-btn:hover,
+  [data-theme="dark"] .btn-crop-tool:hover {
+    background: #303134;
+    border-color: #8ab4f8;
+    color: #8ab4f8;
+  }
+  [data-theme="dark"] .avatar-zoom-slider {
+    background: #3c4043;
+  }
+  [data-theme="dark"] .avatar-crop-footer .btn-secondary {
+    background: #282a2c;
+    border-color: #3c4043;
+    color: #e3e3e3;
+  }
   [data-theme="dark"] .field label,
   [data-theme="dark"] .field-label {
     color: #c4c7c5;
@@ -3439,6 +3709,12 @@
             <img class="profile-avatar-img" id="profileAvatarImg" alt="Profile picture" style="display:none;" />
             <span class="profile-avatar-initial" id="profileAvatarInitial">?</span>
           </div>
+          <button type="button" class="profile-avatar-edit-btn" id="profileAvatarEditBtn" aria-label="Upload or edit profile picture" title="Upload or edit profile picture">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+            </svg>
+          </button>
+          <input type="file" id="profileAvatarFileInput" accept="image/*" style="display:none;" />
         </div>
         <div class="profile-info">
           <h3 class="profile-name" id="profileDisplayName"></h3>
@@ -3507,6 +3783,7 @@
 
   <div class="bottom-bar-slot bottom-bar-slot-right">
     <button class="bottom-bar-profile-btn" id="headerProfileBtn" type="button" aria-label="Your profile" title="Your profile">
+      <img id="headerProfileImg" class="bottom-bar-profile-img" alt="Profile" style="display:none;width:100%;height:100%;border-radius:50%;object-fit:cover;" />
       <span id="headerProfileInitial" style="display:none;">?</span>
       <svg class="profile-icon-svg" id="headerProfileIconSvg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -3515,6 +3792,55 @@
     </button>
   </div>
 </nav>
+
+<!-- Avatar Crop / Edit Modal -->
+<div class="avatar-crop-overlay" id="avatarCropOverlay" aria-hidden="true">
+  <div class="avatar-crop-card">
+    <div class="avatar-crop-header">
+      <h3>Edit Profile Photo</h3>
+      <button type="button" class="log-close-btn" id="avatarCropCloseBtn" aria-label="Close">✕</button>
+    </div>
+
+    <div class="avatar-crop-viewport" id="avatarCropViewport">
+      <canvas id="avatarCropCanvas" width="260" height="260"></canvas>
+      <div class="avatar-crop-mask-circle" aria-hidden="true"></div>
+    </div>
+    <p class="avatar-crop-hint">Drag to arrange · Scroll or pinch to zoom</p>
+
+    <div class="avatar-crop-controls">
+      <div class="avatar-zoom-row">
+        <button type="button" class="avatar-zoom-btn" id="avatarZoomOutBtn" aria-label="Zoom out" title="Zoom out">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        </button>
+        <input type="range" class="avatar-zoom-slider" id="avatarZoomSlider" min="1" max="3.5" step="0.01" value="1" aria-label="Zoom photo" />
+        <button type="button" class="avatar-zoom-btn" id="avatarZoomInBtn" aria-label="Zoom in" title="Zoom in">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        </button>
+      </div>
+
+      <div class="avatar-crop-actions-row">
+        <button type="button" class="btn-crop-tool" id="avatarRotateBtn" title="Rotate 90° clockwise">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+          </svg>
+          <span>Rotate</span>
+        </button>
+        <button type="button" class="btn-crop-tool" id="avatarResetBtn" title="Reset image position and zoom">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+            <path d="M3 3v5h5"/>
+          </svg>
+          <span>Center</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="avatar-crop-footer">
+      <button type="button" class="btn btn-secondary" id="avatarCropCancelBtn">Cancel</button>
+      <button type="button" class="btn btn-primary" id="avatarCropApplyBtn">Save Photo</button>
+    </div>
+  </div>
+</div>
 
 <!-- Points info modal -->
 <div class="modal-overlay" id="pointsInfoOverlay" style="align-items:center;justify-content:center;padding:16px;z-index:60;">
@@ -6322,12 +6648,39 @@
     });
   }
 
+  function getActiveAvatarUrl_() {
+    var userId = (profile && profile.userId) || (auth && auth.userId) || "";
+    var localCustom = userId ? localStorage.getItem("bnext_user_avatar_" + userId) : localStorage.getItem("bnext_user_avatar_me");
+    return localCustom || (profile && profile.customAvatar) || (auth && auth.picture) || (profile && (profile.picture || profile.avatarUrl)) || "";
+  }
+
   function updateHeaderProfileUI_() {
     var btn = document.getElementById("headerProfileBtn");
     var initialEl = document.getElementById("headerProfileInitial");
     var iconEl = document.getElementById("headerProfileIconSvg");
+    var imgEl = document.getElementById("headerProfileImg");
     if (!btn) return;
     btn.style.display = "inline-flex";
+
+    var picUrl = getActiveAvatarUrl_();
+    if (picUrl && imgEl) {
+      imgEl.src = picUrl;
+      imgEl.style.display = "block";
+      if (initialEl) initialEl.style.display = "none";
+      if (iconEl) iconEl.style.display = "none";
+      imgEl.onerror = function () {
+        imgEl.style.display = "none";
+        renderFallbackHeaderProfile_();
+      };
+    } else {
+      if (imgEl) imgEl.style.display = "none";
+      renderFallbackHeaderProfile_();
+    }
+  }
+
+  function renderFallbackHeaderProfile_() {
+    var initialEl = document.getElementById("headerProfileInitial");
+    var iconEl = document.getElementById("headerProfileIconSvg");
     if (profile && profile.username && profile.username.trim()) {
       if (initialEl) {
         initialEl.textContent = profile.username.trim().charAt(0).toUpperCase();
@@ -6340,6 +6693,299 @@
     }
   }
 
+  var avatarCropState = {
+    image: null,
+    zoom: 1,
+    minZoom: 1,
+    maxZoom: 3.5,
+    offsetX: 0,
+    offsetY: 0,
+    rotation: 0,
+    isDragging: false,
+    dragStartX: 0,
+    dragStartY: 0,
+    initialOffsetX: 0,
+    initialOffsetY: 0,
+    baseScale: 1,
+    circleRadius: 115,
+    canvasSize: 260
+  };
+
+  function initAvatarCropper_() {
+    var fileInput = document.getElementById("profileAvatarFileInput");
+    var editBtn = document.getElementById("profileAvatarEditBtn");
+    var closeBtn = document.getElementById("avatarCropCloseBtn");
+    var cancelBtn = document.getElementById("avatarCropCancelBtn");
+    var applyBtn = document.getElementById("avatarCropApplyBtn");
+    var zoomSlider = document.getElementById("avatarZoomSlider");
+    var zoomInBtn = document.getElementById("avatarZoomInBtn");
+    var zoomOutBtn = document.getElementById("avatarZoomOutBtn");
+    var rotateBtn = document.getElementById("avatarRotateBtn");
+    var resetBtn = document.getElementById("avatarResetBtn");
+    var viewport = document.getElementById("avatarCropViewport");
+
+    if (editBtn && fileInput) {
+      editBtn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        fileInput.value = "";
+        fileInput.click();
+      });
+
+      fileInput.addEventListener("change", function () {
+        var file = fileInput.files && fileInput.files[0];
+        if (!file) return;
+        if (!file.type.startsWith("image/")) {
+          showToast("Please choose an image file (PNG, JPG, etc.).", true);
+          return;
+        }
+        var reader = new FileReader();
+        reader.onload = function (e) {
+          var img = new Image();
+          img.onload = function () {
+            openAvatarCropper_(img);
+          };
+          img.onerror = function () {
+            showToast("Couldn't load that image — please try another.", true);
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    if (closeBtn) closeBtn.addEventListener("click", closeAvatarCropper_);
+    if (cancelBtn) cancelBtn.addEventListener("click", closeAvatarCropper_);
+    if (applyBtn) applyBtn.addEventListener("click", applyAvatarCrop_);
+
+    if (zoomSlider) {
+      zoomSlider.addEventListener("input", function () {
+        avatarCropState.zoom = parseFloat(zoomSlider.value) || 1;
+        clampAvatarCropOffsets_();
+        drawAvatarCropCanvas_();
+      });
+    }
+
+    if (zoomInBtn && zoomSlider) {
+      zoomInBtn.addEventListener("click", function () {
+        var next = Math.min(avatarCropState.maxZoom, parseFloat((avatarCropState.zoom + 0.25).toFixed(2)));
+        avatarCropState.zoom = next;
+        zoomSlider.value = next;
+        clampAvatarCropOffsets_();
+        drawAvatarCropCanvas_();
+      });
+    }
+
+    if (zoomOutBtn && zoomSlider) {
+      zoomOutBtn.addEventListener("click", function () {
+        var next = Math.max(avatarCropState.minZoom, parseFloat((avatarCropState.zoom - 0.25).toFixed(2)));
+        avatarCropState.zoom = next;
+        zoomSlider.value = next;
+        clampAvatarCropOffsets_();
+        drawAvatarCropCanvas_();
+      });
+    }
+
+    if (rotateBtn) {
+      rotateBtn.addEventListener("click", function () {
+        avatarCropState.rotation = (avatarCropState.rotation + 90) % 360;
+        updateAvatarBaseScale_();
+        clampAvatarCropOffsets_();
+        drawAvatarCropCanvas_();
+      });
+    }
+
+    if (resetBtn && zoomSlider) {
+      resetBtn.addEventListener("click", function () {
+        avatarCropState.zoom = 1;
+        avatarCropState.rotation = 0;
+        avatarCropState.offsetX = 0;
+        avatarCropState.offsetY = 0;
+        zoomSlider.value = 1;
+        updateAvatarBaseScale_();
+        drawAvatarCropCanvas_();
+      });
+    }
+
+    if (viewport) {
+      viewport.addEventListener("pointerdown", function (e) {
+        avatarCropState.isDragging = true;
+        avatarCropState.dragStartX = e.clientX;
+        avatarCropState.dragStartY = e.clientY;
+        avatarCropState.initialOffsetX = avatarCropState.offsetX;
+        avatarCropState.initialOffsetY = avatarCropState.offsetY;
+        try { viewport.setPointerCapture(e.pointerId); } catch (err) {}
+      });
+
+      viewport.addEventListener("pointermove", function (e) {
+        if (!avatarCropState.isDragging) return;
+        var dx = e.clientX - avatarCropState.dragStartX;
+        var dy = e.clientY - avatarCropState.dragStartY;
+        avatarCropState.offsetX = avatarCropState.initialOffsetX + dx;
+        avatarCropState.offsetY = avatarCropState.initialOffsetY + dy;
+        clampAvatarCropOffsets_();
+        drawAvatarCropCanvas_();
+      });
+
+      var endDrag = function (e) {
+        avatarCropState.isDragging = false;
+        try { if (e && e.pointerId) viewport.releasePointerCapture(e.pointerId); } catch (err) {}
+      };
+      viewport.addEventListener("pointerup", endDrag);
+      viewport.addEventListener("pointercancel", endDrag);
+
+      viewport.addEventListener("wheel", function (e) {
+        e.preventDefault();
+        var delta = e.deltaY > 0 ? -0.1 : 0.1;
+        var next = Math.max(avatarCropState.minZoom, Math.min(avatarCropState.maxZoom, parseFloat((avatarCropState.zoom + delta).toFixed(2))));
+        avatarCropState.zoom = next;
+        if (zoomSlider) zoomSlider.value = next;
+        clampAvatarCropOffsets_();
+        drawAvatarCropCanvas_();
+      }, { passive: false });
+    }
+
+    window.openAvatarCropper_ = openAvatarCropper_;
+  }
+
+  function updateAvatarBaseScale_() {
+    if (!avatarCropState.image) return;
+    var img = avatarCropState.image;
+    var isRotated = (avatarCropState.rotation === 90 || avatarCropState.rotation === 270);
+    var imgW = isRotated ? img.height : img.width;
+    var imgH = isRotated ? img.width : img.height;
+    var diameter = avatarCropState.circleRadius * 2;
+    var scaleX = diameter / imgW;
+    var scaleY = diameter / imgH;
+    avatarCropState.baseScale = Math.max(scaleX, scaleY);
+  }
+
+  function openAvatarCropper_(img) {
+    avatarCropState.image = img;
+    avatarCropState.zoom = 1;
+    avatarCropState.rotation = 0;
+    avatarCropState.offsetX = 0;
+    avatarCropState.offsetY = 0;
+    var slider = document.getElementById("avatarZoomSlider");
+    if (slider) slider.value = 1;
+
+    updateAvatarBaseScale_();
+
+    var canvas = document.getElementById("avatarCropCanvas");
+    var dpr = window.devicePixelRatio || 1;
+    if (canvas) {
+      canvas.width = avatarCropState.canvasSize * dpr;
+      canvas.height = avatarCropState.canvasSize * dpr;
+      canvas.style.width = avatarCropState.canvasSize + "px";
+      canvas.style.height = avatarCropState.canvasSize + "px";
+    }
+
+    drawAvatarCropCanvas_();
+    var overlay = document.getElementById("avatarCropOverlay");
+    if (overlay) overlay.classList.add("show");
+  }
+
+  function closeAvatarCropper_() {
+    var overlay = document.getElementById("avatarCropOverlay");
+    if (overlay) overlay.classList.remove("show");
+    avatarCropState.image = null;
+  }
+
+  function clampAvatarCropOffsets_() {
+    if (!avatarCropState.image) return;
+    var img = avatarCropState.image;
+    var isRotated = (avatarCropState.rotation === 90 || avatarCropState.rotation === 270);
+    var imgW = isRotated ? img.height : img.width;
+    var imgH = isRotated ? img.width : img.height;
+    var currentScale = avatarCropState.baseScale * avatarCropState.zoom;
+    var renderedW = imgW * currentScale;
+    var renderedH = imgH * currentScale;
+    var diameter = avatarCropState.circleRadius * 2;
+
+    var maxOffsetX = Math.max(0, (renderedW - diameter) / 2);
+    var maxOffsetY = Math.max(0, (renderedH - diameter) / 2);
+
+    avatarCropState.offsetX = Math.max(-maxOffsetX, Math.min(maxOffsetX, avatarCropState.offsetX));
+    avatarCropState.offsetY = Math.max(-maxOffsetY, Math.min(maxOffsetY, avatarCropState.offsetY));
+  }
+
+  function drawAvatarCropCanvas_() {
+    var canvas = document.getElementById("avatarCropCanvas");
+    if (!canvas || !avatarCropState.image) return;
+    var ctx = canvas.getContext("2d");
+    var dpr = window.devicePixelRatio || 1;
+    var size = avatarCropState.canvasSize;
+    var center = size / 2;
+
+    ctx.save();
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.scale(dpr, dpr);
+
+    ctx.fillStyle = "#0f172a";
+    ctx.fillRect(0, 0, size, size);
+
+    ctx.save();
+    ctx.translate(center + avatarCropState.offsetX, center + avatarCropState.offsetY);
+    ctx.rotate((avatarCropState.rotation * Math.PI) / 180);
+    var currentScale = avatarCropState.baseScale * avatarCropState.zoom;
+    var img = avatarCropState.image;
+    var drawW = img.width * currentScale;
+    var drawH = img.height * currentScale;
+    ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
+    ctx.restore();
+
+    ctx.restore();
+  }
+
+  function applyAvatarCrop_() {
+    if (!avatarCropState.image) return;
+    var exportSize = 320;
+    var exportCanvas = document.createElement("canvas");
+    exportCanvas.width = exportSize;
+    exportCanvas.height = exportSize;
+    var ctx = exportCanvas.getContext("2d");
+
+    var ratio = exportSize / (avatarCropState.circleRadius * 2);
+    var center = exportSize / 2;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(center, center, exportSize / 2, 0, Math.PI * 2);
+    ctx.clip();
+
+    ctx.translate(center + avatarCropState.offsetX * ratio, center + avatarCropState.offsetY * ratio);
+    ctx.rotate((avatarCropState.rotation * Math.PI) / 180);
+    var currentScale = avatarCropState.baseScale * avatarCropState.zoom * ratio;
+    var img = avatarCropState.image;
+    var drawW = img.width * currentScale;
+    var drawH = img.height * currentScale;
+    ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
+    ctx.restore();
+
+    var croppedDataUrl = exportCanvas.toDataURL("image/jpeg", 0.9);
+    var userId = (profile && profile.userId) || (auth && auth.userId) || "me";
+    try {
+      localStorage.setItem("bnext_user_avatar_" + userId, croppedDataUrl);
+    } catch (e) {}
+
+    if (profile) {
+      profile.customAvatar = croppedDataUrl;
+    }
+
+    var avatarImg = document.getElementById("profileAvatarImg");
+    var avatarInitial = document.getElementById("profileAvatarInitial");
+    if (avatarImg) {
+      avatarImg.src = croppedDataUrl;
+      avatarImg.style.display = "block";
+    }
+    if (avatarInitial) {
+      avatarInitial.style.display = "none";
+    }
+
+    updateHeaderProfileUI_();
+    closeAvatarCropper_();
+    showToast("Profile photo updated!");
+  }
+
   function openProfilePanel_() {
     if (!profile) return;
     var nameEl = document.getElementById("profileDisplayName");
@@ -6349,7 +6995,7 @@
 
     var avatarImg = document.getElementById("profileAvatarImg");
     var avatarInitial = document.getElementById("profileAvatarInitial");
-    var picUrl = (auth && auth.picture) || (profile && (profile.picture || profile.avatarUrl)) || "";
+    var picUrl = getActiveAvatarUrl_();
     var nameForInitial = (profile.username || auth.name || profile.email || auth.email || "?").trim();
     var initialChar = nameForInitial ? nameForInitial.charAt(0).toUpperCase() : "?";
 
@@ -6508,6 +7154,7 @@
   function bindEventListeners_() {
     initTheme_();
     updateHeaderProfileUI_();
+    initAvatarCropper_();
     initTagFriends_(LOG_TAG_FRIENDS_CFG);
     initTagFriends_(EDIT_TAG_FRIENDS_CFG);
 
