@@ -133,6 +133,20 @@ function forcePlainTextColumns_(sheet, fieldNames, headers) {
   });
 }
 
+// Same protection as forcePlainTextColumns_, but scoped to a single row —
+// call this right before writing to a fresh/updated row so it's safe even
+// if setup() was never (re-)run after a numeric-ish column like
+// tagged_friends was added. Must run BEFORE the value is written: once
+// Sheets auto-detects a cell as a Number, the original text (and any
+// commas in it) are already gone — setting '@' afterward only changes how
+// the now-corrupted value displays, not what it is.
+function forcePlainTextRow_(sheet, rowIndex, fieldNames, headers) {
+  fieldNames.forEach(function (field) {
+    var col = headers.indexOf(field) + 1;
+    if (col > 0) sheet.getRange(rowIndex, col, 1, 1).setNumberFormat('@');
+  });
+}
+
 function getFolder_() {
   var props = PropertiesService.getScriptProperties();
   var folderId = props.getProperty('DRIVE_FOLDER_ID');
@@ -314,6 +328,10 @@ function rowToEntry_(row) {
   });
   entry.amount = Number(entry.amount) || 0;
   entry.deleted = entry.deleted === true || entry.deleted === 'TRUE';
+  // userId can come back as a Number if the cell was ever auto-formatted
+  // (see forcePlainTextRow_) — coerce so string comparisons elsewhere
+  // (ownership checks, tag matching) don't silently fail on type alone.
+  entry.userId = entry.userId ? String(entry.userId) : '';
   entry.tagged_friends = String(entry.tagged_friends || '')
     .split(',')
     .map(function (s) { return s.trim(); })
@@ -326,7 +344,7 @@ function rowToEntry_(row) {
 // owner already, not a tagged friend), duplicates and unknowns removed.
 function sanitizeTaggedFriends_(rawList, ownerUserId) {
   if (!Array.isArray(rawList)) return [];
-  var knownIds = listUsers_().map(function (u) { return u.userId; });
+  var knownIds = listUsers_().map(function (u) { return String(u.userId); });
   var seen = {};
   var result = [];
   rawList.forEach(function (id) {
@@ -351,6 +369,8 @@ function rowToUser_(row) {
   USER_HEADERS.forEach(function (field, idx) {
     user[field] = row[idx];
   });
+  // See rowToEntry_ — guard against a userId cell read back as a Number.
+  user.userId = user.userId ? String(user.userId) : '';
   return user;
 }
 
@@ -360,7 +380,7 @@ function getUserProfile_(userId) {
   if (lastRow < 2) return null;
   var values = sheet.getRange(2, 1, lastRow - 1, USER_HEADERS.length).getValues();
   for (var i = 0; i < values.length; i++) {
-    if (values[i][userIndexOf_('userId')] === userId) return rowToUser_(values[i]);
+    if (String(values[i][userIndexOf_('userId')]) === userId) return rowToUser_(values[i]);
   }
   return null;
 }
@@ -385,7 +405,7 @@ function upsertUserProfile_(auth, username) {
   if (lastRow >= 2) {
     var values = sheet.getRange(2, 1, lastRow - 1, USER_HEADERS.length).getValues();
     for (var i = 0; i < values.length; i++) {
-      if (values[i][userIndexOf_('userId')] === auth.userId) {
+      if (String(values[i][userIndexOf_('userId')]) === auth.userId) {
         return { ok: false, error: 'Display name has already been selected' };
       }
     }
@@ -401,6 +421,8 @@ function upsertUserProfile_(auth, username) {
       default: return '';
     }
   });
+  // Must run before appendRow — see forcePlainTextRow_.
+  forcePlainTextRow_(sheet, sheet.getLastRow() + 1, ['userId'], USER_HEADERS);
   sheet.appendRow(row);
   return { ok: true, user: { userId: auth.userId, email: auth.email, username: username } };
 }
@@ -438,6 +460,8 @@ function createEntry_(body, auth) {
       default: return '';
     }
   });
+  // Must run before appendRow — see forcePlainTextRow_.
+  forcePlainTextRow_(sheet, sheet.getLastRow() + 1, ['userId', 'tagged_friends'], HEADERS);
   sheet.appendRow(row);
   return { ok: true, entry: rowToEntry_(row) };
 }
@@ -500,6 +524,8 @@ function updateEntry_(body, auth) {
     if (field === 'deleted') return false;
     return updated[field];
   });
+  // Must run before setValues — see forcePlainTextRow_.
+  forcePlainTextRow_(sheet, rowIndex, ['userId', 'tagged_friends'], HEADERS);
   range.setValues([row]);
   return { ok: true, entry: rowToEntry_(row) };
 }
