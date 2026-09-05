@@ -5,8 +5,8 @@
 | | |
 |---|---|
 | **Author** | Sef |
-| **Date** | 26 Aug 2026 (last updated 4 Sep 2026) |
-| **Status** | v7 — Phase 1 live and in use; gallery/UI overhaul merged (§6.4, §6.6, §11); real per-person access control (Google Sign-In + allowlist) is now live (§6.7, §8.3, §11) — the app no longer has a "no login" model, see §5.2/§7; user profiles and activity tagging shipped alongside it (§6.8); Phase 2 documented (§12), and the identity groundwork it needed is now already in place |
+| **Date** | 26 Aug 2026 (last updated 5 Sep 2026) |
+| **Status** | v9 — Phase 1 live and in use; gallery/UI overhaul merged (§6.4, §6.6, §11); real per-person access control (Google Sign-In + allowlist) is now live (§6.7, §8.3, §11) — the app no longer has a "no login" model, see §5.2/§7; user profiles and activity tagging shipped alongside it (§6.8); the gallery preview, entry form, and Profile page were rebuilt as fullscreen pages with a consistent back-navigation pattern (§6.4, §6.6, §6.8); the "Tag friends" control was redesigned into a searchable pill selector (§6.6); a profile photo upload/crop feature shipped but is currently device-local only, flagged as an open gap (§6.8); Phase 2 documented (§12), and the identity groundwork it needed is now already in place |
 | **Challenge deadline** | 31 Dec 2026 |
 | **Reference** | [binthenextchapter.ai.studio](https://binthenextchapter.ai.studio/) — the prototype this build's visual design was matched to exactly (pulled from its actual source, not just screenshots) |
 
@@ -87,11 +87,11 @@ A private group of friends (not the general public) participating in the same ch
 
 ### 6.4 Photo/video gallery
 
-*Substantially reworked 3 Sep 2026 via a community-contributed PR (reviewed, tested, and hardened — see session-notes.md).*
+*Substantially reworked 3 Sep 2026 via a community-contributed PR (reviewed, tested, and hardened — see session-notes.md). Preview presentation changed again 5 Sep 2026 — see below.*
 
 - **Masonry collage view** by default — thumbnails of varying aspect ratios tiled together without subheaders; an alternate grouped-by-month view is available via the filter control.
 - A single **filter capsule** replaces the earlier separate Month/Category dropdowns, offering the same two filter dimensions (usable together) through one unified control.
-- Tapping a thumbnail opens a **post preview modal** with the full photo/video and its details: who logged it, activity name, category, date, and amount + units.
+- Tapping a thumbnail opens a **fullscreen preview page** (changed 5 Sep 2026 from a centered popup card) with the full photo/video and its details: who logged it, activity name, category, date, and amount + units — a sticky navbar with a back button sits at the top, and the details scroll independently underneath it. The date and amount are shown on one line, separated by " · " (e.g. "4 Sep 2026 · 5 km" — the date uses a capitalized three-letter month with no leading zero on the day, changed 5 Sep 2026 from an all-caps month with a zero-padded day).
 - Each entry can be **edited** (opens the entry form pre-filled, including the option to replace the media) or **deleted** (behind a confirmation modal, since deletes also remove the underlying Drive file and are not recoverable) — as of 4 Sep 2026, only by the entry's own owner (see §6.7).
 - **Who was there** (added 4 Sep 2026, see §6.8): every card shows overlapping avatar initials (poster first, then tagged friends, capped at 3 circles) plus a one-line summary — just the poster's name if no one's tagged, "X and Y were there" for one tag, "X and N friends were there" for more. The expanded preview reveals everyone involved, no cap, each with their avatar and name.
 - **Resize/crop**: from the edit flow, an uploaded photo can be re-cropped (zoom, pan, 3:4/4:3 aspect ratio) via an in-browser canvas tool. This is **destructive** — cropping replaces the currently-stored photo; the pre-crop original is not preserved, so cropping again later crops the already-cropped version, not the original upload. Deliberate simplicity trade-off (see §10) — revisit only if this causes real user frustration, since fixing it non-destructively means storing two files per cropped entry.
@@ -114,13 +114,14 @@ A private group of friends (not the general public) participating in the same ch
 | Date | Date picker | Required. Defaults to today. Cannot be a future date. |
 | Amount | Number | Required. Up to 1 decimal place. Must be greater than 0. |
 | Units | Dropdown | Required. Options: km, hours. |
-| Tag friends | Multi-select | Optional (added 4 Sep 2026, see §6.8). Select-all / individual-deselect dropdown listing other allowlisted users. |
+| Tag friends | Searchable multi-select | Optional (added 4 Sep 2026, see §6.8; redesigned 5 Sep 2026). A search input filters other allowlisted users live; each match is a checkbox in a dropdown (with select-all), and every selection renders as a removable pill above the input — no truncation, and pills stay in sync with the dropdown's checkboxes in both directions. The search clears and the list resets to everyone right after a selection, and the dropdown keeps its scroll position across re-renders. |
 | Photo/video | File upload | **Mandatory.** Accepts image or video, from camera or existing gallery. Videos over 20MB are rejected client-side before any processing (tightened from an original 45MB ceiling per §8.2's stress-test findings). |
 
 - On submit, the entry is added to the shared pool and reflected in the progress bar, category breakdown, and gallery for everyone (see §8 for sync timing).
 - Form validates all fields client-side before allowing submission (in particular: no future dates, amount > 0 with max 1 decimal, media file present).
 - The same form is reused for **editing** an existing entry (pre-filled from the gallery's edit action), with the option to keep the existing photo/video or replace it.
 - **Video-to-GIF conversion** (added 3 Sep 2026): a chosen video is automatically converted client-side to a short animated GIF (~5 seconds, 9fps, capped at 360px on the long edge) before upload, so the gallery can show it as a simple, consistently-playable image rather than needing a native video embed. If conversion fails (unsupported format, slow device, etc.), the app falls back to uploading the original video file as before.
+- **Navigation** (restyled 5 Sep 2026): the form is a fullscreen page with a sticky top navbar and a back-arrow button, the same pattern now shared with the gallery preview (§6.4) and Profile page (§6.8), replacing the earlier top-left ✕ close button.
 
 ### 6.7 Access control — Google Sign-In (added 4 Sep 2026, live)
 
@@ -134,9 +135,10 @@ Real, server-verified authentication replacing the earlier client-side password 
 ### 6.8 User profiles & activity tagging (added 4 Sep 2026, live)
 
 - **First sign-in** prompts for a one-time display name (pre-filled with the signer's real Google name, editable), stored in a new **Users** sheet keyed by Google's stable account ID — not email, which a person could technically change, and not the display name itself, which is meant to be freely editable later without breaking anything tied to that person.
-- **Profile page**: edit display name any time; a "My Posts" tab (tap any post to edit it directly, skipping the normal preview step) and a "Tagged In" tab (posts someone else logged that tagged this user — view-only, since tagging doesn't grant ownership).
+- **Profile page**: edit display name any time; a "My Posts" tab (tap any post to edit it directly, skipping the normal preview step) and a "Tagged In" tab (posts someone else logged that tagged this user — view-only, since tagging doesn't grant ownership). Presented as a fullscreen page with a back-arrow navbar (restyled 5 Sep 2026 from a centered modal card), matching the entry form (§6.6) and gallery preview (§6.4).
 - **Edit/delete ownership**: an entry can only be edited or deleted by the account that logged it (enforced server-side). Entries logged before this system existed have no owner on record and stay open to anyone, so nothing from before the upgrade is stranded.
 - **Tagging**: the "Tag friends" field (§6.6) lets a logger credit other allowlisted friends as having done the activity together. Tagged friends are not co-owners — they can't edit or delete the entry, it just shows up under their own "Tagged In" tab and in the gallery's "who was there" display (§6.4).
+- **Profile photo** (added 5 Sep 2026, built in a separate concurrent session): a pencil-icon button on the Profile page opens an in-browser crop tool (zoom, pan, rotate) to set a custom avatar, shown in the header and on the Profile page in place of the default Google-account picture or initial-letter avatar. **Known gap, not yet a settled design**: the cropped photo is stored only in that browser's `localStorage` (keyed by userId) — `Code.gs` has no avatar-related code at all, so nothing is written to Drive or the Users sheet. Net effect: the photo doesn't follow the user to a different device/browser (falls back to their Google account picture there), and it's never visible to other friends anywhere in the app — the gallery's "who was there" avatars and tagged-friend lists still render text initials, not photos, for everyone. Flagged for Phase 1 follow-up (see §11's milestone table and session-notes.md's Next steps) rather than treated as done.
 
 ## 7. Non-functional requirements
 
@@ -229,6 +231,8 @@ Not in the original scope — added after the app went live, once the group want
 | userId | string | **Added 4 Sep 2026.** The logger's Google account ID (stable `sub` claim, not email). The entry's owner — only this account can edit/delete it. Blank on entries logged before this system existed; those stay editable by anyone (§6.8). |
 | tagged_friends | string | **Added 4 Sep 2026** as `participants`, renamed to `tagged_friends` 5 Sep 2026. Comma-separated userIds of other people tagged as having done the activity too (§6.8). Never includes the logger's own userId. Denormalized (not a separate join-table tab) since the set is small and bounded per entry. |
 
+> Both `userId` and `tagged_friends` are all-digit-looking strings that Google Sheets will silently reinterpret as a `Number` cell (destroying the comma-separated list, and losing precision on the digit-string itself) unless the column is forced to plain-text format — `Code.gs` now does this defensively on every write, not just at initial setup (found and fixed 5 Sep 2026; see session-notes.md).
+
 Total points = SUM(amount) across all entries where `deleted = false`. Category totals = SUM(amount) grouped by category, same filter.
 
 **User — one row per person who's signed in, in the Sheet's "Users" tab**
@@ -240,6 +244,8 @@ Total points = SUM(amount) across all entries where `deleted = false`. Category 
 | username | string | Display name, editable any time from the Profile page; max 24 characters |
 | createdAt | timestamp | Set on first sign-in (profile creation) |
 | updatedAt | timestamp | Set whenever the display name changes |
+
+> No avatar/photo field exists in this table yet — the profile-photo feature (§6.8) currently stores its image only in browser `localStorage`, not here. Adding a Drive-hosted file ID/URL column here is the natural fix for that gap.
 
 **Allowlist — one row per approved person, in the Sheet's "Allowlist" tab**
 
@@ -272,6 +278,8 @@ Total points = SUM(amount) across all entries where `deleted = false`. Category 
 | Testing across friends' phones | Done — an iOS Safari-specific rendering bug was found, fixed, and confirmed resolved on a real device |
 | Gallery/UI overhaul (masonry layout, dark mode, resize/crop, GIF conversion) | Done — 3 Sep 2026, merged via community-contributed PR #1 after code review found and fixed a stored-XSS issue, a missing video size limit, a transparent-PNG-to-black bug, two service-worker caching bugs, and a GIF-frame-capture race; also removed a fake "demo/offline" mode that silently no-op'd saves |
 | Google Sign-In access control + user profiles + activity tagging (§6.7, §6.8, §8.3) | **Done and live — 4 Sep 2026.** Production Apps Script backend and OAuth client both updated ahead of the frontend going out, to minimize the window where the two could mismatch. |
+| Fullscreen page rework (gallery preview, entry form, Profile) + tag-friends searchable pill selector + gallery card date/spacing polish | **Done — 5 Sep 2026.** |
+| Profile photo upload/crop | **Live, but incomplete — 5 Sep 2026.** Device-local only (`localStorage`), no backend sync; see §6.8's gap note and §9's data-model note. |
 | Launch to the group | Not yet confirmed |
 | Challenge deadline | **31 Dec 2026** |
 

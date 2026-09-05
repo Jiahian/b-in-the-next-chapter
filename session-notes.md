@@ -27,6 +27,18 @@ kept up to date as we go.
 - **Sheet now has three tabs**: Entries, Users, and Allowlist (the
   allowlist moved off a Script Property onto a sheet tab on 4 Sep 2026,
   for easier editing — see decision 8).
+- **Gallery preview, Log form, and Profile panel are full-bleed fullscreen
+  pages** — live as of 5 Sep 2026, replacing the earlier centered
+  modal-card treatment for all three. See decision 9 below.
+- **Tagged-friends data corruption fixed at the root** — live as of 5 Sep
+  2026, after an initial fix (4 Sep 2026) turned out to be incomplete in
+  production. See the updated "Fixed this session" entry below.
+- **Tag-friends control redesigned** — live as of 5 Sep 2026: a searchable
+  input + removable pills replaced the old checkbox-dropdown-behind-a-
+  summary control. See decision 10 below.
+- **Profile photo upload/crop shipped, but device-local only** — live as
+  of 5 Sep 2026 (a separate concurrent session's work). Not yet synced to
+  the backend — a known gap, not a settled design. See decision 12 below.
 
 ## Key decisions
 
@@ -144,6 +156,20 @@ kept up to date as we go.
      (2026-09-05)**: `ozywasborn` is now a full repo collaborator, so
      future work happens on branches in this repo directly rather than
      via fork+PR.
+     - **First real test of that, same day**: a `git push origin master`
+       was rejected — another session/device had pushed a profile
+       avatar redesign (pencil icon, photo cropper, avatar styling)
+       straight to `master` while this session's Code.gs fixes were
+       also pending locally, unpushed. Before doing anything, fetched
+       and ran a dry-run three-way merge (`git merge-tree`) to confirm
+       the two sets of commits didn't actually touch overlapping lines
+       (this session's commits were Code.gs-only; the other session's
+       were index.html-only) — came back clean. Rebased the local
+       Code.gs commits on top of `origin/master` (linear history, no
+       merge commit, applied without conflict as predicted) and pushed.
+       Worth remembering as the playbook if two sessions collide on
+       `master` again: fetch, dry-run the merge before touching
+       anything, only then decide rebase vs. merge.
 
 8. **Google Sign-In, real per-person identity, and activity tagging —
    built and shipped live** (4 Sep 2026, on `feature/google-signin-
@@ -256,6 +282,105 @@ kept up to date as we go.
        needed to wait. Worth remembering if this recurs after any future
        OAuth client change — don't assume it's broken immediately.
 
+9. **Gallery preview, Log form, and Profile panel rebuilt as fullscreen
+   pages** (5 Sep 2026, explicit request). All three now follow the same
+   pattern: a sticky navbar with a left-arrow back button pinned to the
+   top, and the actual content (photo/details, the entry form, or the
+   profile) scrolling independently underneath it in its own region — no
+   backdrop blur, no centered card, no ✕ button.
+   - **Reverses part of decision 8's "unrelated UI decisions."** That
+     entry noted an earlier full-screen experiment for the gallery
+     preview modal had been reverted back to a popup-card style. This
+     session redid exactly that, deliberately, this time extending the
+     same treatment to the Log form and Profile panel too (both of which
+     had used a centered, backdrop-blurred modal card since decision 3).
+   - **Page margin restructured to match**: `<main>`'s horizontal padding
+     was removed entirely (vertical padding kept); the dashboard's
+     content blocks (`.card-countdown`, `.card-points-acc`,
+     `.card-points-category`, the gallery header row) now each carry
+     their own 16px horizontal padding directly, except the bare gallery
+     wrapper (`.card-bare`), which uses 4px — giving the gallery grid
+     more usable width without changing anything else's visual inset.
+   - **Content re-centers on wider screens.** The three fullscreen pages
+     cap their content at `max-width: 560px` (matching `<main>`'s own
+     dashboard width) and center it with auto margins — a no-op on
+     mobile widths (where 100% is already under 560px), so this only
+     changes anything on desktop/tablet.
+   - **Gallery card date/amount line**: the expanded preview's date is
+     now shown on the same line as the amount, joined by " · " and
+     styled identically to the amount — matching the format the
+     collapsed gallery card already used (see the 4/5 Sep 2026 entries
+     under decision 8's "Gallery attribution").
+   - Also tightened: `.meta-people-text` (the "who was there" summary
+     line) is smaller/lighter (10px/400, was 11px/600) with tighter
+     line-height for when it wraps; gallery card title/description sizes
+     were reduced slightly (title 12px/600, description 12px) to fit
+     more card in the same space.
+
+10. **Tag-friends control redesigned from a checkbox dropdown to a
+    searchable pill selector** (5 Sep 2026, explicit request). The old
+    control showed a summary like "3 people tagged" behind a toggle
+    button; replaced with a text input that filters the friend list
+    live, individual checkboxes in the dropdown for each match, and
+    every selected friend rendered as a removable pill (name + ×) above
+    the input — no truncation, and pills stay in sync with the
+    dropdown's checkboxes in both directions (checking a box adds a
+    pill; removing a pill unchecks the box, re-rendering the open
+    dropdown if it's visible).
+    - **Clears on select**: after checking a friend, the search text
+      clears and the list resets to everyone, ready for the next
+      search. Implemented as a direct re-render rather than relying on
+      the input's native `focus` event to trigger it — calling
+      `.focus()` on an element that's already the active element
+      doesn't refire that event, which a standalone test harness caught
+      before it shipped (not just assumed).
+    - **Scroll position preserved**: re-rendering the dropdown's list
+      (on open, or after a select) used to reset its scroll to the top;
+      the scrollable panel's `scrollTop` is now captured before the
+      rebuild and restored after.
+    - Verified via a throwaway static-HTML harness that reused the
+      exact component markup/CSS/JS, rather than through the real
+      sign-in-gated app (no test Google account/allowlist entry
+      available in this environment) — also caught an earlier attempt
+      at browser-automation testing drifting off-target, since adding
+      a pill shifts the dropdown panel's position between clicks.
+
+11. **Gallery card polish** (5 Sep 2026, explicit request):
+    - Date moved onto the same line as the amount (e.g.
+      "4 Sep 2026 · 5 km"), styled identically to the amount; month is
+      a capitalized three-letter abbreviation and the day has no
+      leading zero (was an all-caps month with a zero-padded day).
+    - "Who was there" avatars now float against the text's first line
+      (like a leading icon) instead of vertically centering against
+      the whole block; overflow text wraps full-width below once past
+      the avatar height. Avatars enlarged 20px → 22px.
+    - Card content padding tightened to `10px 10px 12px` (was
+      `13px 14px 14px`); gap between cards tightened to `4px` (was
+      `9px`/`8px` across the masonry/grid layouts); the gallery
+      wrapper's (`.card-bare`) horizontal padding set to `4px`.
+    - **Note**: `.card-bare`'s padding was found at `0` immediately
+      before this fix, despite decision 9 (above) already describing
+      it as `4px` and live since 5 Sep. Unclear whether it regressed
+      via an intervening change (several other sessions pushed to this
+      file the same day — see decision 12 below) or the two edits
+      simply raced; not chased further since it's `4px` again now.
+
+12. **Profile photo upload/crop shipped by a separate concurrent
+    session — traced and flagged as a backend-sync gap** (5 Sep 2026).
+    A pencil-icon button on the Profile page opens an in-browser crop
+    tool (zoom, pan, rotate) to set a custom avatar shown in the header
+    and Profile page. Investigated after noticing `index.html`'s line
+    count had grown by ~1800 lines mid-session from work this session
+    didn't do: the cropped image is stored only in
+    `localStorage["bnext_user_avatar_" + userId]`, and `Code.gs` has no
+    avatar/photo-related code at all — no Drive upload, no Users-sheet
+    column. Net effect: a custom photo (a) doesn't follow the user to a
+    different device/browser (falls back to their Google account
+    picture there), and (b) is never visible to other friends anywhere
+    in the app — gallery/tagging avatars still render text initials for
+    everyone, not photos. **Explicitly flagged as a gap to close, not a
+    settled scope decision** — see PRD §6.8/§9 and the Next steps below.
+
 ## Fixed this session (bugs, not design changes)
 
 - iOS Safari's native date input was overflowing the form/viewport
@@ -302,6 +427,39 @@ kept up to date as we go.
     this fix needs its "Tag friends" re-selected and the entry re-
     saved once the fix is live, to overwrite the cell with a correctly
     text-formatted value. **Not yet done.**
+  - **`setup()`-only fix turned out incomplete** (found 2026-09-05,
+    later the same day, user-reported after redeploying: brand-new
+    entries were *still* coming out corrupted, but editing one back to
+    the same values fixed it). Root cause: `forcePlainTextColumns_()`
+    was only ever invoked from the manual, one-time `setup()` function —
+    never automatically — so a deployment where `setup()` predates the
+    `tagged_friends` column (or was never re-run after) writes new rows
+    into unformatted cells regardless of the earlier fix. **Fixed**:
+    added `forcePlainTextRow_()`, called immediately before every
+    individual write to a `userId`/`tagged_friends` cell
+    (`createEntry_`, `updateEntry_`, `upsertUserProfile_`) — new data is
+    now protected regardless of whether `setup()` was ever re-run.
+  - **Second layer, same day**: even with `forcePlainTextRow_()` in
+    place, *creating* an entry still corrupted `tagged_friends` — only
+    editing it afterward actually fixed the cell. Root cause:
+    `createEntry_`/`upsertUserProfile_` pre-formatted the row they
+    *expected* to write to (`getLastRow() + 1`), then called
+    `sheet.appendRow(row)` — which resolves its own target row
+    internally, independently of that expectation, so the format
+    wasn't reliably in place by the time the value actually landed.
+    `updateEntry_` never had this problem, since it writes via
+    `range.setValues([row])` on an already-known, exact row — which is
+    exactly why re-editing a corrupted entry "fixed" it. **Fixed**:
+    replaced `appendRow()` in both functions with an explicit
+    `sheet.getRange(<the same row just formatted>, ...).setValues([row])`
+    call, so the format and the value write always target the identical
+    row. Also coerced `userId` to `String` when reading rows back
+    (`rowToEntry_`, `rowToUser_`) and in the remaining raw-cell
+    comparisons (`getUserProfile_`, the duplicate-profile check,
+    `sanitizeTaggedFriends_()`'s known-user lookup), so a cell that was
+    already typed as a Number from before this fix doesn't silently
+    fail the string-equality checks used for ownership and tag
+    matching.
   - **Renamed `participants` → `tagged_friends`** (2026-09-05, same
     session, for clarity) across `Code.gs` (the `HEADERS` column,
     `sanitizeParticipants_()` → `sanitizeTaggedFriends_()`, and every
@@ -356,6 +514,24 @@ Full report: [artifact](https://claude.ai/code/artifact/c30fe412-c465-44e8-8c5d-
       sign-in is live: confirm everyone's email is in the Allowlist,
       everyone can sign in and set a display name, and the app otherwise
       feels normal day-to-day (not just single-account testing)
+- [ ] Verify the `tagged_friends` fix in production: log a brand-new
+      entry (not an edit) with 2+ friends tagged and confirm the stored
+      value comes back as separate userIds, not one garbled number —
+      the first fix looked complete after redeploy but wasn't (see the
+      updated "Fixed this session" entry)
+- [ ] Re-log (or hand-fix in the Sheet) any entries tagged with 2+
+      friends before the 5 Sep 2026 fix — their `tagged_friends` value
+      is still permanently corrupted and won't self-heal
+- [ ] Spot-check the Profile page: this session's fullscreen-page
+      conversion and another session's avatar/photo-cropper redesign
+      both touched it independently the same day; a clean git rebase
+      doesn't guarantee the two designs compose visually
+- [ ] Sync custom profile photos to the backend (e.g. upload to the
+      Drive media folder + a new Users-sheet column for the file
+      ID/URL) so they persist across devices and can eventually be
+      shown to the group, instead of being `localStorage`-only per
+      device (found 5 Sep 2026 while documenting the avatar/photo-
+      cropper feature — see decision 12)
 - [ ] Phase 2 (gamification) groundwork is now further along than
       originally planned — every entry and every user already has a
       stable ID, which §12.3 of the PRD called out as the main thing
