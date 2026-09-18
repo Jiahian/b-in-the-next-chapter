@@ -6572,7 +6572,7 @@
 
   function loadStoredAuth_() {
     try {
-      var raw = sessionStorage.getItem(AUTH_STORAGE_KEY);
+      var raw = localStorage.getItem(AUTH_STORAGE_KEY);
       if (!raw) return null;
       var parsed = JSON.parse(raw);
       if (!parsed.idToken || !parsed.exp || parsed.exp * 1000 <= Date.now()) return null;
@@ -6582,12 +6582,12 @@
     }
   }
   function storeAuth_() {
-    try { sessionStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(auth)); } catch (err) { /* ignore */ }
+    try { localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(auth)); } catch (err) { /* ignore */ }
   }
   function clearAuth_() {
     auth = { idToken: null, email: null, name: null, picture: null, userId: null, exp: 0 };
     profile = null;
-    try { sessionStorage.removeItem(AUTH_STORAGE_KEY); } catch (err) { /* ignore */ }
+    try { localStorage.removeItem(AUTH_STORAGE_KEY); } catch (err) { /* ignore */ }
   }
 
   function showAuthGate_(forbidden) {
