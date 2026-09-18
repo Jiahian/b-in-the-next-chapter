@@ -3,7 +3,7 @@
  * ------------------------------------------------
  * Bound to a Google Sheet. Deploy as a Web App (Extensions > Apps Script,
  * then Deploy > New deployment > Web app, "Execute as: Me",
- * "Who has access: Anyone with the link"). See SETUP_GUIDE.md.
+ * "Who has access: Anyone with the link"). See docs/SETUP.md.
  *
  * Data model deliberately mirrors what a future Firestore migration would
  * look like (see PRD §12.3): a stable UUID entryId per row, ISO timestamps,
