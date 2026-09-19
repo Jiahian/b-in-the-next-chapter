@@ -87,6 +87,17 @@ centered modal cards — a sticky navbar with a back button, content scrolls
 independently underneath. Chosen for a cleaner mobile feel; applied
 consistently to all three surfaces.
 
+**Session storage switched from `sessionStorage` to `localStorage`, plus an
+on-brand loading screen for the sign-in → data-loaded gap.** Mobile Chrome
+routinely kills backgrounded tabs, and `sessionStorage` doesn't survive
+that — friends were getting bounced back to the sign-in screen on nearly
+every reopen even with a still-valid ~1hr ID token. A session now persists
+across app relaunches for the token's full lifetime. Separately, an
+animated loading screen (app mark, category-colored dots) now covers the
+gap between a confirmed session and the first entries fetch resolving, so
+Apps Script's cold-start delay no longer shows as a flash of the
+empty/zeroed app shell.
+
 **Tag-friends control is a searchable pill selector**, not a
 checkbox-dropdown-behind-a-summary — a text input filters the friend list
 live, selections render as removable pills, and the dropdown/pills stay in
