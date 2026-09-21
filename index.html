@@ -20,6 +20,26 @@
       }
     } catch (e) {}
   })();
+
+  // Google blocks its Sign-In flow inside embedded "in-app browser" webviews
+  // (Telegram, Instagram, Facebook, Line, ...). On Android, an intent: URL
+  // hands the current page straight to the system/default browser with no
+  // user action needed, so escape immediately, before anything else loads.
+  // iOS has no equivalent — Apple only allows a browser switch from a user
+  // tap — so that case is handled later, in-page (see isInAppBrowser_ /
+  // showInAppBrowserGate_ further down).
+  (function () {
+    try {
+      var ua = navigator.userAgent || "";
+      var isAndroid = /Android/i.test(ua);
+      var isInAppBrowser = !!(window.TelegramWebviewProxy || window.TelegramWebviewProxyProto) ||
+        /Telegram|FBAN|FBAV|Instagram|Line\/|MicroMessenger|TikTok|Snapchat|Twitter/i.test(ua);
+      if (isAndroid && isInAppBrowser) {
+        var target = location.href.replace(/^https?:\/\//, "");
+        location.href = "intent://" + target + "#Intent;scheme=https;end";
+      }
+    } catch (e) {}
+  })();
 </script>
 <link rel="manifest" href="manifest.json" />
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
@@ -4259,6 +4279,20 @@
   </div>
 </div>
 
+<!-- In-app browser redirect (iOS) — shown immediately on load when opened inside
+     Telegram's built-in browser, before the user ever reaches sign-in. iOS
+     won't let a page auto-redirect out of an in-app browser (unlike Android,
+     handled earlier in <head>), so this asks for one tap instead. -->
+<div class="modal-overlay" id="inAppBrowserGate" style="z-index:110;">
+  <div class="modal-sheet center" style="position:relative;">
+    <button type="button" class="modal-close" id="inAppBrowserGateCloseBtn" aria-label="Close" style="position:absolute;top:10px;right:10px;">✕</button>
+    <div class="confetti-emoji">🌐</div>
+    <p>Open link in browser for Google sign-in to verify that you have access to this site.</p>
+    <button type="button" class="btn btn-primary" id="openInBrowserBtn">Open in Browser</button>
+    <button type="button" class="btn btn-secondary" id="inAppGateCopyLinkBtn" style="margin-top:8px;">Copy link instead</button>
+  </div>
+</div>
+
 <!-- Auth gate -->
 <div class="modal-overlay" id="authGateOverlay" style="z-index:100;">
   <div class="modal-sheet center">
@@ -4267,7 +4301,7 @@
     <p id="authPrompt">Sign in with the Google account you use with the group to continue.</p>
     <p class="field-error" id="authForbidden">That Google account isn't on the group's list yet — ask the organizer to add it, then try signing in again.</p>
     <div id="inAppBrowserWarning" style="display:none;">
-      <p class="field-error show">Google blocks sign-in inside Telegram's built-in browser. Tap the <strong>⋯</strong> menu (or the browser icon) above and choose <strong>"Open in Browser"</strong> / <strong>"Open in Safari"</strong>, then sign in there.</p>
+      <p class="field-error show">Still in Telegram's browser? Google sign-in won't work here — open this link in your regular browser instead.</p>
       <button type="button" class="btn btn-primary" id="copyLinkBtn" style="margin-top:4px;">Copy link</button>
     </div>
     <div id="googleSignInBtn" style="display:flex;justify-content:center;margin-top:6px;"></div>
@@ -6693,6 +6727,26 @@
     if (window.TelegramWebviewProxy || window.TelegramWebviewProxyProto) return true;
     return /Telegram|FBAN|FBAV|Instagram|Line\/|MicroMessenger|TikTok|Snapchat|Twitter/i.test(ua);
   }
+  function isIOS_() {
+    return /iPhone|iPad|iPod/i.test(navigator.userAgent || "");
+  }
+
+  function copyPageLink_() {
+    var url = location.href;
+    var done = function () { showToast("Link copied — paste it into Chrome or Safari."); };
+    var fail = function () { window.prompt("Copy this link and open it in Chrome or Safari:", url); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(done, fail);
+    } else {
+      fail();
+    }
+  }
+  function showInAppBrowserGate_() {
+    document.getElementById("inAppBrowserGate").classList.add("show");
+  }
+  function hideInAppBrowserGate_() {
+    document.getElementById("inAppBrowserGate").classList.remove("show");
+  }
 
   function showAuthGate_(forbidden) {
     document.getElementById("authGateOverlay").classList.add("show");
@@ -7351,6 +7405,14 @@
     bindEventListeners_();
     waitForGis_(initGoogleSignIn_);
 
+    // Android already escaped Telegram's in-app browser automatically (see
+    // the intent: redirect in <head>) before this script ever ran, so
+    // reaching here inside an in-app browser only happens on iOS — where
+    // Apple only allows a browser switch from a real user tap.
+    if (isIOS_() && isInAppBrowser_()) {
+      showInAppBrowserGate_();
+    }
+
     var stored = loadStoredAuth_();
     if (stored) {
       auth = stored;
@@ -7442,15 +7504,16 @@
       switchPanel("home");
     });
     document.getElementById("profileSignOutBtn").addEventListener("click", signOut_);
-    document.getElementById("copyLinkBtn").addEventListener("click", function () {
-      var url = location.href;
-      var done = function () { showToast("Link copied — paste it into Chrome or Safari."); };
-      var fail = function () { window.prompt("Copy this link and open it in Chrome or Safari:", url); };
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(url).then(done, fail);
-      } else {
-        fail();
-      }
+    document.getElementById("copyLinkBtn").addEventListener("click", copyPageLink_);
+    document.getElementById("inAppGateCopyLinkBtn").addEventListener("click", copyPageLink_);
+    document.getElementById("inAppBrowserGateCloseBtn").addEventListener("click", hideInAppBrowserGate_);
+    document.getElementById("openInBrowserBtn").addEventListener("click", function () {
+      // Best-effort: this custom scheme asks iOS to reopen the current page
+      // in Safari. It isn't guaranteed to work in every in-app browser, which
+      // is why "Copy link instead" stays offered alongside it as a fallback
+      // that always works.
+      var target = location.href.replace(/^https?:\/\//, "");
+      location.href = "x-safari-https://" + target;
     });
     document.getElementById("profileTabMine").addEventListener("click", function () { switchProfileTab_("mine"); });
     document.getElementById("profileTabTagged").addEventListener("click", function () { switchProfileTab_("tagged"); });
