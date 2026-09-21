@@ -4193,6 +4193,10 @@
     <h3>This app is private</h3>
     <p id="authPrompt">Sign in with the Google account you use with the group to continue.</p>
     <p class="field-error" id="authForbidden">That Google account isn't on the group's list yet — ask the organizer to add it, then try signing in again.</p>
+    <div id="inAppBrowserWarning" style="display:none;">
+      <p class="field-error show">Google blocks sign-in inside Telegram's built-in browser. Tap the <strong>⋯</strong> menu (or the browser icon) above and choose <strong>"Open in Browser"</strong> / <strong>"Open in Safari"</strong>, then sign in there.</p>
+      <button type="button" class="btn btn-primary" id="copyLinkBtn" style="margin-top:4px;">Copy link</button>
+    </div>
     <div id="googleSignInBtn" style="display:flex;justify-content:center;margin-top:6px;"></div>
   </div>
 </div>
@@ -6590,10 +6594,24 @@
     try { sessionStorage.removeItem(AUTH_STORAGE_KEY); } catch (err) { /* ignore */ }
   }
 
+  // Google blocks its Sign-In flow inside embedded "in-app browser" WebViews
+  // (Telegram, Instagram, Facebook, Line, WeChat, TikTok, ...) — the button
+  // either does nothing or lands on Google's own "disallowed_useragent"
+  // error page. Detect those and point the user at their real browser
+  // instead of showing a button that can't work.
+  function isInAppBrowser_() {
+    var ua = navigator.userAgent || "";
+    if (window.TelegramWebviewProxy || window.TelegramWebviewProxyProto) return true;
+    return /Telegram|FBAN|FBAV|Instagram|Line\/|MicroMessenger|TikTok|Snapchat|Twitter/i.test(ua);
+  }
+
   function showAuthGate_(forbidden) {
     document.getElementById("authGateOverlay").classList.add("show");
     document.getElementById("authForbidden").classList.toggle("show", !!forbidden);
     document.getElementById("authPrompt").style.display = forbidden ? "none" : "block";
+    var inApp = !forbidden && isInAppBrowser_();
+    document.getElementById("inAppBrowserWarning").style.display = inApp ? "block" : "none";
+    document.getElementById("googleSignInBtn").style.display = inApp ? "none" : "flex";
   }
   function hideAuthGate_() {
     document.getElementById("authGateOverlay").classList.remove("show");
@@ -7318,6 +7336,16 @@
       switchPanel("home");
     });
     document.getElementById("profileSignOutBtn").addEventListener("click", signOut_);
+    document.getElementById("copyLinkBtn").addEventListener("click", function () {
+      var url = location.href;
+      var done = function () { showToast("Link copied — paste it into Chrome or Safari."); };
+      var fail = function () { window.prompt("Copy this link and open it in Chrome or Safari:", url); };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(done, fail);
+      } else {
+        fail();
+      }
+    });
     document.getElementById("profileTabMine").addEventListener("click", function () { switchProfileTab_("mine"); });
     document.getElementById("profileTabTagged").addEventListener("click", function () { switchProfileTab_("tagged"); });
 
