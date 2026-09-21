@@ -3008,8 +3008,8 @@
   /* The auth gate is a true center-screen dialog, not a bottom sheet —
      override just this one overlay rather than the shared .center class
      used by the celebration/delete-confirm modals. */
-  #authGateOverlay, #usernameSetupOverlay { align-items: center; }
-  #authGateOverlay .modal-sheet.center, #usernameSetupOverlay .modal-sheet.center { margin-bottom: 0; }
+  #authGateOverlay, #usernameSetupOverlay, #inAppBrowserGate { align-items: center; }
+  #authGateOverlay .modal-sheet.center, #usernameSetupOverlay .modal-sheet.center, #inAppBrowserGate .modal-sheet.center { margin-bottom: 0; }
   .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
   .modal-header h3 { margin: 0; font-size: 18px; font-weight: 800; }
   .modal-close { background: none; border: none; font-size: 20px; color: var(--text-muted); cursor: pointer; padding: 4px; }
@@ -4287,7 +4287,7 @@
   <div class="modal-sheet center" style="position:relative;">
     <button type="button" class="modal-close" id="inAppBrowserGateCloseBtn" aria-label="Close" style="position:absolute;top:10px;right:10px;">✕</button>
     <div class="confetti-emoji">🌐</div>
-    <p>Open link in browser for Google sign-in to verify that you have access to this site.</p>
+    <p>Open link in browser to use Google sign-in to verify your access to this site.</p>
     <button type="button" class="btn btn-primary" id="openInBrowserBtn">Open in Browser</button>
     <button type="button" class="btn btn-secondary" id="inAppGateCopyLinkBtn" style="margin-top:8px;">Copy link instead</button>
   </div>
