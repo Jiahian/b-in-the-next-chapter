@@ -25,9 +25,10 @@
   // (Telegram, Instagram, Facebook, Line, ...). On Android, an intent: URL
   // hands the current page straight to the system/default browser with no
   // user action needed, so escape immediately, before anything else loads.
-  // iOS has no equivalent — Apple only allows a browser switch from a user
-  // tap — so that case is handled later, in-page (see isInAppBrowser_ /
-  // showInAppBrowserGate_ further down).
+  // iOS has no equivalent — a page can't invoke "open with default browser"
+  // the way a native app like Telegram can — so that case (and this one, if
+  // the intent: redirect below ever fails) is handled later, in-page (see
+  // isInAppBrowser_ / showInAppBrowserGate_ further down).
   (function () {
     try {
       var ua = navigator.userAgent || "";
@@ -3008,8 +3009,8 @@
   /* The auth gate is a true center-screen dialog, not a bottom sheet —
      override just this one overlay rather than the shared .center class
      used by the celebration/delete-confirm modals. */
-  #authGateOverlay, #usernameSetupOverlay { align-items: center; }
-  #authGateOverlay .modal-sheet.center, #usernameSetupOverlay .modal-sheet.center { margin-bottom: 0; }
+  #authGateOverlay, #usernameSetupOverlay, #inAppBrowserGate { align-items: center; }
+  #authGateOverlay .modal-sheet.center, #usernameSetupOverlay .modal-sheet.center, #inAppBrowserGate .modal-sheet.center { margin-bottom: 0; }
   .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
   .modal-header h3 { margin: 0; font-size: 18px; font-weight: 800; }
   .modal-close { background: none; border: none; font-size: 20px; color: var(--text-muted); cursor: pointer; padding: 4px; }
@@ -4279,17 +4280,44 @@
   </div>
 </div>
 
-<!-- In-app browser redirect (iOS) — shown immediately on load when opened inside
-     Telegram's built-in browser, before the user ever reaches sign-in. iOS
-     won't let a page auto-redirect out of an in-app browser (unlike Android,
-     handled earlier in <head>), so this asks for one tap instead. -->
+<!-- In-app browser gate — shown immediately on load in place of the normal
+     auth gate, whenever the page is opened inside Telegram's built-in
+     browser (Google's Sign-In flow doesn't work there). A page can't auto-
+     open a specific "default browser" the way a native app like Telegram
+     itself can — each button below can only force open one named browser
+     via that browser's own URL scheme, which only works if it's installed
+     (undetectable in advance from a webpage) — so "Copy Link" stays as the
+     option that always works. No close button — there's nothing useful to
+     fall back to underneath it, since sign-in can't work here anyway. The
+     Safari button is hidden on non-iOS (see showInAppBrowserGate_). -->
 <div class="modal-overlay" id="inAppBrowserGate" style="z-index:110;">
-  <div class="modal-sheet center" style="position:relative;">
-    <button type="button" class="modal-close" id="inAppBrowserGateCloseBtn" aria-label="Close" style="position:absolute;top:10px;right:10px;">✕</button>
+  <div class="modal-sheet center">
     <div class="confetti-emoji">🌐</div>
-    <p>Open link in browser for Google sign-in to verify that you have access to this site.</p>
-    <button type="button" class="btn btn-primary" id="openInBrowserBtn">Open in Browser</button>
-    <button type="button" class="btn btn-secondary" id="inAppGateCopyLinkBtn" style="margin-top:8px;">Copy link instead</button>
+    <p>Continue in your browser to sign in with Google.</p>
+    <button type="button" class="btn btn-primary" id="openInChromeBtn">
+      <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="9" fill="none" stroke="#EA4335" stroke-width="6" stroke-dasharray="18.85 37.7" stroke-dashoffset="0"></circle>
+        <circle cx="12" cy="12" r="9" fill="none" stroke="#4285F4" stroke-width="6" stroke-dasharray="18.85 37.7" stroke-dashoffset="-18.85"></circle>
+        <circle cx="12" cy="12" r="9" fill="none" stroke="#34A853" stroke-width="6" stroke-dasharray="18.85 37.7" stroke-dashoffset="-37.7"></circle>
+        <circle cx="12" cy="12" r="4" fill="#FBBC05" stroke="#fff" stroke-width="1"></circle>
+      </svg>
+      Open in Chrome
+    </button>
+    <button type="button" class="btn btn-primary" id="openInSafariBtn" style="margin-top:8px;">
+      <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="10" fill="#0FB5EE"></circle>
+        <path d="M12 4l2.2 7.8L12 12z" fill="#FF3B30"></path>
+        <path d="M12 20l-2.2-7.8L12 12z" fill="#E5E5EA"></path>
+      </svg>
+      Open in Safari
+    </button>
+    <button type="button" class="btn btn-secondary" id="inAppGateCopyLinkBtn" style="margin-top:8px;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="9" y="9" width="11" height="11" rx="2"></rect>
+        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+      </svg>
+      Copy Link
+    </button>
   </div>
 </div>
 
@@ -4300,10 +4328,6 @@
     <h3>This app is private</h3>
     <p id="authPrompt">Sign in with the Google account you use with the group to continue.</p>
     <p class="field-error" id="authForbidden">That Google account isn't on the group's list yet — ask the organizer to add it, then try signing in again.</p>
-    <div id="inAppBrowserWarning" style="display:none;">
-      <p class="field-error show">Still in Telegram's browser? Google sign-in won't work here — open this link in your regular browser instead.</p>
-      <button type="button" class="btn btn-primary" id="copyLinkBtn" style="margin-top:4px;">Copy link</button>
-    </div>
     <div id="googleSignInBtn" style="display:flex;justify-content:center;margin-top:6px;"></div>
   </div>
 </div>
@@ -6742,19 +6766,14 @@
     }
   }
   function showInAppBrowserGate_() {
+    document.getElementById("openInSafariBtn").style.display = isIOS_() ? "" : "none";
     document.getElementById("inAppBrowserGate").classList.add("show");
-  }
-  function hideInAppBrowserGate_() {
-    document.getElementById("inAppBrowserGate").classList.remove("show");
   }
 
   function showAuthGate_(forbidden) {
     document.getElementById("authGateOverlay").classList.add("show");
     document.getElementById("authForbidden").classList.toggle("show", !!forbidden);
     document.getElementById("authPrompt").style.display = forbidden ? "none" : "block";
-    var inApp = !forbidden && isInAppBrowser_();
-    document.getElementById("inAppBrowserWarning").style.display = inApp ? "block" : "none";
-    document.getElementById("googleSignInBtn").style.display = inApp ? "none" : "flex";
   }
   function hideAuthGate_() {
     document.getElementById("authGateOverlay").classList.remove("show");
@@ -7406,20 +7425,22 @@
     waitForGis_(initGoogleSignIn_);
 
     // Android already escaped Telegram's in-app browser automatically (see
-    // the intent: redirect in <head>) before this script ever ran, so
-    // reaching here inside an in-app browser only happens on iOS — where
-    // Apple only allows a browser switch from a real user tap.
-    if (isIOS_() && isInAppBrowser_()) {
+    // the intent: redirect in <head>) before this script ever ran, unless
+    // that redirect happened to fail — so reaching here still inside an
+    // in-app browser can happen on either platform. Google Sign-In can't
+    // work here regardless, so show the dedicated gate instead of the
+    // normal sign-in flow.
+    if (isInAppBrowser_()) {
       showInAppBrowserGate_();
-    }
-
-    var stored = loadStoredAuth_();
-    if (stored) {
-      auth = stored;
-      showLoadingScreen_();
-      checkProfileAndProceed_();
     } else {
-      showAuthGate_(false);
+      var stored = loadStoredAuth_();
+      if (stored) {
+        auth = stored;
+        showLoadingScreen_();
+        checkProfileAndProceed_();
+      } else {
+        showAuthGate_(false);
+      }
     }
   });
 
@@ -7504,14 +7525,15 @@
       switchPanel("home");
     });
     document.getElementById("profileSignOutBtn").addEventListener("click", signOut_);
-    document.getElementById("copyLinkBtn").addEventListener("click", copyPageLink_);
     document.getElementById("inAppGateCopyLinkBtn").addEventListener("click", copyPageLink_);
-    document.getElementById("inAppBrowserGateCloseBtn").addEventListener("click", hideInAppBrowserGate_);
-    document.getElementById("openInBrowserBtn").addEventListener("click", function () {
-      // Best-effort: this custom scheme asks iOS to reopen the current page
-      // in Safari. It isn't guaranteed to work in every in-app browser, which
-      // is why "Copy link instead" stays offered alongside it as a fallback
-      // that always works.
+    document.getElementById("openInChromeBtn").addEventListener("click", function () {
+      // Best-effort: only works if Chrome is installed — there's no way to
+      // detect that in advance from a webpage. "Copy Link" is the fallback
+      // that always works regardless of which browser(s) are installed.
+      var target = location.href.replace(/^https?:\/\//, "");
+      location.href = "googlechromes://" + target;
+    });
+    document.getElementById("openInSafariBtn").addEventListener("click", function () {
       var target = location.href.replace(/^https?:\/\//, "");
       location.href = "x-safari-https://" + target;
     });
