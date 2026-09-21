@@ -147,6 +147,7 @@ Real, server-verified authentication (no password anywhere in this model):
 - Sign-in uses Google Identity Services; `Code.gs` verifies each request's ID token server-side and checks the resulting email against an **Allowlist** sheet tab (name + email columns — name is admin-facing only, for tracking who's who; only email is actually checked). Adding/removing someone is a direct edit to that tab, no redeploy.
 - A signed-in-but-not-allowlisted account gets a distinct "not on the group's list" message rather than a generic error, so re-trying with the same account doesn't loop pointlessly.
 - A small header control (initial-letter avatar) opens the Profile page (§6.8); tapping "Sign out" there clears the session, useful on a shared device.
+- Opening the app's link inside Telegram's own browser blocks Google sign-in outright (a platform restriction, not a bug). The app detects this and shows a screen before sign-in even loads: Android jumps straight to the phone's regular browser automatically; iPhone gets buttons to open it in Chrome or Safari, plus a "Copy Link" option.
 
 ### 6.8 User profiles & activity tagging
 

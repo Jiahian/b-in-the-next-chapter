@@ -59,6 +59,12 @@ near the bottom of the file. A few things worth knowing before editing it:
   `docs/DECISIONS.md`'s gallery/UI overhaul entry).
 - `sw.js` (service worker) + `manifest.json` + `icons/` make this installable
   as a home-screen PWA.
+- Opening the link inside Telegram's built-in browser blocks Google
+  Sign-In entirely, so `index.html` detects it (`isInAppBrowser_`) and
+  shows a dedicated screen before sign-in ever loads: Android is
+  auto-redirected out to the phone's regular browser, iPhone gets buttons
+  to open it in Chrome/Safari, with "Copy Link" as a fallback. See
+  `docs/DECISIONS.md`.
 
 ### Backend: Google Apps Script bound to a Sheet
 

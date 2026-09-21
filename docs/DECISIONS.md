@@ -103,6 +103,16 @@ checkbox-dropdown-behind-a-summary — a text input filters the friend list
 live, selections render as removable pills, and the dropdown/pills stay in
 sync in both directions.
 
+**Opening the shared link inside Telegram no longer breaks sign-in.**
+Google blocks its sign-in flow inside Telegram's built-in browser, so
+friends tapping the link in the group chat used to hit a dead end. Android
+now escapes automatically to the phone's regular browser — no tap needed.
+iPhone can't be redirected automatically (Apple doesn't allow it), so it
+shows one screen with "Open in Chrome" / "Open in Safari" / "Copy Link"
+buttons instead of the sign-in form. A first attempt just told people to
+use Telegram's own "Open in Browser" menu — more correct in theory, but
+dropped for asking people to hunt for a menu instead of tapping a button.
+
 ## Data-integrity bug: `tagged_friends` corruption (resolved)
 
 Google Sheets auto-detects digit-only strings and silently converts them to
