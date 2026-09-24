@@ -146,6 +146,9 @@
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; overflow-x: hidden; }
+  /* Scrollable everywhere, visible scrollbar nowhere. */
+  * { scrollbar-width: none; -ms-overflow-style: none; }
+  *::-webkit-scrollbar { display: none; width: 0; height: 0; }
   body {
     font-family: 'Poppins', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     background: var(--page);
@@ -168,16 +171,15 @@
     width: 100%;
     margin: 0;
   }
-  body.log-mode {
-    overflow: hidden;
-  }
   /* Plain overflow:hidden on body isn't reliably honored by mobile Chrome's
      touch-scroll — pinning body out of the document flow entirely (so
      there's nothing behind the overlay for a touch gesture to scroll) is
      the technique that actually works across mobile browsers. The JS side
      sets `top` to the negative scroll offset so nothing visually jumps,
      and restores real scroll position on close. */
-  body.gallery-preview-open {
+  body.log-mode,
+  body.gallery-preview-open,
+  body.edit-mode {
     position: fixed;
     left: 0;
     right: 0;
@@ -218,7 +220,7 @@
   }
   .header-titles h1 {
     margin: 0 0 4px;
-    font-size: clamp(21px, 5.4vw, 27px);
+    font-size: 22px;
     font-weight: 800;
     color: #0f172a;
     letter-spacing: -0.025em;
@@ -227,7 +229,7 @@
   }
   .header-titles p.sub {
     margin: 0;
-    font-size: 11.5px;
+    font-size: 14px;
     font-weight: 700;
     color: #64748b;
     letter-spacing: 0.07em;
@@ -256,12 +258,12 @@
   /* Floating Bottom Menu Bar */
   .floating-bottom-bar {
     position: fixed;
-    bottom: max(11px, calc(5px + env(safe-area-inset-bottom)));
+    bottom: max(8px, calc(2px + env(safe-area-inset-bottom)));
     left: 50%;
     transform: translateX(-50%);
     width: calc(100% - 32px);
     max-width: 528px;
-    height: 68px;
+    height: 60px;
     background: #ffffff;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
@@ -290,8 +292,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 50px;
-    height: 50px;
+    width: 48px;
+    height: 48px;
     background: var(--accent);
     color: var(--accent-contrast);
     border: none;
@@ -319,8 +321,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
+    width: 38px;
+    height: 38px;
     background: #f1f5f9;
     color: #475569;
     border: 1.5px solid #e2e8f0;
@@ -390,7 +392,7 @@
   }
   .card h2 {
     margin: 0 0 16px;
-    font-size: 13px;
+    font-size: 14px;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     color: var(--text-muted);
@@ -402,7 +404,7 @@
     box-shadow: none;
   }
   .card-plain h2 { text-align: center; }
-  .card-bare { background: transparent; border: none; box-shadow: none; padding: 0 4px; margin-bottom: 0; }
+  .card-bare { background: transparent; border: none; box-shadow: none; padding: 0 8px; margin-bottom: 0; }
 
   /* Countdown */
   .card-countdown {
@@ -545,7 +547,7 @@
   }
   .card-points-category h2 {
     margin: 0 0 14px;
-    font-size: 11.8px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -558,14 +560,14 @@
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 9px;
+    gap: 10px;
   }
   .legend-list li {
     display: flex;
     align-items: center;
-    gap: 14.5px;
+    gap: 14px;
     padding: 2px 0;
-    font-size: 13.2px;
+    font-size: 14px;
   }
   .legend-label {
     width: 87px;
@@ -573,7 +575,7 @@
     text-align: right;
     color: #0f172a;
     font-weight: 700;
-    font-size: 13.6px;
+    font-size: 14px;
   }
   .legend-track {
     flex: 1;
@@ -595,7 +597,7 @@
     text-align: right;
     color: #64748b;
     font-weight: 700;
-    font-size: 13.2px;
+    font-size: 14px;
     font-variant-numeric: tabular-nums;
   }
 
@@ -634,7 +636,7 @@
   }
   .log-modal-header h2 {
     margin: 0;
-    font-size: 17px;
+    font-size: 18px;
     font-weight: 700;
     color: var(--text-primary, #0f172a);
     letter-spacing: -0.02em;
@@ -646,7 +648,7 @@
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
-    padding: 20px 16px 24px;
+    padding: 24px 16px;
     box-sizing: border-box;
   }
   .log-close-btn {
@@ -667,14 +669,14 @@
     background: var(--gridline, rgba(15, 23, 42, 0.08));
   }
 
-  .field { margin-bottom: 15px; }
+  .field { margin-bottom: 16px; }
   .field label, .field-label {
     display: flex;
     align-items: center;
-    gap: 5px;
-    font-size: 13px;
+    gap: 4px;
+    font-size: 14px;
     font-weight: 600;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
     color: #475569;
   }
   .field-error { color: var(--critical); font-size: 11.5px; margin-top: 3px; line-height: 1.3; display: none; }
@@ -684,7 +686,7 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 12px;
-    margin-bottom: 15px;
+    margin-bottom: 16px;
   }
 
   /* Tag friends — searchable multi-select (log + edit forms) */
@@ -725,7 +727,7 @@
   .tag-friends-selectall {
     display: block; width: 100%; text-align: left; padding: 8px 10px; margin-bottom: 4px;
     border: none; border-bottom: 1px solid var(--input-border); background: none;
-    color: var(--accent); font-size: 12.5px; font-weight: 700; font-family: inherit; cursor: pointer;
+    color: var(--accent); font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer;
   }
   .tag-friend-item {
     display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: 7px;
@@ -1224,8 +1226,8 @@
     transform: translateY(-1px);
   }
 
-  input[type="text"], input[type="date"], input[type="number"], input[type="password"], select {
-    width: 100%; min-width: 0; max-width: 100%; padding: 8px 12px; font-size: 13px; border-radius: 9px;
+  input[type="text"], input[type="date"], input[type="number"], input[type="password"], select, textarea {
+    width: 100%; min-width: 0; max-width: 100%; padding: 8px 12px; font-size: 14px; border-radius: 10px;
     border: 1px solid #e2e8f0; background: #f8fafc; color: #0f172a;
     font-family: inherit;
     transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
@@ -1238,7 +1240,7 @@
   select::-ms-expand {
     display: none;
   }
-  input[type="text"]::placeholder, input[type="number"]::placeholder {
+  input[type="text"]::placeholder, input[type="number"]::placeholder, textarea::placeholder {
     color: #94a3b8;
     font-weight: 400;
   }
@@ -1246,11 +1248,18 @@
     -webkit-appearance: none;
     appearance: none;
   }
-  input:focus, select:focus {
+  input:focus, select:focus, textarea:focus {
     outline: none;
     border-color: #6366f1;
     background: #ffffff;
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+  }
+  .field-textarea {
+    min-height: 110px;
+    max-height: 260px;
+    resize: vertical;
+    line-height: 1.5;
+    overflow-y: auto;
   }
 
   .select-wrap {
@@ -1270,7 +1279,7 @@
   /* File Dropzone */
   .file-drop-card {
     border: 1.5px dashed #cbd5e1;
-    border-radius: 9px;
+    border-radius: 10px;
     padding: 6px 12px;
     background: #f8fafc;
     display: flex;
@@ -1296,18 +1305,15 @@
     border: none;
     border-radius: 6px;
     padding: 5px 14px;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 700;
     font-family: inherit;
     pointer-events: none;
-    flex-shrink: 0;
-    display: inline-flex;
     align-items: center;
-    justify-content: center;
   }
   .upload-drop-text {
     flex: 1;
-    font-size: 12.5px;
+    font-size: 14px;
     color: #64748b;
     font-weight: 400;
     white-space: nowrap;
@@ -1349,11 +1355,11 @@
     color: #ffffff;
     border: none;
     border-radius: 10px;
-    padding: 11px 16px;
-    font-size: 14.5px;
+    padding: 12px 16px;
+    font-size: 14px;
     font-weight: 700;
     width: 100%;
-    margin-top: 14px;
+    margin-top: 52px;
     cursor: pointer;
     box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
     transition: all 0.2s ease;
@@ -1399,7 +1405,7 @@
   }
   .gallery-header-row .section-heading {
     margin: 0;
-    font-size: 21px;
+    font-size: 20px;
     font-weight: 800;
     letter-spacing: -0.02em;
     color: var(--text-primary);
@@ -1954,341 +1960,6 @@
   }
   .empty-state { text-align: center; padding: 44px 16px; color: var(--text-muted); font-size: 16px; }
 
-  @media (max-width: 480px) {
-    .header-inner {
-      padding: 0 14px;
-    }
-    .header-titles h1 {
-      font-size: clamp(19px, 5.2vw, 22px);
-    }
-    .header-titles p.sub {
-      font-size: 10.5px;
-    }
-    main {
-      padding: 16px 0 calc(100px + env(safe-area-inset-bottom));
-    }
-    .card-countdown {
-      margin: 0 16px 16px;
-    }
-    .floating-bottom-bar {
-      width: calc(100% - 28px);
-      max-width: 532px;
-      height: 68px;
-      padding: 0 6px;
-    }
-    .card-points-acc {
-      padding: 22px 16px 24px;
-    }
-    .progress-headline .value {
-      font-size: clamp(52px, 14vw, 68px);
-    }
-    .card-points-category {
-      padding: 18px 16px 18px;
-    }
-    .legend-label {
-      width: 76px;
-      flex: 0 0 76px;
-      font-size: 12.5px;
-    }
-    .countdown-grid {
-      gap: 6px;
-    }
-    .countdown-cell .num-box {
-      padding: 10px 2px 9px;
-      border-radius: 10px;
-    }
-    .countdown-cell .num {
-      font-size: 26px;
-    }
-    .countdown-cell .label {
-      font-size: 10px;
-      margin-top: 6px;
-    }
-
-    .gallery-header-row {
-      margin: 22px 0 14px;
-      gap: 8px;
-    }
-    .gallery-header-row .section-heading {
-      font-size: 17px;
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-    .filter-capsule-root {
-      min-height: 25.5px;
-      flex-shrink: 0;
-    }
-    .filter-capsule-wrap {
-      height: 25.5px;
-      padding: 2px;
-    }
-    .filter-capsule-wrap.is-circle {
-      width: 25.5px;
-      min-width: 25.5px;
-      height: 25.5px;
-    }
-    .filter-capsule-wrap.is-open {
-      width: 152px;
-      min-width: 152px;
-      padding: 1.5px;
-    }
-    .filter-capsule-idle-btn {
-      height: 25.5px;
-      padding: 0 9px;
-      font-size: 9.5px;
-    }
-    .filter-capsule-idle-btn.is-icon-btn {
-      width: 25.5px;
-      height: 25.5px;
-      padding: 0;
-    }
-    .filter-capsule-idle-btn.is-icon-btn svg {
-      width: 12px;
-      height: 12px;
-    }
-    .filter-capsule-row {
-      gap: 1.5px;
-    }
-    .filter-capsule-btn {
-      padding: 2.5px 2px;
-      font-size: 9px;
-      font-weight: 600;
-      letter-spacing: -0.03em;
-      line-height: 1.1;
-    }
-    .filter-capsule-popover {
-      top: calc(100% + 5px);
-      padding: 4px;
-      border-radius: 12px;
-      gap: 3px;
-    }
-    .filter-sub-grid-months {
-      width: 160px;
-      gap: 2.5px;
-    }
-    .filter-sub-list-areas,
-    .filter-sub-list-categories {
-      width: 104px;
-      gap: 2.5px;
-    }
-    .filter-sub-pill {
-      padding: 3px 5px;
-      font-size: 9px;
-    }
-  }
-
-  @media (max-width: 360px) {
-    .header-inner {
-      padding: 0 12px;
-    }
-    .header-titles h1 {
-      font-size: 18px;
-    }
-    main {
-      padding: 14px 0 calc(100px + env(safe-area-inset-bottom));
-    }
-    .card-countdown {
-      margin: 0 16px 14px;
-    }
-    .floating-bottom-bar {
-      width: calc(100% - 24px);
-      height: 68px;
-      padding: 0 4px;
-    }
-    .bottom-bar-log-btn {
-      width: 46px;
-      height: 46px;
-    }
-    .bottom-bar-profile-btn {
-      width: 36px;
-      height: 36px;
-    }
-    .countdown-grid {
-      gap: 4px;
-    }
-    .countdown-cell .num-box {
-      padding: 8px 1px 7px;
-      border-radius: 8px;
-    }
-    .countdown-cell .num {
-      font-size: 22px;
-    }
-    .gallery-header-row .section-heading {
-      font-size: 15px;
-    }
-    .filter-capsule-wrap.is-open {
-      width: 138px;
-      min-width: 138px;
-      padding: 1px;
-    }
-    .filter-capsule-row {
-      gap: 1px;
-    }
-    .filter-capsule-btn {
-      padding: 2px 1px;
-      font-size: 8.5px;
-      letter-spacing: -0.035em;
-    }
-    .filter-sub-grid-months {
-      width: 148px;
-    }
-    .filter-sub-list-areas,
-    .filter-sub-list-categories {
-      width: 96px;
-    }
-
-    .gallery-masonry,
-    .gallery-grid {
-      gap: 4px;
-    }
-    .gallery-masonry-col {
-      gap: 4px;
-    }
-    .gallery-item {
-      border-radius: 10px;
-    }
-    .gallery-item .meta {
-      padding: 8px 8px 10px;
-    }
-    .gallery-item .meta-bottom {
-      padding-top: 4px;
-      gap: 4px;
-    }
-    .gallery-item .meta-cat {
-      font-size: 9px;
-      padding: 1.5px 2.5px;
-      letter-spacing: 0.02em;
-    }
-    .gallery-item .meta-title {
-      font-size: 12px;
-      line-height: 1.3;
-      margin: 1px 0 3px;
-    }
-    .gallery-item .meta-desc {
-      font-size: 12px;
-      line-height: 1.45;
-      margin: 3px 0 6px;
-      display: block;
-      white-space: pre-wrap;
-    }
-    .gallery-item .meta-amount {
-      font-size: 10px;
-    }
-    .gallery-item .pts-pill {
-      font-size: 10px;
-      font-weight: 600;
-      padding: 2.5px 6px;
-      right: 5px;
-      bottom: 5px;
-    }
-    .gallery-item .thumb .thumb-menu-btn {
-      width: 25px;
-      height: 25px;
-      top: 5px;
-      right: 5px;
-    }
-    .gallery-category-title {
-      font-size: 16.5px;
-      margin: 2px 0 8px 0;
-      padding-bottom: 6px;
-    }
-    .gallery-category-group {
-      margin-bottom: 16px;
-    }
-
-    /* Log New Activity Mobile Optimization */
-    .log-modal-content {
-      padding: 18px 16px 20px;
-    }
-    .log-modal-header h2 {
-      font-size: 17px;
-    }
-    .field {
-      margin-bottom: 13px;
-    }
-    .field label, .field-label {
-      font-size: 12px;
-      margin-bottom: 4px;
-    }
-    .field-error {
-      font-size: 11px;
-      margin-top: 2px;
-    }
-    input[type="text"], input[type="date"], input[type="number"], input[type="password"], select {
-      padding: 7px 10px;
-      font-size: 13px;
-      height: 36px;
-      border-radius: 8px;
-    }
-    .form-grid-2 {
-      gap: 10px;
-      margin-bottom: 13px;
-    }
-    .file-drop-card {
-      padding: 5px 10px;
-      min-height: 36px;
-      gap: 8px;
-      border-radius: 8px;
-    }
-    .upload-badge-btn {
-      padding: 4px 11px;
-      font-size: 11.5px;
-    }
-    .upload-drop-text {
-      font-size: 11.5px;
-    }
-    .btn-submit-log {
-      padding: 10px 14px;
-      font-size: 13.5px;
-      height: 38px;
-      min-height: 38px;
-      margin-top: 10px;
-      border-radius: 8px;
-    }
-  }
-
-  @media (max-height: 640px) {
-    .log-modal-content {
-      padding: 14px 16px 16px;
-    }
-    .log-modal-header h2 {
-      font-size: 16px;
-    }
-    .field {
-      margin-bottom: 10px;
-    }
-    .field label, .field-label {
-      font-size: 11px;
-      margin-bottom: 3px;
-    }
-    input[type="text"], input[type="date"], input[type="number"], input[type="password"], select {
-      padding: 5px 9px;
-      font-size: 12px;
-      height: 32px;
-      border-radius: 7px;
-    }
-    .form-grid-2 {
-      gap: 8px;
-      margin-bottom: 10px;
-    }
-    .file-drop-card {
-      padding: 4px 9px;
-      min-height: 32px;
-      border-radius: 7px;
-    }
-    .upload-badge-btn {
-      padding: 3px 9px;
-      font-size: 11px;
-    }
-    .btn-submit-log {
-      padding: 8px 12px;
-      font-size: 13px;
-      min-height: 34px;
-      height: 34px;
-      margin-top: 8px;
-    }
-  }
-
   /* Post Preview Modal (Expanded View matching Gallery Item exactly) */
   .post-preview-overlay {
     display: none;
@@ -2348,6 +2019,20 @@
   }
   .post-preview-sheet .preview-back-btn:hover {
     background: var(--gridline, rgba(15, 23, 42, 0.08));
+  }
+  .preview-navbar-poster {
+    display: flex; align-items: center; gap: 8px; min-width: 0; overflow: hidden;
+    margin-left: 4px;
+  }
+  .preview-navbar-poster-avatar {
+    flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%;
+    background: var(--gridline); color: var(--text-primary);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12.5px; font-weight: 800; line-height: 1;
+  }
+  .preview-navbar-poster-name {
+    font-size: 14px; font-weight: 700; color: var(--text-primary);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   .post-preview-sheet .preview-scroll-content {
     flex: 1;
@@ -2435,16 +2120,22 @@
     align-items: center;
     justify-content: space-between;
     margin-top: auto;
-    padding-top: 8px;
+    padding-top: 16px;
     gap: 8px;
     width: 100%;
     min-width: 0;
   }
-  /* "Who was there" — poster + tagged friends, fully revealed in the preview.
-     Grid caps rows at 5 people; a 6th+ tagged friend wraps to the next row. */
+  /* Tagged friends only (the poster now has their own spot in the navbar) —
+     fully revealed in the preview. Grid caps rows at 5 people; a 6th+
+     tagged friend wraps to the next row. */
+  .preview-people-section { margin-bottom: 12px; }
+  .preview-people-heading {
+    margin: 0 0 8px; font-size: 12px; font-weight: 700;
+    color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em;
+  }
   .preview-people {
     display: grid; grid-template-columns: repeat(5, minmax(64px, 1fr));
-    gap: 10px; margin-bottom: 12px;
+    gap: 10px;
   }
   .preview-person {
     display: flex; flex-direction: column; align-items: center; gap: 4px; width: 64px;
@@ -2465,19 +2156,19 @@
     flex-shrink: 0;
   }
   .post-preview-sheet .meta-title {
-    font-size: 15.5px;
+    font-size: 16px;
     line-height: 1.45;
     margin: 2px 0 6px;
-    font-weight: 700;
+    font-weight: 600;
   }
   .post-preview-sheet .meta-desc {
-    font-size: 13.5px;
+    font-size: 14px;
     line-height: 1.7;
-    margin: 6px 0 10px;
+    margin: 6px 0 16px;
     letter-spacing: 0.01em;
   }
   .post-preview-sheet .meta-amount {
-    font-size: 12.5px;
+    font-size: 12px;
     line-height: 1.4;
     white-space: nowrap;
     overflow: hidden;
@@ -2490,66 +2181,59 @@
     to { opacity: 1; transform: scale(1) translateY(0); }
   }
 
-  @media (max-width: 480px), (max-height: 750px) {
-    .post-preview-sheet .thumb {
-      max-height: 32vh;
-    }
-    .post-preview-sheet .thumb.ratio-3-4,
-    .post-preview-sheet.ratio-3-4 .thumb {
-      max-height: 36vh;
-    }
-    .post-preview-sheet .meta {
-      padding: 12px 13px 13px;
-    }
-    .post-preview-sheet .meta-bottom {
-      padding-top: 6px;
-      gap: 6px;
-    }
-    .post-preview-sheet .meta-title {
-      font-size: 14.5px;
-      line-height: 1.35;
-      margin: 2px 0 4px;
-    }
-    .post-preview-sheet .meta-desc {
-      font-size: 12.5px;
-      line-height: 1.6;
-      margin: 4px 0 8px;
-    }
-    .post-preview-sheet .meta-amount {
-      font-size: 11.5px;
-    }
-  }
-
   /* Edit Activity Modal */
   .edit-activity-overlay {
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.52);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
+    background: var(--surface-1, #ffffff);
     z-index: 50;
-    align-items: center;
-    justify-content: center;
-    padding: 16px;
-    overflow-y: auto;
+    align-items: stretch;
+    justify-content: stretch;
+    padding: 0;
+    overflow: hidden;
   }
   .edit-activity-overlay.show {
     display: flex;
   }
   .edit-activity-sheet {
-    background: #ffffff;
     width: 100%;
-    max-width: 440px;
-    border-radius: 24px;
-    padding: 0;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-    max-height: 92vh;
-    overflow-y: auto;
-    overflow-x: hidden;
-    animation: modalPopIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    max-width: 560px;
+    margin: 0 auto;
+    height: 100vh;
+    height: 100dvh;
+    max-height: none;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
+    animation: modalPopIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .edit-activity-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+  .edit-delete-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: var(--critical);
+    cursor: pointer;
+    padding: 0;
+    margin-left: auto;
+    transition: background 0.15s ease;
+  }
+  .edit-delete-icon-btn:hover {
+    background: rgba(239, 68, 68, 0.12);
   }
   .edit-media-container {
     position: relative;
@@ -2575,31 +2259,6 @@
     display: block;
     border: none;
   }
-  .edit-media-close-btn {
-    position: absolute;
-    top: 14px;
-    right: 14px;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: rgba(15, 23, 42, 0.65);
-    color: #ffffff;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 700;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    transition: all 0.15s ease;
-    z-index: 2;
-  }
-  .edit-media-close-btn:hover {
-    background: rgba(15, 23, 42, 0.88);
-    transform: scale(1.08);
-  }
   .edit-media-crop-btn {
     position: absolute;
     right: 14px;
@@ -2623,89 +2282,8 @@
     transform: scale(1.05);
   }
   .edit-activity-content {
-    padding: 20px 22px 24px;
-    display: flex;
-    flex-direction: column;
-  }
-  .edit-form-field {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  .edit-form-label {
-    font-size: 13.5px;
-    font-weight: 700;
-    color: #475569;
-    margin-bottom: 1px;
-  }
-  .edit-form-grid-2 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-  }
-  .edit-actions-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-top: 8px;
-  }
-  .btn-edit-save {
-    background: #4f46e5;
-    color: #ffffff;
-    border: none;
-    border-radius: 12px;
-    padding: 13px 16px;
-    font-size: 15px;
-    font-weight: 700;
-    cursor: pointer;
-    box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
-    transition: all 0.15s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-  }
-  .btn-edit-save:hover:not(:disabled) {
-    background: #4338ca;
-    transform: translateY(-1px);
-  }
-  .btn-edit-save:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-  .btn-edit-cancel {
-    background: #e2e8f0;
-    color: #1e293b;
-    border: none;
-    border-radius: 12px;
-    padding: 13px 16px;
-    font-size: 15px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .btn-edit-cancel:hover {
-    background: #cbd5e1;
-  }
-  .btn-edit-delete {
-    background: var(--critical);
-    color: #ffffff;
-    border: none;
-    border-radius: 12px;
-    width: 100%;
-    padding: 13px 16px;
-    font-size: 15px;
-    font-weight: 700;
-    cursor: pointer;
-    margin-top: 10px;
-    text-align: center;
-    transition: filter 0.15s ease;
-  }
-  .btn-edit-delete:hover {
-    filter: brightness(0.92);
+    padding: 24px 16px;
+    box-sizing: border-box;
   }
 
   /* Resize Image Modal */
@@ -3006,11 +2584,11 @@
     box-shadow: var(--card-shadow);
   }
   .modal-sheet.center { border-radius: var(--radius-lg); margin-bottom: 10vh; text-align: center; padding: 28px 24px 26px; }
-  /* The auth gate is a true center-screen dialog, not a bottom sheet —
-     override just this one overlay rather than the shared .center class
-     used by the celebration/delete-confirm modals. */
-  #authGateOverlay, #usernameSetupOverlay, #inAppBrowserGate { align-items: center; }
-  #authGateOverlay .modal-sheet.center, #usernameSetupOverlay .modal-sheet.center, #inAppBrowserGate .modal-sheet.center { margin-bottom: 0; }
+  /* The auth gate and delete-confirm are true center-screen dialogs, not
+     bottom sheets — override just these overlays rather than the shared
+     .center class used by the celebration modal. */
+  #authGateOverlay, #usernameSetupOverlay, #inAppBrowserGate, #deleteConfirmOverlay { align-items: center; }
+  #authGateOverlay .modal-sheet.center, #usernameSetupOverlay .modal-sheet.center, #inAppBrowserGate .modal-sheet.center, #deleteConfirmOverlay .modal-sheet.center { margin-bottom: 0; }
   .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
   .modal-header h3 { margin: 0; font-size: 18px; font-weight: 800; }
   .modal-close { background: none; border: none; font-size: 20px; color: var(--text-muted); cursor: pointer; padding: 4px; }
@@ -3472,18 +3050,21 @@
   [data-theme="dark"] input[type="date"],
   [data-theme="dark"] input[type="number"],
   [data-theme="dark"] input[type="password"],
-  [data-theme="dark"] select {
+  [data-theme="dark"] select,
+  [data-theme="dark"] textarea {
     background-color: #282a2c;
     border-color: #3c4043;
     color: #e3e3e3;
   }
   [data-theme="dark"] input[type="text"]::placeholder,
   [data-theme="dark"] input[type="number"]::placeholder,
-  [data-theme="dark"] input[type="password"]::placeholder {
+  [data-theme="dark"] input[type="password"]::placeholder,
+  [data-theme="dark"] textarea::placeholder {
     color: #80868b;
   }
   [data-theme="dark"] input:focus,
-  [data-theme="dark"] select:focus {
+  [data-theme="dark"] select:focus,
+  [data-theme="dark"] textarea:focus {
     border-color: #8ab4f8;
     background-color: #282a2c;
     box-shadow: 0 0 0 3px rgba(138, 180, 248, 0.2);
@@ -3582,30 +3163,6 @@
     background: #3c4043;
     color: #8ab4f8;
   }
-  [data-theme="dark"] .edit-activity-sheet {
-    background: #1e1f20;
-    border: 1px solid #3c4043;
-    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
-  }
-  [data-theme="dark"] .edit-form-label {
-    color: #c4c7c5;
-  }
-  [data-theme="dark"] .btn-edit-save {
-    background: #8ab4f8;
-    color: #131314;
-    box-shadow: 0 4px 14px rgba(138, 180, 248, 0.3);
-  }
-  [data-theme="dark"] .btn-edit-save:hover:not(:disabled) {
-    background: #a8c7fa;
-  }
-  [data-theme="dark"] .btn-edit-cancel {
-    background: #282a2c;
-    border: 1px solid #3c4043;
-    color: #e3e3e3;
-  }
-  [data-theme="dark"] .btn-edit-cancel:hover {
-    background: #303134;
-  }
   [data-theme="dark"] .resize-image-card {
     background: #1e1f20;
     border: 1px solid #3c4043;
@@ -3654,8 +3211,7 @@
   [data-theme="dark"] .resize-btn-apply:hover {
     background: #a8c7fa;
   }
-  [data-theme="dark"] .modal-overlay,
-  [data-theme="dark"] .edit-activity-overlay {
+  [data-theme="dark"] .modal-overlay {
     background: rgba(0, 0, 0, 0.72);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
@@ -3689,6 +3245,106 @@
     background: #282a2c;
     color: #e3e3e3;
     border: 1px solid #3c4043;
+  }
+
+  /* ---------------------------------------------------------------------
+     Desktop (>=1024px): the main/home page only — header, countdown,
+     progress card, category breakdown, and activity gallery. The Gallery
+     preview / Log form / Profile panel stay full-bleed fullscreen pages at
+     every width (see docs/DECISIONS.md) and are intentionally untouched
+     here, as is the floating bottom dock (three small icons stretched
+     across a 1000px+ bar would just look broken, so it stays a compact,
+     centered dock rather than growing with the content column).
+     --------------------------------------------------------------------- */
+  @media (min-width: 1024px) {
+    main,
+    .header-inner,
+    .config-banner {
+      max-width: 1040px;
+    }
+
+    .header-titles h1 {
+      font-size: 28px;
+    }
+
+    /* Turn the stacked dashboard cards into a two-column layout: countdown
+       stays full-width up top, progress + category breakdown sit side by
+       side, and the gallery header/grid run full-width below. */
+    #panel-home {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      column-gap: 28px;
+    }
+    #panel-home > .card-countdown,
+    #panel-home > .gallery-header-row,
+    #panel-home > .card-bare {
+      grid-column: 1 / -1;
+    }
+    #panel-home > .card-countdown {
+      margin: 0 0 28px;
+    }
+    #panel-home > .card-points-acc,
+    #panel-home > .card-points-category {
+      margin: 0 0 28px;
+    }
+
+    .countdown-grid {
+      max-width: 460px;
+      gap: 12px;
+    }
+    .countdown-cell .num-box {
+      padding: 16px 4px 15px;
+      border-radius: 14px;
+    }
+    .countdown-cell .num {
+      font-size: 38px;
+    }
+    .countdown-cell .label {
+      font-size: 12px;
+    }
+
+    .card-points-acc {
+      padding: 36px 32px 38px;
+    }
+    .progress-headline .value {
+      font-size: 96px;
+    }
+    .card-points-category {
+      padding: 28px 28px 26px;
+      height: 100%;
+      box-sizing: border-box;
+    }
+
+    .gallery-header-row {
+      margin: 44px 0 24px;
+      padding: 0;
+    }
+    .gallery-header-row .section-heading {
+      font-size: 24px;
+    }
+    .gallery-category-title {
+      font-size: 20px;
+    }
+
+    /* True multi-column masonry needs the JS balancing logic to build more
+       than two DOM columns (out of scope here — JS isn't touched), so each
+       of the two existing masonry columns is itself split into two CSS
+       columns, yielding four visual columns at this width without any
+       markup/script changes. */
+    .gallery-masonry {
+      gap: 14px;
+    }
+    .gallery-masonry-col {
+      display: block;
+      column-count: 2;
+      column-gap: 14px;
+      gap: 0;
+    }
+    .gallery-item {
+      margin-bottom: 14px;
+      break-inside: avoid;
+      -webkit-column-break-inside: avoid;
+    }
   }
 </style>
 </head>
@@ -3765,7 +3421,7 @@
 
         <div class="field">
           <label for="fName">What went on?</label>
-          <input type="text" id="fName" maxlength="200" placeholder="What made it memorable?" required />
+          <textarea id="fName" class="field-textarea" maxlength="200" placeholder="What made it memorable?" required></textarea>
           <div class="field-error" data-for="fName">Please describe the activity</div>
         </div>
 
@@ -4040,6 +3696,10 @@
           <path d="M12 19l-7-7 7-7"></path>
         </svg>
       </button>
+      <div class="preview-navbar-poster" id="previewNavbarPoster">
+        <span class="preview-navbar-poster-avatar" id="previewNavbarPosterAvatar"></span>
+        <span class="preview-navbar-poster-name" id="previewNavbarPosterName"></span>
+      </div>
     </div>
     <div class="preview-scroll-content">
     <div class="thumb" id="previewMediaBox">
@@ -4073,7 +3733,10 @@
     <div class="meta">
       <div class="meta-title" id="previewTitle"></div>
       <div class="meta-desc" id="previewFullDesc"></div>
-      <div class="preview-people" id="previewPeople"></div>
+      <div class="preview-people-section" id="previewPeopleSection">
+        <p class="preview-people-heading">Tagged friends:</p>
+        <div class="preview-people" id="previewPeople"></div>
+      </div>
       <div class="meta-bottom">
         <div class="meta-amount" id="previewAmount"></div>
         <span class="meta-cat" id="previewAreaBadge">General</span>
@@ -4083,37 +3746,55 @@
   </div>
 </div>
 
-<!-- Edit Activity pop-up modal (opened on clicking any gallery post) -->
+<!-- Edit Activity fullscreen page (opened on clicking any gallery post) -->
 <div class="edit-activity-overlay" id="editActivityOverlay">
   <div class="edit-activity-sheet">
-    <div class="edit-media-container" id="editMediaBox">
-      <img id="editMediaImg" referrerpolicy="no-referrer" src="icons/block-party-2026.svg" alt="Activity preview" onerror="this.onerror=null;this.src='icons/block-party-2026.svg';" />
-      <iframe id="editMediaVideo" style="display:none;width:100%;height:100%;border:none;" allow="autoplay"></iframe>
-      <button type="button" class="edit-media-close-btn" id="editTopCloseBtn" title="Close" aria-label="Close">✕</button>
-      <button type="button" class="edit-media-crop-btn" id="editCropBtn" title="Resize image" aria-label="Resize image">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M6 2v14a2 2 0 0 0 2 2h14"></path>
-          <path d="M18 22V8a2 2 0 0 0-2-2H2"></path>
+    <div class="log-modal-header">
+      <button type="button" class="log-close-btn" id="editTopCloseBtn" aria-label="Cancel" title="Cancel">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      <button type="button" class="edit-delete-icon-btn" id="editDeleteBtn" aria-label="Delete post" title="Delete post">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"></polyline>
+          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+          <path d="M10 11v6"></path>
+          <path d="M14 11v6"></path>
+          <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path>
         </svg>
       </button>
     </div>
 
-    <div class="edit-activity-content">
-      <form id="editActivityForm" novalidate style="display:flex;flex-direction:column;gap:14px;">
-        <div class="edit-form-field">
-          <label class="edit-form-label" for="editActivityName">Activity Name</label>
+    <div class="edit-activity-scroll">
+      <div class="edit-media-container" id="editMediaBox">
+        <img id="editMediaImg" referrerpolicy="no-referrer" src="icons/block-party-2026.svg" alt="Activity preview" onerror="this.onerror=null;this.src='icons/block-party-2026.svg';" />
+        <iframe id="editMediaVideo" style="display:none;width:100%;height:100%;border:none;" allow="autoplay"></iframe>
+        <button type="button" class="edit-media-crop-btn" id="editCropBtn" title="Resize image" aria-label="Resize image">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 2v14a2 2 0 0 0 2 2h14"></path>
+            <path d="M18 22V8a2 2 0 0 0-2-2H2"></path>
+          </svg>
+        </button>
+      </div>
+
+      <div class="edit-activity-content">
+      <form id="editActivityForm" novalidate>
+        <div class="field">
+          <label for="editActivityName">Activity Name</label>
           <input type="text" id="editActivityName" maxlength="200" placeholder="Activity Name" required />
           <div class="field-error" data-for="editActivityName">Please enter an activity name.</div>
         </div>
 
-        <div class="edit-form-field">
-          <label class="edit-form-label" for="editWhatWentOn">What went on?</label>
-          <input type="text" id="editWhatWentOn" maxlength="200" placeholder="What made it memorable?" required />
+        <div class="field">
+          <label for="editWhatWentOn">What went on?</label>
+          <textarea id="editWhatWentOn" class="field-textarea" maxlength="200" placeholder="What made it memorable?" required></textarea>
           <div class="field-error" data-for="editWhatWentOn">Please describe the activity</div>
         </div>
 
-        <div class="edit-form-field">
-          <label class="edit-form-label">Tag friends <span style="font-weight:400;">(optional)</span></label>
+        <div class="field">
+          <label>Tag friends <span style="font-weight:400;color:var(--text-muted);">(optional)</span></label>
           <div class="tag-friends" id="editTagFriends">
             <div class="tag-friends-pills" id="editTagFriendsPills"></div>
             <div class="tag-friends-search-wrap">
@@ -4126,14 +3807,9 @@
           </div>
         </div>
 
-        <div class="edit-form-grid-2">
-          <div class="edit-form-field">
-            <label class="edit-form-label" for="editDate">Date</label>
-            <input type="date" id="editDate" required />
-            <div class="field-error" data-for="editDate">Date can't be in the future.</div>
-          </div>
-          <div class="edit-form-field">
-            <label class="edit-form-label" for="editCategory">Category</label>
+        <div class="form-grid-2">
+          <div class="field">
+            <label for="editCategory">Category</label>
             <div class="select-wrap">
               <select id="editCategory" required>
                 <option value="Spiritual">Spiritual</option>
@@ -4143,15 +3819,20 @@
             </div>
             <div class="field-error" data-for="editCategory">Please choose a category.</div>
           </div>
+          <div class="field">
+            <label for="editDate">Date</label>
+            <input type="date" id="editDate" required />
+            <div class="field-error" data-for="editDate">Date can't be in the future.</div>
+          </div>
         </div>
 
-        <div class="edit-form-grid-2">
-          <div class="edit-form-field">
-            <label class="edit-form-label" for="editAmount">Amount</label>
+        <div class="form-grid-2">
+          <div class="field">
+            <label for="editAmount">Amount</label>
             <input type="number" id="editAmount" step="0.1" min="0.1" placeholder="e.g. 5" required />
             <div class="field-error" data-for="editAmount">Enter an amount &gt; 0.</div>
           </div>
-          <div class="edit-form-field" style="justify-content:flex-end;">
+          <div class="field align-end">
             <div class="select-wrap">
               <select id="editUnits" required>
                 <option value="hours">Hours (hrs)</option>
@@ -4161,8 +3842,8 @@
           </div>
         </div>
 
-        <div class="edit-form-field">
-          <label class="edit-form-label">Change Media (optional)</label>
+        <div class="field">
+          <label class="field-label">Change Media (optional)</label>
           <div class="file-drop-card" id="editFileDrop">
             <span class="upload-badge-btn">Upload</span>
             <span class="upload-drop-text" id="editFileDropText">or drag and drop files here</span>
@@ -4176,13 +3857,9 @@
           <input type="file" id="editFileInput" accept="image/*,video/*,video/mp4,video/quicktime,video/mov,video/webm,video/3gpp,video/3gpp2,video/x-m4v,video/x-matroska,video/avi,video/x-msvideo,.mov,.MOV,.mp4,.MP4,.m4v,.M4V,.webm,.WEBM,.3gp,.3gpp,.mkv,.MKV,.avi,.AVI,.heic,.HEIC,.heif,.HEIF" />
         </div>
 
-        <div class="edit-actions-row">
-          <button type="submit" class="btn-edit-save" id="editSaveBtn">Save Changes</button>
-          <button type="button" class="btn-edit-cancel" id="editCancelBtn">Cancel</button>
-        </div>
-
-        <button type="button" class="btn-edit-delete" id="editDeleteBtn">Delete activity</button>
+        <button type="submit" class="btn-submit-log" id="editSaveBtn">Save Changes</button>
       </form>
+      </div>
     </div>
   </div>
 </div>
@@ -4261,8 +3938,8 @@
 <div class="modal-overlay" id="deleteConfirmOverlay">
   <div class="modal-sheet center">
     <div class="confetti-emoji">🗑️</div>
-    <h3>Delete this entry?</h3>
-    <p>This removes it from the group total and deletes the uploaded photo/video. This can't be undone.</p>
+    <h3>Delete Post</h3>
+    <p>Are you sure to delete this post?</p>
     <div class="btn-row">
       <button class="btn btn-secondary" id="deleteCancelBtn">Cancel</button>
       <button class="btn btn-danger" id="deleteConfirmBtn">Delete</button>
@@ -4326,7 +4003,7 @@
   <div class="modal-sheet center">
     <div class="confetti-emoji">🔒</div>
     <h3>This app is private</h3>
-    <p id="authPrompt">Sign in with the Google account you use with the group to continue.</p>
+    <p id="authPrompt">Sign in with the Google account to verify your access to this site.</p>
     <p class="field-error" id="authForbidden">That Google account isn't on the group's list yet — ask the organizer to add it, then try signing in again.</p>
     <div id="googleSignInBtn" style="display:flex;justify-content:center;margin-top:6px;"></div>
   </div>
@@ -5183,13 +4860,16 @@
     '</div>';
   }
 
-  // Full reveal for the preview modal: every person involved, avatar + name.
+  // Tagged friends only, full reveal in the preview — the poster is shown
+  // separately in the navbar (see openPreviewModal / previewNavbarPoster).
   function renderPreviewPeople_(entry) {
+    var section = document.getElementById("previewPeopleSection");
     var container = document.getElementById("previewPeople");
-    if (!container) return;
-    if (!entry.userId) { container.innerHTML = ""; return; }
-    var allIds = [entry.userId].concat(entry.tagged_friends || []);
-    container.innerHTML = allIds.map(function (id) {
+    if (!container || !section) return;
+    var taggedIds = entry.tagged_friends || [];
+    if (!taggedIds.length) { container.innerHTML = ""; section.style.display = "none"; return; }
+    section.style.display = "";
+    container.innerHTML = taggedIds.map(function (id) {
       return '<div class="preview-person">' +
         '<span class="preview-person-avatar">' + escapeHtml_(userInitial_(id)) + '</span>' +
         '<span class="preview-person-name">' + escapeHtml_(userDisplayName_(id)) + '</span>' +
@@ -5422,6 +5102,19 @@
 
     renderPreviewPeople_(entry);
 
+    var posterAvatarEl = document.getElementById("previewNavbarPosterAvatar");
+    var posterNameEl = document.getElementById("previewNavbarPosterName");
+    var posterWrapEl = document.getElementById("previewNavbarPoster");
+    if (posterWrapEl && posterAvatarEl && posterNameEl) {
+      if (entry.userId) {
+        posterAvatarEl.textContent = userInitial_(entry.userId);
+        posterNameEl.textContent = userDisplayName_(entry.userId);
+        posterWrapEl.style.display = "";
+      } else {
+        posterWrapEl.style.display = "none";
+      }
+    }
+
     // Area badge & color class
     var catKey = String(entry.category || "others").toLowerCase().replace(/[^a-z0-9]/g, "");
     var catClass = "cat-" + (catKey === "spiritual" || catKey === "relationship" ? catKey : "others");
@@ -5527,8 +5220,10 @@
   }
 
   // ===================================================================
-  // Edit Activity Pop-up Modal
+  // Edit Activity fullscreen page
   // ===================================================================
+  var editModalScrollY = 0;
+  var editModalOwnsScrollLock = false;
   function updateEditMediaBoxRatio(isPortrait) {
     var box = document.getElementById("editMediaBox");
     if (!box) return;
@@ -5602,11 +5297,27 @@
     dropCard.classList.remove("has-file");
     document.getElementById("editFileDropText").textContent = "or drag and drop files here";
 
+    // Only capture/lock scroll if nothing else already has the body locked
+    // (e.g. opening straight from the gallery) — if we're opening on top of
+    // an already-locked view (e.g. from the Profile panel's own posts),
+    // that outer lock's scroll position must be left alone.
+    editModalOwnsScrollLock = !(document.body.classList.contains("log-mode") || document.body.classList.contains("gallery-preview-open"));
+    if (editModalOwnsScrollLock) {
+      editModalScrollY = window.scrollY || window.pageYOffset || 0;
+      document.body.style.top = "-" + editModalScrollY + "px";
+    }
+    document.body.classList.add("edit-mode");
     document.getElementById("editActivityOverlay").classList.add("show");
   }
 
   function closeEditModal() {
     document.getElementById("editActivityOverlay").classList.remove("show");
+    document.body.classList.remove("edit-mode");
+    if (editModalOwnsScrollLock) {
+      document.body.style.top = "";
+      window.scrollTo(0, editModalScrollY);
+      editModalOwnsScrollLock = false;
+    }
     var vidEl = document.getElementById("editMediaVideo");
     if (vidEl) vidEl.src = "";
     state.editingEntry = null;
@@ -6627,17 +6338,32 @@
   // ===================================================================
   // Tabs
   // ===================================================================
+  var logModeScrollY = 0;
   function switchPanel(name) {
+    var wasLogMode = document.body.classList.contains("log-mode");
+    var willBeLogMode = (name === "log" || name === "profile");
+
     document.getElementById("panel-log").classList.remove("active");
     document.getElementById("panel-profile").classList.remove("active");
-    document.body.classList.remove("log-mode");
     document.getElementById("panel-home").classList.add("active");
+
+    if (willBeLogMode && !wasLogMode) {
+      logModeScrollY = window.scrollY || window.pageYOffset || 0;
+      document.body.style.top = "-" + logModeScrollY + "px";
+    }
+
+    document.body.classList.remove("log-mode");
     if (name === "log") {
       document.getElementById("panel-log").classList.add("active");
       document.body.classList.add("log-mode");
     } else if (name === "profile") {
       document.getElementById("panel-profile").classList.add("active");
       document.body.classList.add("log-mode");
+    }
+
+    if (!willBeLogMode && wasLogMode) {
+      document.body.style.top = "";
+      window.scrollTo(0, logModeScrollY);
     }
   }
 
@@ -7760,9 +7486,6 @@
 
     var editActivityForm = document.getElementById("editActivityForm");
     if (editActivityForm) editActivityForm.addEventListener("submit", submitEditActivityForm);
-
-    var editCancelBtn = document.getElementById("editCancelBtn");
-    if (editCancelBtn) editCancelBtn.addEventListener("click", closeEditModal);
 
     var editTopCloseBtn = document.getElementById("editTopCloseBtn");
     if (editTopCloseBtn) editTopCloseBtn.addEventListener("click", closeEditModal);

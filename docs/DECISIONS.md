@@ -113,6 +113,32 @@ buttons instead of the sign-in form. A first attempt just told people to
 use Telegram's own "Open in Browser" menu — more correct in theory, but
 dropped for asking people to hunt for a menu instead of tapping a button.
 
+**Small-viewport CSS breakpoints consolidated into one mobile/desktop split.**
+The scattered `max-width: 480px`/`360px` (one already dead/commented-out) and
+height-based (`max-height: 640px`/`750px`) breakpoints were removed outright
+— base styles are now the single mobile treatment for every phone size, with
+one real desktop breakpoint added at `min-width: 1024px` (wider content
+column, a two-column dashboard row for progress/category, a 4-visual-column
+gallery). The floating bottom dock and the three fullscreen pages (Log form,
+Profile, Gallery preview) intentionally don't change at the desktop
+breakpoint.
+
+**Log form and Edit Activity form UI unified**, plus several standalone
+fixes: scrollbars are hidden site-wide (scroll still works); the Log form's
+background can no longer be scrolled while it's open (reused the same
+position-fixed lock already proven for the gallery preview); "What went on?"
+is now a bigger, internally-scrollable textarea instead of a single-line
+input. The Edit Activity form was converted from a centered pop-up card to a
+fullscreen page matching the Log form's actual CSS classes (not a visually
+similar copy — same classes, so they can't drift apart again), with Cancel
+top-left, a red delete icon top-right, Category/Date swapped to match the Log
+form's order, and a single full-width Save Changes button (the old
+Cancel/Delete-activity buttons at the bottom are gone). The existing delete
+confirmation popup is now truly centered on screen and reused as-is for this
+flow. The post preview modal now shows the poster's avatar/name in its
+navbar and labels the people grid "Tagged friends:", listing only actual
+tagged friends (the poster no longer double-counts in that list).
+
 ## Data-integrity bug: `tagged_friends` corruption (resolved)
 
 Google Sheets auto-detects digit-only strings and silently converts them to
