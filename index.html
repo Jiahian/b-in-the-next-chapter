@@ -1419,7 +1419,12 @@
     align-items: center;
     justify-content: flex-end;
     position: relative;
-    z-index: 40;
+    /* Below the floating bottom bar (z-index 35) so the button tucks under
+       the navbar like the rest of the page content, instead of poking above
+       it when the gallery header sits in the bar's zone on short screens.
+       The popover keeps its own higher z-index within this stacking context,
+       so it still opens above the gallery cards. */
+    z-index: 30;
     max-width: 100%;
     min-height: 34px;
     flex-shrink: 0;
