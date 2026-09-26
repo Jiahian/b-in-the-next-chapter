@@ -119,6 +119,52 @@ Share the hosted link with the group. On each friend's phone:
 
 It'll then open full-screen like a native app. First open still requires signing in with Google.
 
+## 9. Telegram notifications (optional)
+
+Posts an AI-written announcement (with the photo and a link back to the post)
+into a Telegram group topic whenever someone logs an activity, plus milestone
+messages. Everything about *what* it says and *when* is editable from your phone
+— no code changes.
+
+**One-time setup:**
+1. **Telegram bot + group**: create a bot with @BotFather, enable **Topics** on
+   your group, create a topic for the announcements, and add the bot as an
+   admin. Post a message in that topic, then open
+   `https://api.telegram.org/bot<TOKEN>/getUpdates` in a browser to read the
+   group's `chat.id` (a negative number) and the topic's `message_thread_id`.
+2. **Gemini key**: get a free API key from Google AI Studio
+   (aistudio.google.com/apikey). Pick a model with a reasonable daily request
+   quota — some newer models allow only ~20/day on the free tier.
+3. **Script Properties** (Apps Script → Project Settings → Script Properties):
+   add `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `TELEGRAM_TOPIC_ID`,
+   `GEMINI_API_KEY`.
+4. **Run once** from the editor, in order: `setup` (creates the Settings,
+   Notifications, NameScrub tabs + a style-guide Google Doc, and the new
+   columns), `backfillUserCounters`, then `setupNotificationTrigger` (installs
+   the every-minute queue processor — approve the permission prompt).
+5. Set the project **timezone to Asia/Singapore** (Project Settings).
+6. **Redeploy** a New version so the web app runs the new code.
+
+**What you tune, and where (all phone-editable):**
+- **Settings tab** — `FRONTEND_URL` (your live site, for the "Read more" link),
+  `GEMINI_MODEL`, `MILESTONES` + `LAST_MILESTONE_ANNOUNCED` (set this to the
+  highest milestone already passed so it doesn't announce an old one), the
+  `*_ENABLED` on/off toggles, and `MAX_NOTIFICATION_RETRIES`.
+- **Style-guide Google Doc** — the tone, rules, and example wording sent to the
+  AI. Keep real names out of examples (member names are auto-scrubbed, but a
+  non-member name typed here would reach the AI).
+- **NameScrub tab** — name variants/nicknames (mapped to a member's userId) and
+  any sensitive words to hide from the AI. Everything sent to Gemini has these
+  replaced with placeholder codes and restored afterwards.
+- **Notifications tab** — the send log/queue. To fix a bad message: delete it in
+  Telegram, edit the row's `messageContent`, set `status` to `PENDING_RESEND`.
+
+**Testing safely:** to try changes without posting to the real group, make a
+**copy of the Sheet** (its own Apps Script project = its own Script Properties)
+and point a **test bot/chat** at it — the shared code reads each project's own
+properties, so test and production never cross. (The Telegram token and chat id
+are Script Properties, not in `Code.gs`.)
+
 ## Who can do what (important to know)
 
 The Web App is deployed with **"Anyone" access** at the Apps Script layer
