@@ -3703,7 +3703,7 @@
     </div>
     <div class="preview-scroll-content">
     <div class="thumb" id="previewMediaBox">
-      <img id="previewMediaImg" referrerpolicy="no-referrer" src="icons/block-party-2026.svg" alt="Activity media" onerror="this.onerror=null;this.src='icons/block-party-2026.svg';" />
+      <img id="previewMediaImg" referrerpolicy="no-referrer" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="Activity media" onerror="this.onerror=null;this.src='data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';" />
       <iframe id="previewMediaVideo" style="display:none;width:100%;height:100%;border:none;" allow="autoplay"></iframe>
 
       <div class="preview-top-actions">
@@ -3769,7 +3769,7 @@
 
     <div class="edit-activity-scroll">
       <div class="edit-media-container" id="editMediaBox">
-        <img id="editMediaImg" referrerpolicy="no-referrer" src="icons/block-party-2026.svg" alt="Activity preview" onerror="this.onerror=null;this.src='icons/block-party-2026.svg';" />
+        <img id="editMediaImg" referrerpolicy="no-referrer" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="Activity preview" onerror="this.onerror=null;this.src='data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';" />
         <iframe id="editMediaVideo" style="display:none;width:100%;height:100%;border:none;" allow="autoplay"></iframe>
         <button type="button" class="edit-media-crop-btn" id="editCropBtn" title="Resize image" aria-label="Resize image">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
@@ -4146,8 +4146,12 @@
     return isNaN(d.getTime()) ? value : sgDateFormatter_.format(d); // en-CA formats as YYYY-MM-DD
   }
 
+  // Transparent 1x1 — a blank placeholder for missing/failed media, so the
+  // media box shows its own (surface-coloured) background instead of a graphic.
+  var BLANK_MEDIA = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+
   function driveImageUrl(fileId) {
-    if (!fileId) return "icons/block-party-2026.svg";
+    if (!fileId) return BLANK_MEDIA;
     if (fileId.indexOf("data:") === 0 || fileId.indexOf("http://") === 0 || fileId.indexOf("https://") === 0 || fileId.indexOf("/") === 0 || fileId.indexOf("./") === 0 || fileId.indexOf("icons/") === 0) {
       return fileId;
     }
@@ -4883,7 +4887,7 @@
     var catKey = String(entry.category || "others").toLowerCase().replace(/[^a-z0-9]/g, "");
     var catClass = "cat-" + (catKey === "spiritual" || catKey === "relationship" ? catKey : "others");
     var imgSrc = escapeHtml_(driveImageUrl(entry.driveFileId));
-    var altText = escapeHtml_(entry.activity || "Activity");
+    var altText = escapeHtml_(entry.activityTitle || "Activity");
 
     var isExplicitPortrait = (entry.aspectRatio === "3:4" || entry.aspectRatio === "portrait");
     var isExplicitLandscape = (entry.aspectRatio === "4:3" || entry.aspectRatio === "landscape");
@@ -4893,7 +4897,7 @@
       ? '<div class="video-fallback">▶️</div>'
       : '<img loading="lazy" decoding="async" referrerpolicy="no-referrer" src="' + imgSrc + '" alt="' + altText + '" onerror="if(this.src.indexOf(\'lh3.googleusercontent.com\')!==-1){this.src=\'https://drive.google.com/thumbnail?id=' + encodeURIComponent(entry.driveFileId || '') + '&sz=w800\';}else if(this.src.indexOf(\'drive.google.com/thumbnail\')!==-1){this.src=\'https://drive.google.com/uc?export=view&id=' + encodeURIComponent(entry.driveFileId || '') + '\';}else{this.onerror=null;this.outerHTML=\'<div class=&quot;video-fallback&quot; style=&quot;background:var(--card);color:var(--text-muted);&quot;>📷</div>\';}" />';
     
-    var rawWhatWentOn = (entry.name || "").trim();
+    var rawWhatWentOn = (entry.activityDesc || "").trim();
     var whatWentOn = "";
     if (rawWhatWentOn) {
       var words = rawWhatWentOn.split(/\s+/);
@@ -5129,12 +5133,12 @@
 
     var titleEl = document.getElementById("previewTitle");
     if (titleEl) {
-      titleEl.textContent = entry.activity || "Activity";
-      titleEl.title = entry.activity || "Activity";
+      titleEl.textContent = entry.activityTitle || "Activity";
+      titleEl.title = entry.activityTitle || "Activity";
     }
 
     var descEl = document.getElementById("previewFullDesc");
-    var fullDescText = (entry.name || "").trim();
+    var fullDescText = (entry.activityDesc || "").trim();
     if (descEl) {
       if (fullDescText) {
         descEl.textContent = fullDescText;
@@ -5189,10 +5193,10 @@
             this.src = "https://drive.google.com/uc?export=view&id=" + encodeURIComponent(entry.driveFileId);
           } else {
             this.onerror = null;
-            this.src = "icons/block-party-2026.svg";
+            this.src = BLANK_MEDIA;
           }
         };
-        imgEl.src = driveImageUrl(entry.driveFileId) || "icons/block-party-2026.svg";
+        imgEl.src = driveImageUrl(entry.driveFileId) || BLANK_MEDIA;
         if (imgEl.complete && imgEl.naturalWidth > 0) {
           checkImgRatio();
         }
@@ -5240,8 +5244,8 @@
     if (editTagFriendsWrap) editTagFriendsWrap.classList.remove("open");
     clearEditErrors_();
 
-    document.getElementById("editActivityName").value = entry.activity || "";
-    document.getElementById("editWhatWentOn").value = entry.name || "";
+    document.getElementById("editActivityName").value = entry.activityTitle || "";
+    document.getElementById("editWhatWentOn").value = entry.activityDesc || "";
     document.getElementById("editDate").value = entry.date || todayISO();
     document.getElementById("editDate").max = todayISO();
     
@@ -5283,10 +5287,10 @@
             this.src = "https://drive.google.com/uc?export=view&id=" + encodeURIComponent(entry.driveFileId);
           } else {
             this.onerror = null;
-            this.src = "icons/block-party-2026.svg";
+            this.src = BLANK_MEDIA;
           }
         };
-        imgEl.src = driveImageUrl(entry.driveFileId) || "icons/block-party-2026.svg";
+        imgEl.src = driveImageUrl(entry.driveFileId) || BLANK_MEDIA;
         if (imgEl.complete && imgEl.naturalWidth > 0) {
           checkImgRatio();
         }
@@ -5885,9 +5889,9 @@
     var payload = {
       action: "update",
       entryId: entryId,
-      name: whatWentOn,
+      activityDesc: whatWentOn,
       category: category,
-      activity: activity,
+      activityTitle: activity,
       date: date,
       amount: amount,
       units: units,
@@ -6139,9 +6143,9 @@
 
   function populateFormForEdit(entry) {
     state.editingId = entry.entryId;
-    document.getElementById("fName").value = entry.name;
+    document.getElementById("fName").value = entry.activityDesc;
     document.getElementById("fCategory").value = entry.category;
-    document.getElementById("fActivity").value = entry.activity;
+    document.getElementById("fActivity").value = entry.activityTitle;
     document.getElementById("fDate").value = entry.date;
     document.getElementById("fDate").max = todayISO();
     document.getElementById("fAmount").value = entry.amount;
@@ -6277,7 +6281,7 @@
 
     var payload = {
       action: state.editingId ? "update" : "create",
-      name: name, category: category, activity: activity, date: date, amount: amount, units: units,
+      activityDesc: name, category: category, activityTitle: activity, date: date, amount: amount, units: units,
       tagged_friends: state.pendingTaggedFriends
     };
     if (state.pendingMedia) payload.media = state.pendingMedia;
@@ -6370,6 +6374,39 @@
   // ===================================================================
   // Load loop
   // ===================================================================
+  // Opens the post named by ?entry=<id> (a notification deep link). Called once
+  // after entries load; no-ops quietly if there's no param, and toasts if the
+  // entry isn't found (e.g. it was deleted before the link was opened).
+  // Returns true if it opened a post preview (so the caller can keep the
+  // loading screen up until the overlay has painted).
+  function handleEntryDeepLink_() {
+    var opened = false;
+    try {
+      var entryId = new URLSearchParams(location.search).get("entry");
+      if (!entryId) return false;
+      var entry = (state.entries || []).find(function (e) { return e.entryId === entryId; });
+      if (entry) {
+        openPreviewModal(entry);
+        opened = true;
+      } else {
+        showToast("That post couldn't be found — it may have been removed.");
+      }
+      // Strip ?entry from the address bar now that it's handled, so a manual
+      // refresh won't reopen it and the URL stays tidy. Only removes that one
+      // param; anything else in the query is preserved.
+      try {
+        var u = new URL(location.href);
+        u.searchParams.delete("entry");
+        history.replaceState(null, "", u.pathname + u.search + u.hash);
+      } catch (e) {
+        // Older browser without URL/replaceState — harmless, leave URL as-is.
+      }
+    } catch (err) {
+      // URLSearchParams unsupported or malformed — ignore, don't block the app.
+    }
+    return opened;
+  }
+
   function loadEntries() {
     if (!isConfigured) {
       state.entries = [];
@@ -6408,7 +6445,37 @@
         renderFilterCapsule();
         renderGallery();
       }
-      hideLoadingScreen_();
+      // Deep link (?entry=<id>) from a notification: open that post once, on
+      // the first successful load only — the flag stops the 20s poll (or a
+      // retry after an earlier failure) from reopening it.
+      var openedDeepLink = false;
+      if (!state.deepLinkHandled) {
+        state.deepLinkHandled = true;
+        openedDeepLink = handleEntryDeepLink_();
+      }
+      if (openedDeepLink) {
+        // Hold the loading screen (z-index 90, above the preview) until the
+        // post's real image has actually loaded — otherwise it hides while the
+        // preview still shows its blank placeholder before the photo, which
+        // reads as a flash of empty box. A
+        // timeout guarantees we never hang on a slow/broken image.
+        var mediaImg = document.getElementById("previewMediaImg");
+        if (mediaImg && !(mediaImg.complete && mediaImg.naturalWidth > 0)) {
+          var settled = false;
+          var finishDeepLink = function () {
+            if (settled) return;
+            settled = true;
+            hideLoadingScreen_();
+          };
+          mediaImg.addEventListener("load", finishDeepLink, { once: true });
+          mediaImg.addEventListener("error", finishDeepLink, { once: true });
+          setTimeout(finishDeepLink, 2500);
+        } else {
+          requestAnimationFrame(function () { requestAnimationFrame(hideLoadingScreen_); });
+        }
+      } else {
+        hideLoadingScreen_();
+      }
     }).catch(function () {
       if (!state.loaded) {
         state.entries = [];
@@ -7456,7 +7523,7 @@
                 }
               };
               imgEl.onload = checkOrigRatio;
-              imgEl.src = driveImageUrl(entry.driveFileId) || "icons/block-party-2026.svg";
+              imgEl.src = driveImageUrl(entry.driveFileId) || BLANK_MEDIA;
               if (imgEl.complete && imgEl.naturalWidth > 0) {
                 checkOrigRatio();
               }

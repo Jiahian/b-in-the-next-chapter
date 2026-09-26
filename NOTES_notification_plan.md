@@ -53,7 +53,7 @@ This plan went through two review passes before build, both against the actual `
 - `taggedInCount` — number of *other people's* posts this user has been tagged in
 - `groupActivityPostCount` — number of this user's *own* posts with at least one tagged friend
 
-**One-time backfill required.** `ensureHeaders_` only grows the header row for new columns — it doesn't populate historical rows. Without a backfill, every existing friend's cell is blank, which reads as `0` and would make their **next** post wrongly announced as their first-ever post. `backfillUserCounters_()` (same one-time idiom as `setup()`) loops `listUsers_()` and recomputes everyone once — must run immediately after deploy, before real traffic.
+**One-time backfill required.** `ensureHeaders_` only grows the header row for new columns — it doesn't populate historical rows. Without a backfill, every existing friend's cell is blank, which reads as `0` and would make their **next** post wrongly announced as their first-ever post. `backfillUserCounters()` (same one-time idiom as `setup()`) loops `listUsers_()` and recomputes everyone once — must run immediately after deploy, before real traffic.
 
 ### Keeping counters correct through edits and deletes
 
@@ -134,7 +134,7 @@ This is the achievable goal in Apps Script's synchronous model: **saving never f
 
 `hourlyChecks_()` — also guarded by `LockService.getDocumentLock().tryLock(5000)` (same lock resource as `processNotificationQueue_`, so they correctly can't run concurrently with each other, while neither ever blocks `doPost`) — is a fallback safety net (in case a one-time trigger ever fails to fire or a run dies mid-processing) plus the genuinely hour-granularity checks: (1) calls `drainNotificationQueue_()` directly (already holding the lock — no nested lock acquisition), (2) Points Update check using **"due and not yet sent"** semantics (`now.getHours() >= POINTS_UPDATE_HOUR && POINTS_UPDATE_LAST_SENT_DATE !== today` — exact-hour equality would silently skip a whole day if a trigger firing is late), (3) highlight check: scans Entries for `highlightOfWeek === true && !highlightAnnouncedAt`, guarded by `HIGHLIGHT_LAST_SENT_WEEK` so at most one highlight fires per week even if the admin ticks more than one entry.
 
-`setupHourlyTrigger_()` — one-time function registering `ScriptApp.newTrigger('hourlyChecks_').timeBased().everyHours(1).create()`. Script project timezone must be `Asia/Singapore` (Project Settings > General settings).
+`setupHourlyTrigger()` — one-time function registering `ScriptApp.newTrigger('hourlyChecks_').timeBased().everyHours(1).create()`. Script project timezone must be `Asia/Singapore` (Project Settings > General settings).
 
 ### Media upload
 
@@ -142,7 +142,7 @@ This is the achievable goal in Apps Script's synchronous model: **saving never f
 
 ### Other functions
 
-- `getSettings_()`/`getSettingsSheet_()`/`setSetting_(key, value)`, `getStyleGuide_()`/`parseStyleGuide_()`, `getOrCreateStyleGuideDoc_()` (called from `setup()`), `computeTotals_()`, `checkAndAdvanceMilestone_(newTotal)` (against the `LAST_MILESTONE_ANNOUNCED` watermark, idempotent regardless of which write path — create/update/delete — changed the total; called inside the lock in each write path), `getNotificationsSheet_()`/`notificationIndexOf_()`/`updateNotificationStatus_()`, `buildEntryContext_(entry, extra)`/`getDisplayName_(userId)`, `computeCountersForUser_()`/`computeStreaks_()`/`weekIndexSinceEpoch_()`/`writeUserCounters_()`/`recomputeUserCounters_(entries, userIds)`, `backfillUserCounters_()`, `checkAndSendPointsUpdate_()`/`weeksBetween_()`, `checkAndSendHighlight_()`.
+- `getSettings_()`/`getSettingsSheet_()`/`setSetting_(key, value)`, `getStyleGuide_()`/`parseStyleGuide_()`, `getOrCreateStyleGuideDoc_()` (called from `setup()`), `computeTotals_()`, `checkAndAdvanceMilestone_(newTotal)` (against the `LAST_MILESTONE_ANNOUNCED` watermark, idempotent regardless of which write path — create/update/delete — changed the total; called inside the lock in each write path), `getNotificationsSheet_()`/`notificationIndexOf_()`/`updateNotificationStatus_()`, `buildEntryContext_(entry, extra)`/`getDisplayName_(userId)`, `computeCountersForUser_()`/`computeStreaks_()`/`weekIndexSinceEpoch_()`/`writeUserCounters_()`/`recomputeUserCounters_(entries, userIds)`, `backfillUserCounters()`, `checkAndSendPointsUpdate_()`/`weeksBetween_()`, `checkAndSendHighlight_()`.
 - **Notifications resend semantics**: resending always replays that row's own stored `messageContent`/`mediaUrl`/`mediaType` verbatim — never re-derives from the live `entryId` (which may have since changed or been deleted). This must still work even if the original entry was since soft-deleted.
 - Add top-level constants (non-secret, same treatment as existing `TARGET_POINTS`/`DEADLINE_ISO` in `index.html`): `FRONTEND_URL` (the GitHub Pages site URL, for building deep links) and mirrored copies of `TARGET_POINTS`/`DEADLINE_ISO` in `Code.gs` itself (needed for the Points Update message's "days remaining"/target context) — comment both as "keep in sync with index.html," following the existing pattern already used for `HEADERS` at `Code.gs:29`.
 
@@ -155,12 +155,64 @@ Add `?entry=<id>` deep-link support: after `loadEntries()` (`index.html:6647`) p
 ## Docs to update once built
 
 - `docs/PRD.md` §5.2: remove "push notifications / reminders" from "out of scope."
-- `docs/SETUP.md`: new "Telegram notifications" section — bot creation, topic ID lookup, the 4 new Script Properties, what Settings/style-guide Doc/Notifications are for, `setupHourlyTrigger_()`'s timezone caveat, and the mandatory one-time `backfillUserCounters_()` step.
+- `docs/SETUP.md`: new "Telegram notifications" section — bot creation, topic ID lookup, the 4 new Script Properties, what Settings/style-guide Doc/Notifications are for, `setupHourlyTrigger()`'s timezone caveat, and the mandatory one-time `backfillUserCounters()` step.
 - `docs/DECISIONS.md`: one short current-state entry once shipped.
 
 ## Deferred to Phase 2
 
 Named streak badges, personal post-count milestone announcements, per-category milestone announcements, "Well-Rounded" — straightforward once Phase 1's counters exist and real data/wording preferences are visible.
+
+## Backlog / ideas (not scheduled)
+
+- **Scheduled announcements: Points Update + Highlight of the week (was Phase
+  8).** A time-based trigger that runs the two date/hour-granularity checks.
+  **Preference: run it DAILY, not hourly** — e.g. `ScriptApp.newTrigger('...')
+  .timeBased().everyDays(1).atHour(POINTS_UPDATE_HOUR).create()` — so the hour
+  is baked into the trigger and the "which hour" check goes away (keep the
+  "due and not yet sent TODAY" guard so a late fire still sends once). Two
+  features, each with Settings toggles/keys already seeded:
+  - **Points Update**: current total, points-to-go, days-to-deadline. Tunables:
+    `POINTS_UPDATE_MODE` (weekly/biweekly/dates/off), `POINTS_UPDATE_DAY_OF_WEEK`,
+    `POINTS_UPDATE_HOUR`, `POINTS_UPDATE_SPECIFIC_DATES`, and script-maintained
+    `POINTS_UPDATE_LAST_SENT_DATE`. Needs mirrored `TARGET_POINTS`/`DEADLINE_ISO`
+    constants in Code.gs (keep in sync with index.html) for the "days remaining".
+  - **Highlight of the week**: admin ticks the `highlightOfWeek` column on an
+    entry; the check finds `highlightOfWeek === true && !highlightAnnouncedAt`,
+    announces once, stamps `highlightAnnouncedAt`, guarded by
+    `HIGHLIGHT_LAST_SENT_WEEK` (≤1 per week). Columns already exist from Phase 1.
+  - Setup: a `setupDailyTrigger` (no underscore, run once) + set the script
+    project timezone to `Asia/Singapore`. The safety-net queue drain the plan
+    put here is now largely redundant (the every-minute queue trigger handles
+    draining) — optional to include.
+  - Deferred 2026-09-25; no code exists yet.
+
+- **First-post & group-activity folding (was Phase 7).** Fold two extras into
+  the SAME entry announcement, each gated by its Settings toggle
+  (`FIRST_POST_MENTION_ENABLED`, `GROUP_ACTIVITY_MENTION_ENABLED`, both already
+  seeded): (1) first-post — the owner's freshly recomputed `postCount === 1`
+  (owned-only, so being tagged earlier doesn't suppress it); (2) group activity
+  — creator + ≥1 tagged friend, passing only the COUNT to Gemini, never the
+  friends' names/ids. Implementation sketch: a `buildEntryContext_(entry,
+  counters)` helper that sets `isFirstPost` / `isGroupActivity`+`friendCount` on
+  the context, called from doPost's create branch (counters are already
+  computed there); plus two `facts.push(...)` lines in `buildGeminiPrompt_`.
+  Counters (`postCount`, `taggedInCount`, `groupActivityPostCount`) already
+  exist from Phase 2, so this is purely wiring. Reverted out of the build on
+  2026-09-25 to defer; no code remains.
+
+- **Model fallback chain.** Replace the single `GEMINI_MODEL` setting with an
+  ordered, phone-editable list (best → worst, e.g. a comma list in Settings).
+  `generateMessageText_` starts at the best model; on a 429 for the current
+  model it advances the pointer and tries the next model in the same run
+  (each free-tier model has its OWN daily quota, so cycling multiplies total
+  daily capacity). Only when every model in the list is exhausted does it drop
+  to the offline fallback sentence (the current 429 behavior). The pointer /
+  per-model "exhausted today" state resets to the best model at the daily quota
+  reset — Google resets at **midnight Pacific**, so compare a stored
+  `exhaustedDate` against the current Pacific date (`Utilities.formatDate(new
+  Date(), 'America/Los_Angeles', 'yyyy-MM-dd')`) rather than Singapore's.
+  Store the exhaustion state in Settings or a tiny tab; keep it best-effort so
+  a stale flag just means one wasted attempt, not a stuck queue.
 
 ## Setup the user needs to do (before code can be tested)
 
@@ -170,7 +222,7 @@ Telegram: create a bot via @BotFather, enable Topics on the group, create the no
 
 No automated test suite in this repo — verify via dev server + browser. Plan:
 1. Deploy the updated `Code.gs` (Apps Script editor > Deploy > Manage deployments > New version).
-2. Run `setup()`, `backfillUserCounters_()`, and `setupHourlyTrigger_()` once each, in that order, from the Apps Script editor.
+2. Run `setup()`, `backfillUserCounters()`, and `setupHourlyTrigger()` once each, in that order, from the Apps Script editor.
 3. Fill in the Settings tab's defaults, the style-guide Doc's initial content, and the 4 new Script Properties.
 4. `npm run dev` locally; log a genuine test activity and confirm: the entry save **returns quickly** (no wait for Telegram/Gemini), a `PENDING` Notifications row appears immediately, and within a couple seconds it flips to `SENT` with the actual photo (uploaded as bytes), varied text, a working deep link.
 5. Log two entries in quick succession from two different signed-in sessions/browsers to confirm neither save fails or measurably slows down.
