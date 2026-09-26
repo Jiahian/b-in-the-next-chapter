@@ -75,14 +75,19 @@ and redeploys — keep this in mind when reasoning about whether a fix is
 `?action=` (`ping`, `list`, `profile`) or `body.action` (`create`, `update`,
 `delete`, `setUsername`).
 
-- **Storage**: a bound Google Sheet with three tabs — `Entries`, `Users`,
-  `Allowlist` — plus a Drive folder (`BNext - Media`) for uploaded
-  photos/videos. There is no other database.
-- **Data model mirrors a future Firestore migration** on purpose (PRD §12.3):
+- **Storage**: a bound Google Sheet — core tabs `Entries`, `Users`,
+  `Allowlist`, plus (for the Telegram notification feature) `Settings`,
+  `Notifications`, and `NameScrub` — plus a Drive folder (`BNext - Media`) for
+  uploaded photos/videos and a style-guide Google Doc. There is no other
+  database. The notification subsystem (async queue + every-minute trigger,
+  Gemini message generation with name-scrubbing, milestones, Telegram delivery)
+  lives in the same `Code.gs`; see `docs/SETUP.md` §9 and `docs/DECISIONS.md`.
+- **Data model mirrors a future Firestore migration** on purpose (see `docs/BACKLOG.md`):
   stable UUID `entryId`/Google `sub`-claim `userId`, ISO timestamp strings,
   media referenced by plain `fileId`/URL. Don't add Sheets-specific modeling
-  (e.g. relying on row position as an id) — the whole point is Phase 2 can
-  lift this into Firestore documents with minimal rework.
+  (e.g. relying on row position as an id) — the whole point is the backlog's
+  gamification/Firestore work can lift this into Firestore documents with
+  minimal rework.
 - **Auth**: Google Sign-In on the client (`GOOGLE_CLIENT_ID`), verified on
   *every* request server-side via `requireAuth_()` calling Google's
   `tokeninfo` endpoint (not a local JWKS check — deliberate, see the comment
@@ -155,5 +160,8 @@ times). To keep that from happening again:
 - Update `docs/PRD.md` only when scope/requirements actually change, and
   state things as current truth (not "added 4 Sep 2026") — that framing
   belongs in `DECISIONS.md`, not the spec.
+- `docs/BACKLOG.md` is the single home for planned-but-unbuilt work
+  (gamification + deferred notification enhancements). Put future ideas there,
+  not scattered across the other docs or in one-off NOTES files.
 - If `docs/DECISIONS.md` crosses ~300 lines, re-condense it the same way
   this file was condensed, rather than letting it sprawl indefinitely.

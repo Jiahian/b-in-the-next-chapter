@@ -8,14 +8,15 @@
 
 ## Status
 
-Phase 1 (§1–§10, this document's core scope) is **built and live**. Phase 2
-(§12, gamification) is documented for direction but not started. For the
-day-to-day build history behind how this scope was reached — what changed,
-when, and why — see [`DECISIONS.md`](DECISIONS.md); it's kept in sync with
-this document rather than duplicated into it.
+The core app (§1–§10) is **built and live**, and the Telegram notification
+pipeline on top of it is built. Larger unbuilt directions — gamification, plus
+deferred notification enhancements — live in [`BACKLOG.md`](BACKLOG.md). For the
+day-to-day build history behind how this scope was reached — what changed, when,
+and why — see [`DECISIONS.md`](DECISIONS.md); it's kept in sync with this
+document rather than duplicated into it.
 
-Launch to the real friend group and Phase 2 scoping are the two open items;
-see `DECISIONS.md`'s "Known gaps / open items".
+Launch to the real friend group and backlog scoping are the open items; see
+`DECISIONS.md`'s "Known gaps / open items".
 
 ## 1. Overview
 
@@ -79,7 +80,6 @@ whoever owns the backend.
 
 ### 5.2 Out of scope (v1)
 
-- Push notifications / reminders.
 - Individual leaderboards or rankings between friends (the goal is explicitly collective, not competitive) — the app records who logged each entry, but v1 does not add a ranked leaderboard view.
 - Editing the target, deadline, or category list from within the app UI (v1 treats these as configuration, not end-user settings).
 
@@ -176,7 +176,7 @@ rather than a separate paid backend like Firebase — **$0 cost, no
 billing/credit card setup.**
 
 - **Frontend**: a single mobile-optimized web app (installable as a home-screen PWA on iOS/Android), covering the dashboard (countdown, progress, category breakdown), the entry form, and the gallery.
-- **Data ("database")**: a **Google Sheet**, owned by the one nominated Google account, with three tabs — **Entries** (one row per logged activity), **Users** (one row per person who's signed in: account ID, email, chosen display name), and **Allowlist** (who's allowed to sign in at all: name + email, editable directly by whoever manages the group). Doubles as a human-readable audit log/export if anyone ever wants to open it directly.
+- **Data ("database")**: a **Google Sheet**, owned by the one nominated Google account, with core tabs — **Entries** (one row per logged activity), **Users** (one row per person who's signed in: account ID, email, chosen display name), and **Allowlist** (who's allowed to sign in at all: name + email, editable directly by whoever manages the group) — plus **Settings**, **Notifications**, and **NameScrub** for the Telegram notification feature (see [`SETUP.md`](SETUP.md) §9). Doubles as a human-readable audit log/export if anyone ever wants to open it directly.
 - **Media storage**: **Google Drive**, same account — one folder holding all uploaded photos/videos, using that account's existing spare space.
 - **Glue**: a **Google Apps Script**, deployed as a Web App under that same account ("Execute as: Me / Access: Anyone with the link"). It exposes simple endpoints the front-end calls to submit, edit, delete, and list entries — it writes rows to the Sheet and files to the Drive folder, and returns a Drive-hosted URL for each media file back to the app. This is what lets every friend log entries and upload media without needing *write access* to the Sheet/Drive themselves — only the Apps Script owner's account touches Drive/Sheets directly. Friends do need their own Google account to *sign in* (see Identity below), but that's for authentication, not Sheet/Drive access.
 - **Sync model**: the app polls the Apps Script endpoint every 20 seconds, and on each app open/resume, rather than an instant push like a realtime database would give. For a friend group logging a few times a day, this trade-off is invisible in practice.
@@ -210,7 +210,7 @@ content). For a ~30-person friend group, free beats "cheap enough" — see
 
 Google Sign-In with a per-person allowlist was chosen over (a) a
 server-side shared password or (b) a custom backend with real sessions,
-specifically because Phase 2's planned badges/currency (§12) need to know
+specifically because the backlog's planned badges/currency ([`BACKLOG.md`](BACKLOG.md)) need to know
 *who* is making a request, not just *that* they know a shared secret — see
 `DECISIONS.md` for the full three-option comparison this decision was based
 on. `Code.gs` verifies the Google ID token server-side on every request and
@@ -280,43 +280,10 @@ Total points = SUM(amount) across all entries where `deleted = false`. Category 
 - **Photo re-cropping is destructive** — the alternative (preserving the original) needs a second stored file per cropped entry plus a schema/lifecycle change, which felt disproportionate to a rare, low-stakes failure mode (worst case, re-upload the photo). Revisit only if this causes real frustration in practice.
 - **Username length**: capped at 24 characters (client + server) — chosen so a display name rarely wraps past one line even in the compact overlapping-avatar gallery view.
 
-## 12. Phase 2 (future) — gamification
+## 12. Future direction — gamification
 
-Not built in Phase 1; captured here so the direction is on record and Phase 1's data model doesn't have to be reworked to support it later.
-
-### 12.1 Concept
-
-Turn the points system into something more playful, in a retro 64px pixel-art style (in the spirit of the "Walking Charlie" reference the group shared — an original art set inspired by that style, not a copy of it). Each friend gets a pixel character living in a shared "town." Direction discussed:
-
-- Rename "points" to **Bread** — the Biblical food-from-heaven, doubling as a natural pun on game "mana." (Placeholder name pending final confirmation.)
-- Introduce a **spendable currency** alongside the group's lifetime point total (see §12.2 — this split is the key data-model decision).
-- A **shop** where Bread buys clothing/accessories and backgrounds to customize a friend's character (dress-up mechanic, optionally with a "mystery box" random-reward element like the reference app).
-- An **inactivity state**: if a friend hasn't logged an entry in 2+ days, their character appears "sleeping" in the town view; friends can "poke" them (visible next time the sleeping friend opens the app — there's no push-notification channel in this build, so a poke isn't instant, it surfaces on next open).
-
-### 12.2 Key design requirement: split lifetime points from spendable currency
-
-The group's shared progress bar must be driven by **lifetime points earned** (sum of every entry's amount, ever — never decreases). **Bread balance** (spendable, decreases when a friend buys something) is a separate number that starts equal to lifetime points and diverges once spending begins. Getting this split right from the start matters — if spending drew down the same number that feeds the group's shared goal, buying a hat would visibly shrink the whole group's progress bar.
-
-### 12.3 Technical approach: hybrid, not a full migration
-
-The identity groundwork this section originally assumed Phase 1 would
-eventually need is already built — every entry carries a stable `userId`
-(Google's account `sub` claim), and a Users sheet already exists mapping
-that ID to a display name. Sign-in verifies Google ID tokens directly
-against Apps Script rather than via Firebase Authentication — cheaper and
-simpler for Phase 1's access-control need alone (§8.3), and it doesn't
-block a Firestore move; Firebase Auth can adopt the same Google accounts
-later if Phase 2's real-time/transaction needs still make Firestore worth
-it.
-
-- **Media (photo/video gallery) stays on Google Drive** — it's write-once data with no concurrency concerns, no reason to re-host it.
-- **Game state (Bread balance, inventory, equipped items, sleep/poke status) moves to Firebase Firestore** when Phase 2 begins, because that layer genuinely benefits from what Firestore gives that Sheets/Apps Script doesn't: real-time listeners (a friend's new outfit or wake-up appears instantly for everyone, not on a 15–30s poll) and atomic transactions (prevents two purchases racing against the same Bread balance and double-spending it).
-- **Migration mechanics**: a one-time script reads existing Sheet rows and writes them into Firestore documents; the front-end swaps its game-state calls from the Apps Script endpoint to the Firestore SDK; done during a short "back in a few minutes" maintenance window rather than engineering zero-downtime dual writes, which isn't worth it at this scale. Since every entry and every user already has a stable ID (userId), the migration only needs to carry Users-sheet rows (and their in-progress game state, once that exists) into Firestore documents keyed by the same ID — entries themselves can stay on Sheets/Drive indefinitely if Phase 2 only needs game state to move.
-- Net effect: Phase 2 adds a small Firebase Blaze bill (Firestore usage at this scale is near-$0) on top of the still-free Drive/Sheets media layer — not a full swap of everything to Firebase.
-
-### 12.4 Open items for Phase 2 (not yet decided)
-
-- Final currency name (Bread vs. alternatives).
-- Whether the shop includes a randomized "mystery box" mechanic or a straightforward direct-purchase shop only.
-- Sprite/art requirements: fixed canvas size for layering (e.g. 64×64 or 128×128px), a base character (or a few), a clothing/accessory set, a background set, an idle pose, a sleeping pose, and a poke reaction — either sourced from the group or Claude can generate an original starter set.
-- Whether "poke" should do anything mechanically (e.g., a small Bread bonus for waking up) or stay purely social.
+Moved to the backlog. The gamification direction (Bread currency, pixel-art
+town, shop, inactivity/poke) and its hybrid Firestore approach now live, in
+full, in [`BACKLOG.md`](BACKLOG.md) alongside the deferred notification
+enhancements — one backlog for the whole project. Phase 1's data model already
+supports it (stable `userId` on every entry/user).

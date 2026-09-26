@@ -13,12 +13,30 @@ root) for implementation-level gotchas.
 - **Hosting**: GitHub Pages, deployed via `.github/workflows/deploy.yml` on every push to `master`. The Apps Script backend has its own separate, manual deploy process (see `docs/SETUP.md`) — the two are never atomic.
 - **Access control**: real, server-verified Google Sign-In. No password gate exists anywhere anymore.
 - Every friend has a real account (Users sheet, stable Google ID), a Profile page, and can tag other allowlisted friends on an entry.
-- Sheet has three tabs: Entries, Users, Allowlist.
+- Sheet tabs: Entries, Users, Allowlist, plus (for notifications) Settings, Notifications, NameScrub.
 - Gallery preview, the Log form, and the Profile panel are all full-bleed fullscreen pages (sticky back-button navbar), not modals.
 - Tag-friends control is a searchable input + removable pills.
 - Profile photo upload/crop works but is device-local only — not synced to the backend (see "Known gaps" below).
+- **Telegram notifications**: logging an entry posts an AI-written announcement (with the photo/GIF and a deep link back to the post) to a group topic; milestones post separately. Async queue drained by an every-minute trigger, so the poster's save is never slowed. Real names are scrubbed out of everything sent to Gemini and restored after. All wording/toggles are phone-editable (Settings tab + style-guide Doc + NameScrub tab), no redeploy. Deferred pieces are in [`BACKLOG.md`](BACKLOG.md).
 
 ## Key decisions
+
+**Telegram notifications run through an async queue, not inline with the save.**
+`doPost` writes a `PENDING` row and returns; a separate every-minute trigger
+does the slow Gemini + Telegram work in its own execution. Why: doing it inline
+would make the poster's own request wait through the whole round-trip (and, worse
+if run inside the write lock, slow every concurrent friend's save). Apps Script
+has no true background primitive — an every-minute recurring trigger proved far
+more reliable than one-time `.after()` triggers, which fired minutes late and
+lingered. Media is sent as **bytes** (the Drive blob), never the viewer URL,
+which Telegram can't fetch. **Names are scrubbed to placeholder codes before
+anything reaches Gemini and restored after** — free-tier Gemini may train on
+submitted data, and the recipients (the group) are the only people who should
+see real names. A curated `NameScrub` tab covers nicknames/variants and specific
+non-member words the admin flags; residual non-member names in free text are an
+accepted, low-frequency gap (de-identification, not full confidentiality). Every
+knob — tone, toggles, milestones, model, retries — is phone-editable so nothing
+needs a `Code.gs` redeploy to tune.
 
 **Secrets never touch the public repo.** `WEB_APP_URL` and
 `GOOGLE_CLIENT_ID` are read from `window.*` globals set by a gitignored
@@ -42,7 +60,7 @@ user-toggleable and persisted per device.
 
 **Access control: Google Sign-In + allowlist, chosen over a shared
 password or a custom backend with real sessions.** Specifically because
-Phase 2's planned badges/currency (`PRD.md` §12) need to know *who* is
+the backlog's planned badges/currency (`BACKLOG.md`) need to know *who* is
 making a request, not just *that* they know a shared password — real
 per-person identity is exactly what this gives. The original client-side
 password gate (a soft deterrent, not real security — the "password"
@@ -70,8 +88,8 @@ confirming Apps Script can't set custom headers on binary `doGet` output
 as a clean error message instead.
 
 **Real per-person identity, user profiles, and activity tagging shipped
-together**, once it became clear Phase 2 needs actual profiles, not just
-an access check. First sign-in prompts for a one-time editable display
+together**, once it became clear the gamification backlog needs actual
+profiles, not just an access check. First sign-in prompts for a one-time editable display
 name (a second "immutable real name" field was considered and deliberately
 rejected — two name-shaped fields on a first-run screen invites confusion,
 and email already answers "who is this really" if needed). Username capped
@@ -162,7 +180,7 @@ permanently corrupted** — see "Known gaps" below.
 - [ ] **Sync profile photos to the backend.** Currently `localStorage`-only per device — doesn't follow the user across devices, and is never visible to other friends (gallery/tagging avatars still render text initials for everyone). Fix direction: upload to the Drive media folder + a new Users-sheet column for the file ID/URL.
 - [ ] **Re-log (or hand-fix in the Sheet) any entries tagged with 2+ friends before the `tagged_friends` corruption fix** — their stored value is permanently corrupted and won't self-heal; re-selecting "Tag friends" and re-saving overwrites the cell correctly.
 - [ ] **Real end-to-end pass with the actual friend group** now that sign-in is live: confirm everyone's email is in the Allowlist, everyone can sign in and set a display name, and the app feels normal day-to-day (not just single-account testing).
-- [ ] **Phase 2 (gamification) scoping** — worth revisiting sooner than originally planned, since the identity groundwork it needed (stable `userId` on every entry/user) is already in place. See `PRD.md` §12.
+- [ ] **Backlog scoping** — the gamification direction and the deferred notification enhancements are worth revisiting; the identity/counter groundwork they need (stable `userId`, per-user counters) is already in place. See [`BACKLOG.md`](BACKLOG.md).
 
 ## Stress-test findings
 

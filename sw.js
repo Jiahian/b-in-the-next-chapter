@@ -11,8 +11,7 @@ var SHELL_FILES = [
   "./manifest.json",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
-  "./icons/apple-touch-icon.png",
-  "./icons/block-party-2026.svg"
+  "./icons/apple-touch-icon.png"
 ];
 
 self.addEventListener("install", function (event) {

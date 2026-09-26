@@ -24,4 +24,5 @@ first (see [`docs/SETUP.md`](docs/SETUP.md)), or the app loads in a visible
 - [`docs/PRD.md`](docs/PRD.md) — what the app does and why (product spec).
 - [`docs/SETUP.md`](docs/SETUP.md) — one-time backend setup (Sheet + Apps Script + OAuth + allowlist), hosting, and troubleshooting.
 - [`docs/DECISIONS.md`](docs/DECISIONS.md) — build history: what was decided, what shipped, known gaps.
+- [`docs/BACKLOG.md`](docs/BACKLOG.md) — planned-but-unbuilt work (gamification + deferred notification enhancements).
 - [`CLAUDE.md`](CLAUDE.md) — architecture notes and implementation gotchas, for anyone (human or AI) editing the code.
