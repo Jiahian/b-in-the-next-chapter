@@ -222,11 +222,12 @@
     text-align: left;
   }
 
-  /* Add New: a lone round button floating at the bottom centre */
+  /* Add New: a lone round button floating at the bottom right, in line with the content column */
   .bottom-bar-log-btn {
     position: fixed;
-    bottom: max(20px, calc(12px + env(safe-area-inset-bottom)));
-    left: 0; right: 0; margin: 0 auto;
+    bottom: max(30px, calc(22px + env(safe-area-inset-bottom)));
+    right: max(31px, calc((100vw - 560px) / 2 + 31px));
+    left: auto; margin: 0;
     z-index: 35;
     display: inline-flex;
     align-items: center;
@@ -3409,6 +3410,9 @@
 
     .header-title {
       font-size: 28px;
+    }
+    .bottom-bar-log-btn {
+      right: max(31px, calc((100vw - 1040px) / 2 + 31px));
     }
 
     /* Turn the stacked dashboard cards into a two-column layout: countdown
