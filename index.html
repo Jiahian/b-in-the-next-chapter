@@ -510,8 +510,8 @@
   .points-btn svg { display: block; }
   .pb-track { stroke: var(--seq-track, #e2e8f0); }
   .pb-fill { stroke: #10b981; transition: stroke-dasharray 0.6s ease; }
-  .pb-num { font-size: 11px; font-weight: 800; fill: var(--accent); font-family: inherit; }
-  .pb-num.sm { font-size: 9.5px; }
+  .pb-num { font-size: 12px; font-weight: 800; fill: var(--accent); font-family: inherit; }
+  .pb-num.sm { font-size: 10.5px; }
 
   .points-overlay {
     --pts-bg: #4f46e5; --pts-fg: #ffffff; --pts-muted: #c7d2fe;
@@ -4769,7 +4769,7 @@
     if (pbNum) {
       var shown = totals.total >= 1000 ? Math.floor(totals.total / 1000) + "k" : String(Math.round(totals.total));
       pbNum.textContent = shown;
-      pbNum.classList.toggle("sm", shown.length >= 3);
+      pbNum.classList.toggle("sm", shown.length >= 4);
     }
     var pbRing = document.getElementById("pointsRingFill");
     if (pbRing) pbRing.setAttribute("stroke-dasharray", pct + " 100");
