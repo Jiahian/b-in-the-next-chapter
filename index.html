@@ -1572,7 +1572,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    margin: 36px 0 24px;
+    margin: 36px 0 12px;
     padding: 0 12px;
     position: relative;
   }
@@ -3485,7 +3485,7 @@
     }
 
     .gallery-header-row {
-      margin: 44px 0 24px;
+      margin: 44px 0 12px;
       padding: 0;
     }
     .gallery-header-row .section-heading {
@@ -4969,7 +4969,7 @@
       wrap.style.width = openW + "px";
       wrap.style.minWidth = openW + "px";
     } else if (isDefault) {
-      var circleW = isMobile ? 25.5 : 34;
+      var circleW = 34;
       wrap.style.width = circleW + "px";
       wrap.style.minWidth = circleW + "px";
     } else {
@@ -4998,6 +4998,8 @@
     if (monthBtn) monthBtn.className = "filter-capsule-btn " + (isMonthActive ? "active" : "");
     var categoryBtn = wrap.querySelector("#capsuleCategoryBtn") || wrap.querySelector("#capsuleAreaBtn");
     if (categoryBtn) categoryBtn.className = "filter-capsule-btn " + (isCategoryActive ? "active" : "");
+    // The open pill is narrower on phones, so the word is shortened there to fit inside it.
+    if (categoryBtn) categoryBtn.textContent = isMobile ? "Cat." : "Category";
 
     // Update popover floating submenu with smooth open/close
     var popover = wrap.querySelector("#filterCapsuleSubmenu");
