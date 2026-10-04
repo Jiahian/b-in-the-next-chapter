@@ -2161,38 +2161,50 @@
     display: none;
     position: fixed;
     inset: 0;
-    background: var(--surface-1, #ffffff);
     z-index: 50;
-    align-items: stretch;
-    justify-content: stretch;
+    align-items: flex-end;
+    justify-content: center;
     padding: 0;
     overflow: hidden;
   }
   .post-preview-overlay.show {
     display: flex;
   }
-  /* While the post grows out of its tile (or shrinks back), the old pop-in is switched off. */
-  .post-preview-overlay.fx .post-preview-sheet { animation: none; }
+  /* The dimmed, blurred gallery behind the sheet. It fades on its own, so the sheet only slides. */
+  .preview-backdrop {
+    position: absolute; inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+  }
+  /* The post is a bottom sheet as tall as its content, up to 90% of the screen; past that the
+     card scrolls inside it. The photo's bottom corners are rounded, and the sheet's top ones. */
   .post-preview-sheet.gallery-item {
+    position: relative;
     width: 100%;
     max-width: 560px;
     margin: 0 auto;
-    height: 100vh;
-    height: 100dvh;
-    max-height: none;
-    border-radius: 0;
+    height: auto;
+    max-height: 90vh;
+    max-height: 90dvh;
+    border-radius: 22px 22px 0 0;
     box-shadow: none;
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    animation: modalPopIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     cursor: default;
-    transform: none !important;
+  }
+  .post-preview-sheet.gallery-item:hover { transform: none; box-shadow: none; }
+  .preview-grab {
+    position: absolute; top: 6px; left: 50%; transform: translateX(-50%);
+    width: 36px; height: 4px; border-radius: 2px;
+    background: rgba(255, 255, 255, 0.75);
+    z-index: 13; pointer-events: none;
   }
   /* The back button and poster float over the photo; the card below overlaps its bottom edge. */
   .post-preview-sheet .preview-navbar {
     position: absolute;
-    top: 10px; left: 10px; right: 56px;
+    top: 14px; left: 10px; right: 56px;
     z-index: 12;
     display: flex;
     align-items: center;
@@ -2239,16 +2251,16 @@
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   .post-preview-sheet .preview-scroll-content {
-    flex: 1;
+    flex: 0 1 auto;
     min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
   }
-  .post-preview-sheet .thumb { cursor: zoom-in; }
+  .post-preview-sheet .thumb { cursor: zoom-in; border-radius: 0 0 22px 22px; }
   .post-preview-sheet .thumb .preview-top-actions {
     position: absolute;
-    top: 10px;
+    top: 14px;
     right: 10px;
     display: flex;
     align-items: center;
@@ -2318,19 +2330,7 @@
     color: #4f46e5;
   }
   .post-preview-sheet .meta {
-    position: relative;
-    z-index: 2;
-    margin-top: -28px;
-    padding: 10px 16px 28px;
-    border-radius: 22px 22px 0 0;
-    background: #ffffff;
-  }
-  .post-preview-sheet .meta::before {
-    content: "";
-    display: block;
-    width: 36px; height: 4px; border-radius: 2px;
-    background: var(--baseline, #cbd5e1);
-    margin: 0 auto 14px;
+    padding: 18px 16px 28px;
   }
   .preview-chips {
     display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
@@ -2343,7 +2343,7 @@
   }
   .preview-fullphoto-btn {
     display: none;
-    position: absolute; right: 10px; bottom: 40px; z-index: 3;
+    position: absolute; right: 10px; bottom: 12px; z-index: 3;
     align-items: center; gap: 5px;
     background: rgba(15, 23, 42, 0.55);
     -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
@@ -3393,7 +3393,7 @@
   [data-theme="dark"] .post-preview-sheet.gallery-item {
     background: #1e1f20;
   }
-  [data-theme="dark"] .post-preview-sheet .meta { background: #1e1f20; }
+  [data-theme="dark"] .preview-backdrop { background: rgba(0, 0, 0, 0.55); }
   [data-theme="dark"] .preview-stack-av { border-color: #1e1f20; }
   [data-theme="dark"] .preview-stack-av.more { background: #3c4043; color: #e3e3e3; }
   [data-theme="dark"] .post-preview-sheet .preview-dropdown-menu {
@@ -3989,7 +3989,9 @@
 
 <!-- Post Preview Modal (Exact gallery post card layout with expanded full text) -->
 <div class="post-preview-overlay" id="postPreviewOverlay">
+  <div class="preview-backdrop" id="previewBackdrop"></div>
   <div class="post-preview-sheet gallery-item" id="postPreviewSheet">
+    <div class="preview-grab" aria-hidden="true"></div>
     <div class="preview-navbar">
       <button type="button" class="preview-back-btn" id="previewCloseBtn" title="Back" aria-label="Back">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -5438,17 +5440,6 @@
   var galleryPreviewScrollY = 0;
   function openPreviewModal(entry, fromEl) {
     state.previewingEntry = entry;
-    // Opened from a gallery tile: remember where it sits so the post can grow out of it.
-    var fromTile = null;
-    if (fromEl && fromEl.querySelector && fromEl.querySelector(".thumb")) {
-      var stripEl_ = fromEl.querySelector(".tile-info");
-      fromTile = {
-        tile: fromEl.getBoundingClientRect(),
-        photo: fromEl.querySelector(".thumb").getBoundingClientRect(),
-        strip: stripEl_ ? getComputedStyle(stripEl_).backgroundColor : "#ffffff"
-      };
-    }
-    previewFromEl_ = fromTile ? fromEl : null;
     
     // Close dropdown menu if previously open
     var menuDropdown = document.getElementById("previewDropdownMenu");
@@ -5523,12 +5514,9 @@
 
     // Media handling
     var isExplicitPortrait = (entry.aspectRatio === "3:4" || entry.aspectRatio === "portrait");
-    // The photo box eases between shapes; switch that off so the reveal measures its final size.
-    var mediaBox_ = document.getElementById("previewMediaBox");
-    if (fromTile && mediaBox_) mediaBox_.style.transition = "none";
     updatePreviewMediaBoxRatio(isExplicitPortrait);
-    // Match the tile's photo shape so the photo can scale up without stretching.
-    if (fromTile && fromEl.querySelector(".thumb.ratio-3-4, .thumb.ratio-4-3")) {
+    // Take the tile's photo shape, so the sheet is the right height from the first frame.
+    if (fromEl && fromEl.querySelector && fromEl.querySelector(".thumb.ratio-3-4, .thumb.ratio-4-3")) {
       updatePreviewMediaBoxRatio(!!fromEl.querySelector(".thumb.ratio-3-4"));
     }
 
@@ -5575,123 +5563,51 @@
     galleryPreviewScrollY = window.scrollY || window.pageYOffset || 0;
     document.body.style.top = "-" + galleryPreviewScrollY + "px";
     document.body.classList.add("gallery-preview-open");
-    if (fromTile && previewMotionOk_()) playPreviewOpen_(fromTile, fromEl);
-    else if (mediaBox_) mediaBox_.style.transition = "";
+    if (previewMotionOk_()) playSheetOpen_();
   }
 
-  // ----- Post reveal: the post grows out of the tile that was tapped, and shrinks back into it.
-  // The overlay's window grows from the tile's box to the full screen, the photo scales from its
-  // tile position to its place in the post, and the rest of the post fades in behind it.
-  var previewFromEl_ = null;
+  // ----- Post sheet: it slides up over a dimmed gallery and slides back down on closing, and can be
+  // dragged down from the top of the card. Its height follows its content (CSS caps it at 90%).
   var previewClosing_ = false;
-  var PREVIEW_OPEN_MS = 460;
-  var PREVIEW_CLOSE_MS = 380;
+  var PREVIEW_OPEN_MS = 420;
+  var PREVIEW_CLOSE_MS = 320;
   var PREVIEW_EASE = "cubic-bezier(0.2, 0.8, 0.2, 1)";
-  var previewGhost_ = null;
-  var FULL_INSET = "inset(0px 0px 0px 0px round 0px)";
 
   function previewMotionOk_() {
     if (typeof Element.prototype.animate !== "function") return false;
     return !(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
   }
-  function insetOfRect_(r) {
-    var w = document.documentElement.clientWidth, h = window.innerHeight;
-    return "inset(" + r.top + "px " + (w - r.right) + "px " + (h - r.bottom) + "px " + r.left + "px round 14px)";
-  }
-  // The transform that puts the post's photo exactly over a tile's photo.
-  function photoOverRect_(thumb, rect) {
-    var f = thumb.getBoundingClientRect();
-    return "translate(" + (rect.left - f.left) + "px," + (rect.top - f.top) + "px) scale(" + (rect.width / f.width) + "," + (rect.height / f.height) + ")";
-  }
-  // A copy of the tile's text strip, held over the post while it opens (or closes), so the tile's
-  // title and date fade out (or back in) instead of vanishing.
-  function ghostOfStrip_(fromEl) {
-    var strip = fromEl.querySelector(".tile-info");
-    if (!strip) return null;
-    var r = strip.getBoundingClientRect();
-    var g = strip.cloneNode(true);
-    g.style.cssText = "position:fixed;left:" + r.left + "px;top:" + r.top + "px;width:" + r.width + "px;" +
-      "margin:0;background:transparent;z-index:60;pointer-events:none;";
-    document.body.appendChild(g);
-    return g;
-  }
-  function dropGhost_() {
-    if (previewGhost_ && previewGhost_.parentNode) previewGhost_.parentNode.removeChild(previewGhost_);
-    previewGhost_ = null;
-  }
-
-  function playPreviewOpen_(from, fromEl) {
+  function playSheetOpen_() {
     var overlay = document.getElementById("postPreviewOverlay");
     var sheet = document.getElementById("postPreviewSheet");
-    var thumb = document.getElementById("previewMediaBox");
-    if (!overlay || !sheet || !thumb) return;
-    var bg = getComputedStyle(overlay).backgroundColor;
-    var timing = { duration: PREVIEW_OPEN_MS, easing: PREVIEW_EASE };
-    overlay.classList.add("fx");
-    var win = overlay.animate([
-      { clipPath: insetOfRect_(from.tile), backgroundColor: from.strip },
-      { clipPath: FULL_INSET, backgroundColor: bg }
-    ], timing);
-    thumb.animate([
-      { transformOrigin: "0 0", transform: photoOverRect_(thumb, from.photo) },
-      { transformOrigin: "0 0", transform: "none" }
-    ], timing);
-    [".preview-navbar", ".meta"].forEach(function (sel, i) {
-      var el = sheet.querySelector(sel);
-      if (el) el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 260, delay: 180 + i * 20, easing: "ease-out", fill: "backwards" });
-    });
-    dropGhost_();
-    previewGhost_ = fromEl ? ghostOfStrip_(fromEl) : null;
-    if (previewGhost_) {
-      var gh = previewGhost_;
-      gh.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200, easing: "ease-out", fill: "forwards" }).onfinish = function () {
-        if (previewGhost_ === gh) dropGhost_();
-      };
-    }
-    win.onfinish = win.oncancel = function () { overlay.classList.remove("fx"); thumb.style.transition = ""; };
+    if (!overlay || !sheet) return;
+    var backdrop = document.getElementById("previewBackdrop");
+    if (backdrop) backdrop.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300, easing: "ease-out" });
+    sheet.animate([{ transform: "translateY(100%)" }, { transform: "translateY(0)" }], { duration: PREVIEW_OPEN_MS, easing: PREVIEW_EASE });
   }
-  function playPreviewClose_(fromEl) {
+  function playSheetClose_(fromOffset) {
     var overlay = document.getElementById("postPreviewOverlay");
     var sheet = document.getElementById("postPreviewSheet");
-    var thumb = document.getElementById("previewMediaBox");
-    var tileThumb = fromEl.querySelector(".thumb");
-    if (!overlay || !sheet || !thumb || !tileThumb) { finishClosePreview_(); return; }
+    if (!overlay || !sheet) { finishClosePreview_(); return; }
     previewClosing_ = true;
-    var bg = getComputedStyle(overlay).backgroundColor;
-    var timing = { duration: PREVIEW_CLOSE_MS, easing: "cubic-bezier(0.4, 0, 0.2, 1)", fill: "forwards" };
-    overlay.classList.add("fx");
-    overlay.style.pointerEvents = "none";
-    var stripEl = fromEl.querySelector(".tile-info");
-    var stripColour = stripEl ? getComputedStyle(stripEl).backgroundColor : bg;
-    var win = overlay.animate([
-      { clipPath: FULL_INSET, backgroundColor: bg },
-      { clipPath: insetOfRect_(fromEl.getBoundingClientRect()), backgroundColor: stripColour }
-    ], timing);
-    thumb.animate([
-      { transformOrigin: "0 0", transform: "none" },
-      { transformOrigin: "0 0", transform: photoOverRect_(thumb, tileThumb.getBoundingClientRect()) }
-    ], timing);
-    [".preview-navbar", ".meta"].forEach(function (sel) {
-      var el = sheet.querySelector(sel);
-      if (el) el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 140, easing: "ease-in", fill: "forwards" });
-    });
-    // the tile's title and date return as the window shrinks onto the tile
-    dropGhost_();
-    previewGhost_ = ghostOfStrip_(fromEl);
-    if (previewGhost_) {
-      previewGhost_.style.opacity = "0";
-      previewGhost_.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200, delay: PREVIEW_CLOSE_MS - 200, easing: "ease-in", fill: "forwards" });
+    var backdrop = document.getElementById("previewBackdrop");
+    if (backdrop) {
+      var fade = parseFloat(getComputedStyle(backdrop).opacity);
+      backdrop.animate([{ opacity: isNaN(fade) ? 1 : fade }, { opacity: 0 }], { duration: PREVIEW_CLOSE_MS, easing: "ease-in", fill: "forwards" });
     }
-    win.onfinish = finishClosePreview_;
+    var slide = sheet.animate([
+      { transform: "translateY(" + (fromOffset || 0) + "px)" },
+      { transform: "translateY(100%)" }
+    ], { duration: PREVIEW_CLOSE_MS, easing: "cubic-bezier(0.4, 0, 0.2, 1)", fill: "forwards" });
+    slide.onfinish = finishClosePreview_;
   }
 
   function closePreviewModal(opts) {
     var overlay = document.getElementById("postPreviewOverlay");
     if (!overlay || !overlay.classList.contains("show") || previewClosing_) return;
     var immediate = !!(opts && opts.immediate === true);
-    var from = previewFromEl_;
-    if (!immediate && from && document.body.contains(from) && previewMotionOk_()) {
-      playPreviewClose_(from);
+    if (!immediate && previewMotionOk_()) {
+      playSheetClose_(opts && opts.fromOffset);
       return;
     }
     finishClosePreview_();
@@ -5699,18 +5615,18 @@
 
   function finishClosePreview_() {
     var overlay = document.getElementById("postPreviewOverlay");
+    var sheet = document.getElementById("postPreviewSheet");
     previewClosing_ = false;
-    previewFromEl_ = null;
-    dropGhost_();
     var viewerEl_ = document.getElementById("photoViewer");
     if (viewerEl_) viewerEl_.classList.remove("show");
     if (overlay) {
       // Drop the finished (forwards-filled) animations so the next opening starts clean.
       if (overlay.getAnimations) overlay.getAnimations({ subtree: true }).forEach(function (a) { a.cancel(); });
-      overlay.classList.remove("fx");
-      overlay.style.pointerEvents = "";
+      var backdropEl_ = document.getElementById("previewBackdrop");
+      if (backdropEl_) backdropEl_.style.opacity = "";
+      overlay.classList.remove("show");
     }
-    if (overlay) overlay.classList.remove("show");
+    if (sheet) { sheet.style.transform = ""; sheet.style.transition = ""; }
     var vidEl = document.getElementById("previewMediaVideo");
     if (vidEl) vidEl.src = "";
     var menuDropdown = document.getElementById("previewDropdownMenu");
@@ -5719,6 +5635,55 @@
     document.body.classList.remove("gallery-preview-open");
     document.body.style.top = "";
     window.scrollTo(0, galleryPreviewScrollY);
+  }
+
+  // Drag the sheet down to close it: only from the top of the card (so scrolling still works),
+  // and a short or slow pull springs back.
+  function bindPreviewSheetDrag_() {
+    var overlay = document.getElementById("postPreviewOverlay");
+    var sheet = document.getElementById("postPreviewSheet");
+    var backdrop = document.getElementById("previewBackdrop");
+    var scroller = sheet && sheet.querySelector(".preview-scroll-content");
+    if (!overlay || !sheet || !scroller || !backdrop) return;
+    var startY = 0, lastY = 0, lastT = 0, vel = 0, dy = 0, tracking = false, dragging = false;
+    sheet.addEventListener("touchstart", function (e) {
+      if (e.touches.length !== 1 || previewClosing_) return;
+      tracking = true; dragging = false; dy = 0; vel = 0;
+      startY = lastY = e.touches[0].clientY; lastT = Date.now();
+    }, { passive: true });
+    sheet.addEventListener("touchmove", function (e) {
+      if (!tracking) return;
+      var y = e.touches[0].clientY, d = y - startY;
+      if (!dragging) {
+        if (d > 8 && scroller.scrollTop <= 0 && !e.target.closest(".preview-menu-wrapper")) dragging = true;
+        else return;
+      }
+      e.preventDefault();
+      dy = Math.max(0, d);
+      var now = Date.now();
+      vel = (y - lastY) / Math.max(1, now - lastT);
+      lastY = y; lastT = now;
+      sheet.style.transform = "translateY(" + dy + "px)";
+      backdrop.style.opacity = String(1 - Math.min(1, dy / (sheet.offsetHeight * 1.2)));
+    }, { passive: false });
+    function endDrag() {
+      if (!tracking) return;
+      tracking = false;
+      if (!dragging) return;
+      dragging = false;
+      if (dy > 110 || vel > 0.6) {
+        closePreviewModal({ fromOffset: dy });
+      } else {
+        var back = dy;
+        sheet.style.transform = "";
+        backdrop.style.opacity = "";
+        if (previewMotionOk_() && back > 0) {
+          sheet.animate([{ transform: "translateY(" + back + "px)" }, { transform: "translateY(0)" }], { duration: 240, easing: PREVIEW_EASE });
+        }
+      }
+    }
+    sheet.addEventListener("touchend", endDrag);
+    sheet.addEventListener("touchcancel", endDrag);
   }
 
   // ===================================================================
@@ -8384,9 +8349,17 @@
     var peopleToggle = document.getElementById("previewPeopleToggle");
     if (peopleToggle) peopleToggle.addEventListener("click", function () {
       var section = document.getElementById("previewPeopleSection");
+      var sheetEl = document.getElementById("postPreviewSheet");
+      var before = sheetEl.offsetHeight;
       var open = section.classList.toggle("open");
       peopleToggle.setAttribute("aria-expanded", open ? "true" : "false");
+      var after = sheetEl.offsetHeight;
+      // the sheet grows (or shrinks) smoothly with the list; past 90% the card scrolls instead
+      if (previewMotionOk_() && before !== after) {
+        sheetEl.animate([{ height: before + "px" }, { height: after + "px" }], { duration: 260, easing: "ease" });
+      }
     });
+    bindPreviewSheetDrag_();
 
     // Tapping the photo opens it uncovered, full screen; tap or Esc to close.
     var photoViewer = document.getElementById("photoViewer");
@@ -8407,7 +8380,7 @@
     var postPreviewOverlay = document.getElementById("postPreviewOverlay");
     if (postPreviewOverlay) {
       postPreviewOverlay.addEventListener("click", function (e) {
-        if (e.target === this) closePreviewModal();
+        if (e.target === this || e.target.id === "previewBackdrop") closePreviewModal();
       });
     }
 
