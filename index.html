@@ -2168,6 +2168,8 @@
   .post-preview-overlay.show {
     display: flex;
   }
+  /* While the post grows out of its tile (or shrinks back), the old pop-in is switched off. */
+  .post-preview-overlay.fx .post-preview-sheet { animation: none; }
   .post-preview-sheet.gallery-item {
     width: 100%;
     max-width: 560px;
@@ -5191,7 +5193,7 @@
     }
 
     item.addEventListener("click", function () {
-      (onClick || openPreviewModal)(entry);
+      (onClick || openPreviewModal)(entry, item);
     });
     return item;
   }
@@ -5329,8 +5331,14 @@
   }
 
   var galleryPreviewScrollY = 0;
-  function openPreviewModal(entry) {
+  function openPreviewModal(entry, fromEl) {
     state.previewingEntry = entry;
+    // Opened from a gallery tile: remember where it sits so the post can grow out of it.
+    var fromTile = null;
+    if (fromEl && fromEl.querySelector && fromEl.querySelector(".thumb")) {
+      fromTile = { tile: fromEl.getBoundingClientRect(), photo: fromEl.querySelector(".thumb").getBoundingClientRect() };
+    }
+    previewFromEl_ = fromTile ? fromEl : null;
     
     // Close dropdown menu if previously open
     var menuDropdown = document.getElementById("previewDropdownMenu");
@@ -5405,7 +5413,14 @@
 
     // Media handling
     var isExplicitPortrait = (entry.aspectRatio === "3:4" || entry.aspectRatio === "portrait");
+    // The photo box eases between shapes; switch that off so the reveal measures its final size.
+    var mediaBox_ = document.getElementById("previewMediaBox");
+    if (fromTile && mediaBox_) mediaBox_.style.transition = "none";
     updatePreviewMediaBoxRatio(isExplicitPortrait);
+    // Match the tile's photo shape so the photo can scale up without stretching.
+    if (fromTile && fromEl.querySelector(".thumb.ratio-3-4, .thumb.ratio-4-3")) {
+      updatePreviewMediaBoxRatio(!!fromEl.querySelector(".thumb.ratio-3-4"));
+    }
 
     var imgEl = document.getElementById("previewMediaImg");
     var vidEl = document.getElementById("previewMediaVideo");
@@ -5448,10 +5463,104 @@
     galleryPreviewScrollY = window.scrollY || window.pageYOffset || 0;
     document.body.style.top = "-" + galleryPreviewScrollY + "px";
     document.body.classList.add("gallery-preview-open");
+    if (fromTile && previewMotionOk_()) playPreviewOpen_(fromTile);
+    else if (mediaBox_) mediaBox_.style.transition = "";
   }
 
-  function closePreviewModal() {
+  // ----- Post reveal: the post grows out of the tile that was tapped, and shrinks back into it.
+  // The overlay's window grows from the tile's box to the full screen, the photo scales from its
+  // tile position to its place in the post, and the rest of the post fades in behind it.
+  var previewFromEl_ = null;
+  var previewClosing_ = false;
+  var PREVIEW_OPEN_MS = 460;
+  var PREVIEW_CLOSE_MS = 380;
+  var PREVIEW_EASE = "cubic-bezier(0.2, 0.8, 0.2, 1)";
+  var TILE_STRIP_COLOR = "#1e293b";
+  var FULL_INSET = "inset(0px 0px 0px 0px round 0px)";
+
+  function previewMotionOk_() {
+    if (typeof Element.prototype.animate !== "function") return false;
+    return !(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  }
+  function insetOfRect_(r) {
+    var w = document.documentElement.clientWidth, h = window.innerHeight;
+    return "inset(" + r.top + "px " + (w - r.right) + "px " + (h - r.bottom) + "px " + r.left + "px round 14px)";
+  }
+  // The transform that puts the post's photo exactly over a tile's photo.
+  function photoOverRect_(thumb, rect) {
+    var f = thumb.getBoundingClientRect();
+    return "translate(" + (rect.left - f.left) + "px," + (rect.top - f.top) + "px) scale(" + (rect.width / f.width) + "," + (rect.height / f.height) + ")";
+  }
+  function playPreviewOpen_(from) {
     var overlay = document.getElementById("postPreviewOverlay");
+    var sheet = document.getElementById("postPreviewSheet");
+    var thumb = document.getElementById("previewMediaBox");
+    if (!overlay || !sheet || !thumb) return;
+    var bg = getComputedStyle(overlay).backgroundColor;
+    var timing = { duration: PREVIEW_OPEN_MS, easing: PREVIEW_EASE };
+    overlay.classList.add("fx");
+    var win = overlay.animate([
+      { clipPath: insetOfRect_(from.tile), backgroundColor: TILE_STRIP_COLOR },
+      { clipPath: FULL_INSET, backgroundColor: bg }
+    ], timing);
+    thumb.animate([
+      { transformOrigin: "0 0", transform: photoOverRect_(thumb, from.photo) },
+      { transformOrigin: "0 0", transform: "none" }
+    ], timing);
+    [".preview-navbar", ".meta"].forEach(function (sel, i) {
+      var el = sheet.querySelector(sel);
+      if (el) el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 260, delay: 180 + i * 20, easing: "ease-out", fill: "backwards" });
+    });
+    win.onfinish = win.oncancel = function () { overlay.classList.remove("fx"); thumb.style.transition = ""; };
+  }
+  function playPreviewClose_(fromEl) {
+    var overlay = document.getElementById("postPreviewOverlay");
+    var sheet = document.getElementById("postPreviewSheet");
+    var thumb = document.getElementById("previewMediaBox");
+    var tileThumb = fromEl.querySelector(".thumb");
+    if (!overlay || !sheet || !thumb || !tileThumb) { finishClosePreview_(); return; }
+    previewClosing_ = true;
+    var bg = getComputedStyle(overlay).backgroundColor;
+    var timing = { duration: PREVIEW_CLOSE_MS, easing: "cubic-bezier(0.4, 0, 0.2, 1)", fill: "forwards" };
+    overlay.classList.add("fx");
+    overlay.style.pointerEvents = "none";
+    var win = overlay.animate([
+      { clipPath: FULL_INSET, backgroundColor: bg },
+      { clipPath: insetOfRect_(fromEl.getBoundingClientRect()), backgroundColor: TILE_STRIP_COLOR }
+    ], timing);
+    thumb.animate([
+      { transformOrigin: "0 0", transform: "none" },
+      { transformOrigin: "0 0", transform: photoOverRect_(thumb, tileThumb.getBoundingClientRect()) }
+    ], timing);
+    [".preview-navbar", ".meta"].forEach(function (sel) {
+      var el = sheet.querySelector(sel);
+      if (el) el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 140, easing: "ease-in", fill: "forwards" });
+    });
+    win.onfinish = finishClosePreview_;
+  }
+
+  function closePreviewModal(opts) {
+    var overlay = document.getElementById("postPreviewOverlay");
+    if (!overlay || !overlay.classList.contains("show") || previewClosing_) return;
+    var immediate = !!(opts && opts.immediate === true);
+    var from = previewFromEl_;
+    if (!immediate && from && document.body.contains(from) && previewMotionOk_()) {
+      playPreviewClose_(from);
+      return;
+    }
+    finishClosePreview_();
+  }
+
+  function finishClosePreview_() {
+    var overlay = document.getElementById("postPreviewOverlay");
+    previewClosing_ = false;
+    previewFromEl_ = null;
+    if (overlay) {
+      // Drop the finished (forwards-filled) animations so the next opening starts clean.
+      if (overlay.getAnimations) overlay.getAnimations({ subtree: true }).forEach(function (a) { a.cancel(); });
+      overlay.classList.remove("fx");
+      overlay.style.pointerEvents = "";
+    }
     if (overlay) overlay.classList.remove("show");
     var vidEl = document.getElementById("previewMediaVideo");
     if (vidEl) vidEl.src = "";
@@ -8110,7 +8219,7 @@
       previewEditOption.addEventListener("click", function (e) {
         e.stopPropagation();
         var entryToEdit = state.previewingEntry;
-        closePreviewModal();
+        closePreviewModal({ immediate: true });
         if (entryToEdit) {
           openEditModal(entryToEdit);
         }
