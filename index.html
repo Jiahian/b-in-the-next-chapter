@@ -2115,24 +2115,18 @@
     min-width: 0;
     flex: 1;
   }
-  /* Photo-first tile: the photo fills the card; a dark strip along its bottom carries
-     the full title, a category dot with the date and amount, and who was there. The
-     story is read in the preview that opens on tap. */
+  /* Photo-first tile: the photo keeps its own shape (the staggered heights are the style);
+     a clean dark strip below it carries the full title, a category dot with the date and
+     amount, and who was there. The story is read in the preview that opens on tap. */
   .gallery-masonry, .gallery-masonry-col { gap: 8px; }
-  /* The photo and the strip share one grid cell. The strip carries a top margin, so a long
-     title makes the tile taller instead of covering the photo: at least 88px of it stays clear. */
   .gallery-tile {
-    display: grid;
     border-radius: 14px;
-    background: var(--gridline);
+    background: #1e293b;
   }
-  .gallery-tile .thumb { grid-area: 1 / 1; align-self: stretch; min-height: 150px; }
   .gallery-tile .pts-pill { right: auto; bottom: auto; top: 8px; left: auto; right: 8px; font-size: 11px; padding: 3px 9px; }
   .tile-info {
-    grid-area: 1 / 1; align-self: end; position: relative; z-index: 1;
-    margin-top: 88px;
     padding: 9px 10px 10px;
-    background: rgba(15, 23, 42, 0.72);
+    background: #1e293b;
     color: #ffffff;
     min-width: 0;
   }
