@@ -52,7 +52,7 @@ near the bottom of the file. A few things worth knowing before editing it:
   a deliberate, repeated redesign (see `docs/DECISIONS.md`). Don't
   reintroduce centered/backdrop-blurred modal cards for these without
   checking that decision first. The **Log form is the exception**: it is a
-  bottom sheet (70% tall, 90% when dragged up or when a field is focused),
+  bottom sheet (50% while empty; with media each step is sized to its content by `logFitSheet_`, up to 90%),
   media first, then four steps. It reuses the old form's field ids
   (`fActivity`, `fAmount`, `fUnits`, `fName`, `fCategory`, `fDate`,
   `fMedia`, `submitBtn`), so keep those when editing it; the sheet's state

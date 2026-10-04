@@ -375,7 +375,7 @@
     box-sizing: border-box;
     animation: fadeInOverlay 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
-  /* The Log panel is a bottom sheet (70% tall, drag up to 90%) over a dimmed
+  /* The Log panel is a bottom sheet (50% tall, 70% for the heavier steps) over a dimmed
      backdrop, not a fullscreen page: see the "Log sheet" block below. */
   #panel-log.active {
     position: fixed; inset: 0; z-index: 50;
@@ -690,30 +690,35 @@
     bottom: var(--log-kb, 0px);
     margin: 0 auto;
     max-width: 560px;
-    height: 70vh; height: 70dvh;
+    min-height: 50vh; min-height: 50dvh; height: auto;
     max-height: calc(100dvh - var(--log-kb, 0px) - 8px);
     border-radius: 24px 24px 0 0;
     box-shadow: 0 -10px 40px rgba(15, 23, 42, 0.25);
     transition: height 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
     animation: logSheetUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
-  #panel-log .log-sheet[data-snap="full"] { height: 90vh; height: 90dvh; }
+  #panel-log .log-sheet[data-snap="full"] { height: 70vh; height: 70dvh; }
+  /* With media, the sheet is exactly as tall as its page needs (JS sets the px height so it can
+     animate between pages), never above 90%. Empty, it is the 50% tray above. */
+  #panel-log .log-sheet[data-has-media="true"] { height: auto; max-height: min(90dvh, calc(100dvh - var(--log-kb, 0px) - 8px)); }
   #panel-log .log-sheet.dragging { transition: none; }
   @keyframes logSheetUp { from { transform: translateY(40px); opacity: 0.6; } to { transform: none; opacity: 1; } }
   .log-grab {
     flex-shrink: 0; display: flex; justify-content: center;
-    padding: 10px 0 2px; cursor: grab; touch-action: none;
+    padding: 8px 0 2px; cursor: grab; touch-action: none;
   }
   .log-grab span { width: 38px; height: 5px; border-radius: 3px; background: var(--baseline, #cbd5e1); }
-  #panel-log .log-modal-header { border-bottom: none; height: 46px; background: transparent; position: static; }
-  #panel-log .log-modal-content { padding: 4px 16px 18px; }
+  #panel-log .log-modal-header { border-bottom: none; height: 42px; background: transparent; position: static; }
+  #panel-log .log-modal-content { padding: 14px 16px calc(env(safe-area-inset-bottom, 0px) + 48px); display: flex; flex-direction: column; }
+  #entryForm { flex: 1; display: flex; flex-direction: column; }
+  .log-stage-details { flex: 1; display: flex; flex-direction: column; }
 
   .log-sheet[data-has-media="false"] .log-stage-details { display: none; }
   .log-sheet[data-has-media="true"] .log-stage-media { display: none; }
 
   .log-tray {
     display: grid; grid-template-columns: repeat(3, 1fr);
-    height: 150px; overflow: hidden;
+    aspect-ratio: 4 / 3; width: min(100%, calc(32dvh * 4 / 3)); margin: 0 auto; overflow: hidden;
     border: 1.5px dashed var(--baseline, #cbd5e1); border-radius: 18px;
     background: var(--surface-2, #f8fafc);
     transition: border-color 0.15s ease;
@@ -726,16 +731,16 @@
   }
   .log-tool:last-child { border-right: none; }
   .log-tool:hover { color: var(--text-primary); background: var(--gridline, #f1f5f9); }
-  .log-tray-hint { margin: 12px 4px 0; font-size: 13px; color: var(--text-muted, #64748b); }
+  .log-tray-hint { margin: 12px 4px 0; font-size: 13px; text-align: center; color: var(--text-muted, #64748b); }
 
+  /* The preview is always the full content width at 4:3, the same on every page. */
   .log-media {
-    position: relative; height: 120px; border-radius: 18px; overflow: hidden;
+    position: relative; flex: none; aspect-ratio: 4 / 3; margin: 0 auto;
+    width: min(100%, 440px);
+    border-radius: 16px; overflow: hidden;
     background: var(--surface-2, #f8fafc);
-    border: 3px solid var(--log-cat, var(--series-spiritual));
     display: flex; align-items: center; justify-content: center;
-    transition: height 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.2s ease;
   }
-  .log-sheet[data-snap="full"] .log-media { height: 210px; }
   .log-media .file-preview {
     position: absolute; inset: 0; margin: 0;
     width: 100%; height: 100%; max-height: none; object-fit: cover; border-radius: 0;
@@ -759,19 +764,27 @@
   }
   .log-media .file-remove-btn:hover { background: rgba(220, 38, 38, 0.85); color: #fff; }
 
-  .log-prog { display: flex; gap: 5px; margin-top: 14px; }
+  .log-prog { display: flex; flex: none; gap: 5px; margin: 8px 0 20px; }
   .log-prog button {
     flex: 1; height: 6px; border: none; border-radius: 3px; padding: 0; cursor: pointer;
     background: var(--border, #e2e8f0); transition: background 0.2s ease;
   }
   .log-prog button.done { background: var(--accent); }
   .log-step { display: none; }
-  .log-step.active { display: block; animation: logStepIn 0.22s ease; }
-  .log-step[data-step="2"].active { min-height: 250px; }
+  .log-step.active {
+    display: flex; flex-direction: column; flex: none;
+    justify-content: flex-start; gap: 12px; padding: 24px 0; animation: logStepIn 0.22s ease;
+  }
+  .log-step.active > * { flex: none; }
+  /* Friends: the list opens upwards over the preview, so it never pushes the sheet. */
+  .log-step[data-step="2"] .tag-friends-panel {
+    top: auto; bottom: calc(100% + 6px); max-height: min(240px, 34dvh);
+  }
+  #panel-log #fName { height: 72px; min-height: 0; resize: none; }
   @keyframes logStepIn { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: none; } }
   .log-q {
     display: flex; align-items: center; gap: 6px;
-    margin: 14px 0 12px; font-size: 17px; font-weight: 700; color: var(--text-primary);
+    margin: 0; font-size: 17px; font-weight: 700; color: var(--text-primary);
   }
   .log-q .opt { font-size: 13px; font-weight: 400; color: var(--text-muted); }
 
@@ -784,7 +797,8 @@
   .log-chip.sel { border-color: var(--accent); }
   #logChips { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
   #logChips .log-chip { margin: 0; justify-content: center; padding: 13px 6px; font-size: 14px; }
-  .log-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+  .log-pills { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .log-pills .log-pill { justify-content: center; }
   .log-pill {
     position: relative; display: inline-flex; align-items: center; gap: 8px;
     padding: 9px 14px; border-radius: 12px; cursor: pointer;
@@ -799,30 +813,47 @@
   }
   .log-chip i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
 
-  .log-amount { display: flex; align-items: center; justify-content: center; gap: 14px; margin: 4px 0 12px; }
+  .log-amt-row { display: flex; align-items: center; justify-content: center; gap: 16px; }
+  .log-amount { display: flex; align-items: center; gap: 8px; margin: 0; }
   .log-amount .step-btn {
-    width: 46px; height: 46px; border-radius: 50%; border: none; padding: 0; cursor: pointer;
+    width: 42px; height: 42px; border-radius: 50%; border: none; padding: 0; cursor: pointer;
     background: var(--surface-2, #f1f5f9); color: var(--text-primary); font-size: 22px; line-height: 1;
   }
   #panel-log #fAmount {
-    width: 120px; text-align: center; font-size: 36px; font-weight: 700; padding: 0;
+    width: 70px; text-align: center; font-size: 32px; font-weight: 700; padding: 0; height: 42px;
     border: none; background: transparent; box-shadow: none; -moz-appearance: textfield;
   }
   #panel-log #fAmount::-webkit-outer-spin-button, #panel-log #fAmount::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-  .log-units { display: flex; width: max-content; margin: 0 auto 14px; padding: 3px; border-radius: 12px; background: var(--surface-2, #f1f5f9); }
+  .log-units { display: flex; flex: none; width: max-content; margin: 0; padding: 3px; border-radius: 12px; background: var(--surface-2, #f1f5f9); }
   .log-units button {
-    border: none; background: none; padding: 7px 16px; border-radius: 9px; cursor: pointer;
+    border: none; background: none; padding: 9px 14px; border-radius: 9px; cursor: pointer;
     font: inherit; font-size: 13px; font-weight: 600; color: var(--text-secondary);
   }
   .log-units button.on { background: var(--surface-1); color: var(--text-primary); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15); }
-  .log-goal-row { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--text-muted); margin-bottom: 6px; }
+  .log-goal { margin-top: 10px; }
+  .log-goal-row { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--text-muted); margin-bottom: 5px; }
   .log-goal-row b { color: var(--text-primary); font-weight: 700; }
   .log-goal-bar { display: flex; height: 8px; border-radius: 4px; overflow: hidden; background: var(--seq-track, #e2e8f0); }
   .log-goal-bar i { display: block; height: 100%; transition: width 0.18s ease; }
   #logGoalBase { background: var(--seq-fill, #10b981); }
   #logGoalAdd { background: var(--badge-bg, #facc15); }
 
-  #panel-log .btn-submit-log { margin-top: 18px; font-family: inherit; }
+  #panel-log .log-modal-header {
+    display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; padding: 0 12px 0 8px;
+  }
+  #panel-log .log-modal-header h2 { text-align: center; margin: 0; }
+  #panel-log .log-modal-header .log-close-btn { justify-self: start; }
+  #panel-log .log-modal-header .log-head-btn { justify-self: end; }
+  .log-head-btn {
+    flex: none; min-width: 72px; height: 36px; padding: 0 16px; border: none; border-radius: 12px;
+    background: var(--accent); color: var(--accent-contrast, #fff);
+    font: inherit; font-size: 14px; font-weight: 700; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .log-head-btn:hover:not(:disabled) { background: var(--accent-hover); }
+  .log-head-btn:disabled { background: var(--border, #e2e8f0); color: var(--text-muted, #64748b); cursor: default; }
+  .log-head-btn .spinner { border-color: rgba(128, 128, 128, 0.4); border-top-color: currentColor; }
 
   .field { margin-bottom: 16px; }
   .field label, .field-label {
@@ -3561,7 +3592,7 @@
     </div>
   </section>
 
-  <!-- LOG: a bottom sheet (70%, drag up to 90%). Media first, then four steps. -->
+  <!-- LOG: a bottom sheet (50%, 70% for the heavier steps). Media first, then four steps. -->
   <section id="panel-log" class="panel">
     <div class="log-modal-card log-sheet" id="logSheet" data-snap="half" data-has-media="false">
       <div class="log-grab" id="logGrab" role="button" tabindex="0" aria-label="Resize sheet"><span></span></div>
@@ -3572,7 +3603,8 @@
             <line x1="6" y1="6" x2="18" y2="18"></line>
           </svg>
         </button>
-        <h2 id="formHeading">Log New Activity</h2>
+        <h2 id="formHeading">Log Activity</h2>
+        <button type="submit" form="entryForm" class="log-head-btn" id="submitBtn">Next</button>
       </div>
       <div class="log-modal-content">
       <form id="entryForm" novalidate>
@@ -3592,12 +3624,18 @@
               Video
             </button>
           </div>
-          <p class="log-tray-hint" id="fileDropText">Start with a photo or video. You'll add the details next.</p>
+          <p class="log-tray-hint" id="fileDropText">Start with a photo or video. Details come next.</p>
         </div>
         <input type="file" id="fMedia" accept="image/*,video/*,video/mp4,video/quicktime,video/mov,video/webm,video/3gpp,video/3gpp2,video/x-m4v,video/x-matroska,video/avi,video/x-msvideo,.mov,.MOV,.mp4,.MP4,.m4v,.M4V,.webm,.WEBM,.3gp,.3gpp,.mkv,.MKV,.avi,.AVI,.heic,.HEIC,.heif,.HEIF" />
         <div class="field-error" data-for="fMedia">A photo or video is required.</div>
 
         <div class="log-stage-details">
+          <div class="log-prog" id="logProg">
+            <button type="button" data-goto="0" aria-label="Activity"></button>
+            <button type="button" data-goto="1" aria-label="Amount"></button>
+            <button type="button" data-goto="2" aria-label="Friends"></button>
+            <button type="button" data-goto="3" aria-label="Note"></button>
+          </div>
           <div class="log-media" id="logMedia">
             <svg class="log-media-ph" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"></path></svg>
             <img class="file-preview" id="filePreviewImg" alt="Preview" />
@@ -3610,13 +3648,6 @@
                 <line x1="6" y1="6" x2="18" y2="18"></line>
               </svg>
             </button>
-          </div>
-
-          <div class="log-prog" id="logProg">
-            <button type="button" data-goto="0" aria-label="Activity"></button>
-            <button type="button" data-goto="1" aria-label="Amount"></button>
-            <button type="button" data-goto="2" aria-label="Friends"></button>
-            <button type="button" data-goto="3" aria-label="Note"></button>
           </div>
 
           <div class="log-step active" data-step="0">
@@ -3639,14 +3670,16 @@
               How much?
               <button type="button" class="info-icon" id="pointsInfoBtn" aria-label="What counts as a point?">?</button>
             </p>
-            <div class="log-amount">
-              <button type="button" class="step-btn" id="amtDec" aria-label="Less">&minus;</button>
-              <input type="number" id="fAmount" step="0.1" min="0.1" inputmode="decimal" placeholder="0" required />
-              <button type="button" class="step-btn" id="amtInc" aria-label="More">+</button>
-            </div>
-            <div class="log-units" id="logUnits">
-              <button type="button" data-unit="hours">Hours</button>
-              <button type="button" data-unit="km">Kilometres</button>
+            <div class="log-amt-row">
+              <div class="log-amount">
+                <button type="button" class="step-btn" id="amtDec" aria-label="Less">&minus;</button>
+                <input type="number" id="fAmount" step="0.1" min="0.1" inputmode="decimal" placeholder="0" required />
+                <button type="button" class="step-btn" id="amtInc" aria-label="More">+</button>
+              </div>
+              <div class="log-units" id="logUnits">
+                <button type="button" data-unit="hours" aria-label="Hours">hrs</button>
+                <button type="button" data-unit="km" aria-label="Kilometres">km</button>
+              </div>
             </div>
             <select id="fUnits" required style="display:none;">
               <option value="hours" selected>Hours (hrs)</option>
@@ -3675,11 +3708,11 @@
 
           <div class="log-step" data-step="3">
             <p class="log-q">What made it memorable?</p>
-            <div class="field" style="margin-bottom:10px;">
+            <div class="field" style="margin-bottom:0;">
               <input type="text" id="fActivity" maxlength="200" placeholder="Name it, e.g. Morning run" required />
               <div class="field-error" data-for="fActivity">Please write an activity name.</div>
             </div>
-            <div class="field" style="margin-bottom:10px;">
+            <div class="field log-grow" style="margin-bottom:0;">
               <textarea id="fName" class="field-textarea" maxlength="200" placeholder="What went on?" required></textarea>
               <div class="field-error" data-for="fName">Please describe the activity</div>
             </div>
@@ -3694,7 +3727,6 @@
             <div class="field-error" data-for="fDate">Date can't be in the future.</div>
           </div>
 
-          <button type="submit" class="btn-submit-log" id="submitBtn">Next</button>
         </div>
       </form>
       </div>
@@ -6224,7 +6256,7 @@
           if (!checkbox.checked && idx !== -1) current.splice(idx, 1);
           cfg.setSelected(current);
           renderTagFriendsPills_(cfg);
-          if (checkbox.checked && searchEl) {
+          if (checkbox.checked && searchEl && !cfg.inline) {
             // Clear the search text on select so the list resets to
             // everyone, ready to search for the next friend to tag.
             // Re-render directly rather than relying on the "focus"
@@ -6318,6 +6350,7 @@
   var LOG_LAST_STEP = 3;
   var logStep_ = 0;
   var logPickAccept_ = null;
+  var logFitTimer_ = null;
   var logCatPicked_ = false; // step 1 needs an explicit choice, not the default
   function logErrorIdFor_(step) { return step === 0 ? "fCategory" : "fAmount"; }
   function logDateLabel_() {
@@ -6350,7 +6383,6 @@
   }
   function logGoToStep_(n) {
     logStep_ = Math.max(0, Math.min(LOG_LAST_STEP, n));
-    if (logStep_ === LOG_LAST_STEP) logSetSnap_("full");
     updateLogUi_();
   }
   function logNext_() {
@@ -6365,6 +6397,23 @@
     var err = document.querySelector("#entryForm .field-error.show");
     var stepEl = err ? err.closest(".log-step") : null;
     if (stepEl) logGoToStep_(parseInt(stepEl.getAttribute("data-step"), 10));
+  }
+
+  // Sizes the sheet to this page's content (CSS caps it at 90%) and animates there.
+  var logFitKey_ = "";
+  function logFitSheet_() {
+    var sheet = document.getElementById("logSheet");
+    if (!sheet) return;
+    if (!logHasMedia_()) { sheet.style.height = ""; return; }
+    var prev = sheet.getBoundingClientRect().height;
+    if (!prev) { sheet.style.height = ""; return; }
+    sheet.style.transition = "none";
+    sheet.style.height = "auto";
+    var next = sheet.getBoundingClientRect().height;
+    sheet.style.height = prev + "px";
+    void sheet.offsetHeight;
+    sheet.style.transition = "";
+    sheet.style.height = next + "px";
   }
 
   // Re-syncs everything the sheet shows from the form's current values.
@@ -6416,14 +6465,19 @@
     if (btn && !btn.dataset.saving) {
       if (state.mediaBusy) {
         btn.disabled = true;
-        btn.innerHTML = '<span class="spinner"></span> Preparing media…';
+        btn.innerHTML = '<span class="spinner" aria-label="Preparing media"></span>';
       } else {
         var friendsPicked = state.pendingTaggedFriends && state.pendingTaggedFriends.length;
-        btn.textContent = logStep_ === LOG_LAST_STEP ? "Post It & Clock It"
+        btn.textContent = logStep_ === LOG_LAST_STEP ? "Post"
           : (logStep_ === 2 && !friendsPicked ? "Skip" : "Next");
         btn.disabled = !logStepValid_(logStep_);
       }
     }
+
+    // Re-fit only when something that changes the page's height changed (not on every keystroke).
+    var fitKey = [logHasMedia_(), logStep_, state.pendingTaggedFriends.length,
+      document.querySelectorAll("#entryForm .field-error.show").length].join("|");
+    if (fitKey !== logFitKey_) { logFitKey_ = fitKey; logFitSheet_(); }
   }
 
   function resetForm(toCreateMode) {
@@ -6444,10 +6498,12 @@
     clearErrors_();
     logStep_ = 0;
     logCatPicked_ = false;
+    logFitKey_ = "";
+    document.getElementById("logSheet").style.height = "";
     logSetSnap_("half");
     if (toCreateMode) {
       state.editingId = null;
-      document.getElementById("formHeading").textContent = "Log New Activity";
+      document.getElementById("formHeading").textContent = "Log Activity";
     }
     updateLogUi_();
   }
@@ -7699,6 +7755,7 @@
       imgPrev.removeAttribute("src"); imgPrev.classList.remove("show");
       vidPrev.removeAttribute("src"); vidPrev.classList.remove("show");
       document.getElementById("logMediaStatus").textContent = "";
+      logSetSnap_("half");
       updateLogUi_();
     });
     fileDrop.addEventListener("dragover", function (e) {
@@ -7775,7 +7832,8 @@
     // Typing needs room (and the keyboard takes half the screen): go to 90%.
     logForm.addEventListener("focusin", function (e) {
       var t = e.target;
-      if (t && (t.tagName === "TEXTAREA" || (t.tagName === "INPUT" && t.type !== "file"))) logSetSnap_("full");
+      if (t && t.id !== "tagFriendsSearch" &&
+          (t.tagName === "TEXTAREA" || (t.tagName === "INPUT" && t.type !== "file"))) logSetSnap_("full");
     });
 
     logForm.addEventListener("submit", submitForm);
@@ -7815,9 +7873,11 @@
         var h = logSheet.getBoundingClientRect().height;
         var vh = window.innerHeight;
         logSheet.style.height = "";
+        // With media the sheet is sized to its page: the handle springs back (only the X closes it).
+        if (logHasMedia_()) { logFitKey_ = ""; updateLogUi_(); return; }
         if (!moved) { toggleSnap_(); return; }
-        if (h < vh * 0.56 && !logHasContent_()) { closeLog_(); return; }
-        logSetSnap_(h > vh * 0.8 ? "full" : "half");
+        if (h < vh * 0.4 && !logHasContent_()) { closeLog_(); return; }
+        logSetSnap_(h > vh * 0.6 ? "full" : "half");
       }
       grab.addEventListener("pointerup", endDrag);
       grab.addEventListener("pointercancel", endDrag);
@@ -7825,6 +7885,15 @@
         if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleSnap_(); }
       });
     })();
+
+    // Re-fit on rotation / resize, and when a tagged-friend pill is added or removed.
+    window.addEventListener("resize", function () {
+      if (logPanel.classList.contains("active")) { logFitKey_ = ""; updateLogUi_(); }
+    });
+    if (window.MutationObserver) {
+      new MutationObserver(function () { logFitKey_ = ""; updateLogUi_(); })
+        .observe(document.getElementById("tagFriendsPills"), { childList: true });
+    }
 
     // Keep the sheet above the on-screen keyboard (iOS doesn't resize dvh for it).
     if (window.visualViewport) {
