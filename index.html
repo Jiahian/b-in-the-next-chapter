@@ -314,29 +314,90 @@
   .panel { display: none; }
   .panel.active { display: block; }
 
-  /* Profile panel fullscreen page */
-  #panel-profile.active {
+  /* Profile page: full screen, in the points summary's indigo. It opens as a circular reveal from
+     the header profile icon (the same motion as the points summary, which grows from the counter). */
+  #panel-profile {
+    --pf-bg: #4f46e5; --pf-muted: #c7d2fe;
+    display: block;
     position: fixed; inset: 0; z-index: 50;
-    background: var(--surface-1, #ffffff);
-    overflow: hidden;
-    padding: 0;
-    box-sizing: border-box;
-    animation: fadeInOverlay 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+    background: var(--pf-bg); color: #ffffff;
+    clip-path: circle(0px at var(--cx, calc(100% - 36px)) var(--cy, 32px));
+    visibility: hidden;
+    transition: clip-path 0.5s cubic-bezier(0.65, 0, 0.35, 1), visibility 0s 0.5s;
   }
-  /* Profile: a 90% bottom sheet over a dimmed backdrop, not a fullscreen page. */
-  #panel-profile.active { background: rgba(15, 23, 42, 0.45); }
-  #panel-profile .log-modal-card {
-    position: absolute; left: 0; right: 0; bottom: 0; margin: 0 auto;
-    height: 90vh; height: 90dvh; max-height: calc(100dvh - 8px);
-    border-radius: 24px 24px 0 0;
-    box-shadow: 0 -10px 40px rgba(15, 23, 42, 0.25);
-    transition: transform 0.2s ease;
-    animation: profileSheetUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  #panel-profile.active {
+    clip-path: circle(150vmax at var(--cx, calc(100% - 36px)) var(--cy, 32px));
+    visibility: visible;
+    transition: clip-path 0.7s cubic-bezier(0.65, 0, 0.35, 1), visibility 0s;
   }
-  @keyframes profileSheetUp { from { transform: translateY(40px); opacity: 0.6; } to { transform: none; opacity: 1; } }
-  .profile-grab { flex-shrink: 0; display: flex; justify-content: center; padding: 8px 0 2px; cursor: grab; touch-action: none; }
-  .profile-grab span { width: 38px; height: 5px; border-radius: 3px; background: var(--baseline, #cbd5e1); }
-  .profile-theme-slot { margin-left: auto; padding-right: 8px; display: flex; align-items: center; }
+  body.profile-open { overflow: hidden; }
+  .pf-inner {
+    width: 100%; max-width: 480px; margin: 0 auto; box-sizing: border-box;
+    padding: calc(max(16px, env(safe-area-inset-top)) + 62px) 22px calc(max(16px, env(safe-area-inset-bottom)) + 44px);
+  }
+  .pf-close {
+    position: fixed; z-index: 3;
+    left: 14px; top: max(10px, env(safe-area-inset-top)); width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    border: none; border-radius: 50%; padding: 0; cursor: pointer;
+    background: #ffffff; color: #4f46e5;
+    opacity: 0; transform: rotate(-90deg) scale(0.8);
+    transition: opacity 0.2s, transform 0.35s;
+  }
+  #panel-profile.active .pf-close { opacity: 1; transform: none; transition: opacity 0.25s 0.25s, transform 0.4s 0.25s; }
+  .pf-theme {
+    position: fixed; z-index: 3; right: 16px; top: calc(max(10px, env(safe-area-inset-top)) + 9px);
+    opacity: 0; transition: opacity 0.2s;
+  }
+  #panel-profile.active .pf-theme { opacity: 1; transition: opacity 0.3s 0.35s; }
+  .pf-hero { text-align: center; }
+  .pf-ring {
+    position: relative; width: 136px; height: 136px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: center;
+  }
+  #panel-profile .profile-avatar-wrap { width: 136px; height: 136px; }
+  #panel-profile .profile-avatar-inner { border: none; background: #1e293b; }
+  #panel-profile .profile-avatar-initial { background: #1e293b; color: #ffffff; font-size: 52px; }
+  #panel-profile .profile-avatar-edit-btn {
+    right: 0; bottom: 0; width: 30px; height: 30px;
+    background: #ffffff; color: #4f46e5; border: none; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.25);
+  }
+  #panel-profile .profile-name {
+    margin: 20px 0 0; font-size: 30px; font-weight: 800; color: #ffffff; letter-spacing: 0.01em;
+  }
+  #panel-profile .profile-email {
+    margin: 4px 0 0; font-size: 13.5px; font-weight: 500; color: var(--pf-muted);
+  }
+  .pf-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 26px 0 24px; }
+  .pf-stat { background: rgba(255, 255, 255, 0.13); border-radius: 14px; padding: 10px 6px; text-align: center; }
+  .pf-stat .k { font-size: 11px; font-weight: 700; color: #e0e7ff; }
+  .pf-stat .v { font-size: 19px; font-weight: 800; margin-top: 2px; font-variant-numeric: tabular-nums; }
+  #panel-profile .profile-tabs { border-bottom-color: rgba(255, 255, 255, 0.22); margin-bottom: 14px; }
+  #panel-profile .profile-tab { color: var(--pf-muted); font-size: 14px; }
+  #panel-profile .profile-tab.active { color: #ffffff; }
+  #panel-profile .profile-tab-indicator { background: #ffffff; }
+  #panel-profile .empty-state { color: var(--pf-muted); }
+  #profileSignOutBtn {
+    display: block; width: auto; margin: 28px auto 0; padding: 9px 22px; border-radius: 999px;
+    background: transparent; color: #e0e7ff; border: 1px solid rgba(255, 255, 255, 0.35);
+    font-size: 13px; font-weight: 600;
+  }
+  /* the pieces fade up in turn once the circle has grown */
+  .pf-hero, .pf-stats, #panel-profile .profile-tabs, #panel-profile .profile-tab-panel, #profileSignOutBtn {
+    opacity: 0; transform: translateY(10px); transition: opacity 0.25s, transform 0.25s;
+  }
+  #panel-profile.active .pf-hero, #panel-profile.active .pf-stats, #panel-profile.active .profile-tabs,
+  #panel-profile.active .profile-tab-panel, #panel-profile.active #profileSignOutBtn {
+    opacity: 1; transform: none; transition: opacity 0.4s, transform 0.4s;
+  }
+  #panel-profile.active .pf-hero { transition-delay: 0.3s; }
+  #panel-profile.active .pf-stats { transition-delay: 0.4s; }
+  #panel-profile.active .profile-tabs, #panel-profile.active .profile-tab-panel { transition-delay: 0.5s; }
+  #panel-profile.active #profileSignOutBtn { transition-delay: 0.55s; }
+  @media (prefers-reduced-motion: reduce) {
+    #panel-profile, #panel-profile *, .pf-close, .pf-theme { transition-duration: 0.01s !important; transition-delay: 0s !important; }
+  }
   /* The Log panel is a bottom sheet (50% tall, 70% for the heavier steps) over a dimmed
      backdrop, not a fullscreen page: see the "Log sheet" block below. */
   #panel-log.active {
@@ -3212,8 +3273,7 @@
   }
 
   /* Modals in Dark Mode */
-  [data-theme="dark"] #panel-log.active,
-  [data-theme="dark"] #panel-profile.active {
+  [data-theme="dark"] #panel-log.active {
     background: rgba(0, 0, 0, 0.6);
   }
   [data-theme="dark"] .log-modal-card {
@@ -3803,20 +3863,13 @@
     </div>
   </section>
 
-  <!-- Profile panel: display name, sign out, and the signed-in user's own posts -->
-  <section id="panel-profile" class="panel">
-    <div class="log-modal-card">
-      <div class="profile-grab" id="profileGrab" aria-hidden="true"><span></span></div>
-      <div class="log-modal-header">
-        <button type="button" class="log-close-btn" id="profileCloseBtn" aria-label="Back" title="Back">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M19 12H5"></path>
-            <path d="M12 19l-7-7 7-7"></path>
-          </svg>
-        </button>
-        <h2>Your Profile</h2>
-        <div class="profile-theme-slot">
-          <button type="button" class="theme-toggle-switch" id="themeToggleBtn" role="switch" aria-checked="false" aria-label="Toggle dark mode" title="Toggle dark mode">
+  <!-- Profile page: a full-screen page that opens as a circular reveal from the header profile icon -->
+  <section id="panel-profile" class="panel" role="dialog" aria-modal="true" aria-label="Your profile" aria-hidden="true">
+    <button type="button" class="pf-close" id="profileCloseBtn" aria-label="Close profile" title="Close">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+    </button>
+    <div class="pf-theme">
+      <button type="button" class="theme-toggle-switch" id="themeToggleBtn" role="switch" aria-checked="false" aria-label="Toggle dark mode" title="Toggle dark mode">
       <span class="theme-toggle-slot slot-moon" aria-hidden="true">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="#ffffff" stroke="none">
           <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
@@ -3837,29 +3890,33 @@
       </span>
       <span class="theme-toggle-thumb" aria-hidden="true"></span>
     </button>
-        </div>
-      </div>
-
-      <div class="log-modal-content">
-      <div class="profile-header-card">
-        <div class="profile-avatar-wrap">
-          <div class="profile-avatar-inner">
-            <img class="profile-avatar-img" id="profileAvatarImg" alt="Profile picture" style="display:none;" />
-            <span class="profile-avatar-initial" id="profileAvatarInitial">?</span>
+    </div>
+    <div class="pf-inner">
+      <div class="pf-hero">
+        <div class="pf-ring">
+          <div class="profile-avatar-wrap">
+            <div class="profile-avatar-inner">
+              <img class="profile-avatar-img" id="profileAvatarImg" alt="Profile picture" style="display:none;" />
+              <span class="profile-avatar-initial" id="profileAvatarInitial">?</span>
+            </div>
+            <button type="button" class="profile-avatar-edit-btn" id="profileAvatarEditBtn" aria-label="Edit profile photo" title="Edit profile photo">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+              </svg>
+            </button>
           </div>
-          <button type="button" class="profile-avatar-edit-btn" id="profileAvatarEditBtn" aria-label="Edit profile photo" title="Edit profile photo">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
-            </svg>
-          </button>
         </div>
-        <div class="profile-info">
-          <h3 class="profile-name" id="profileDisplayName"></h3>
-          <p class="profile-email" id="profileEmailDisplay"></p>
-        </div>
+        <h3 class="profile-name" id="profileDisplayName"></h3>
+        <p class="profile-email" id="profileEmailDisplay"></p>
       </div>
 
-      <div class="profile-tabs" id="profileTabs" style="margin-top:24px;">
+      <div class="pf-stats">
+        <div class="pf-stat"><div class="k">Posts</div><div class="v" id="pfPosts">0</div></div>
+        <div class="pf-stat"><div class="k">Tagged in</div><div class="v" id="pfTagged">0</div></div>
+        <div class="pf-stat pts"><div class="k">Points</div><div class="v" id="pfPoints">0</div></div>
+      </div>
+
+      <div class="profile-tabs" id="profileTabs">
         <button type="button" class="profile-tab active" id="profileTabMine" data-tab="mine">My Posts</button>
         <button type="button" class="profile-tab" id="profileTabTagged" data-tab="tagged">Tagged In</button>
         <span class="profile-tab-indicator" id="profileTabIndicator"></span>
@@ -3874,8 +3931,7 @@
         <div class="empty-state" id="profileTaggedEmpty" style="display:none;">No one's tagged you in an activity yet.</div>
       </div>
 
-      <button type="button" class="btn btn-secondary" id="profileSignOutBtn" style="margin-top:20px;">Sign out</button>
-      </div>
+      <button type="button" class="btn btn-secondary" id="profileSignOutBtn">Sign out</button>
     </div>
   </section>
 
@@ -7033,10 +7089,12 @@
   var logModeScrollY = 0;
   function switchPanel(name) {
     var wasLogMode = document.body.classList.contains("log-mode");
-    var willBeLogMode = (name === "log" || name === "profile");
+    var willBeLogMode = (name === "log");
+    var profileEl = document.getElementById("panel-profile");
+    var wasProfile = profileEl.classList.contains("active");
 
     document.getElementById("panel-log").classList.remove("active");
-    document.getElementById("panel-profile").classList.remove("active");
+    profileEl.classList.remove("active");
     document.getElementById("panel-home").classList.add("active");
 
     if (willBeLogMode && !wasLogMode) {
@@ -7048,15 +7106,35 @@
     if (name === "log") {
       document.getElementById("panel-log").classList.add("active");
       document.body.classList.add("log-mode");
-    } else if (name === "profile") {
-      document.getElementById("panel-profile").classList.add("active");
-      document.body.classList.add("log-mode");
+    }
+
+    // The profile page is a full-screen reveal: the home page stays put underneath it.
+    if (name === "profile") {
+      profileEl.classList.add("active");
+      profileEl.setAttribute("aria-hidden", "false");
+      document.body.classList.add("profile-open");
+      if (!wasProfile) profileEl.scrollTop = 0;
+    } else {
+      profileEl.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("profile-open");
+      // hand focus back to the icon before the page is hidden from assistive tech
+      if (wasProfile && profileEl.contains(document.activeElement)) document.getElementById("headerProfileBtn").focus();
     }
 
     if (!willBeLogMode && wasLogMode) {
       document.body.style.top = "";
       window.scrollTo(0, logModeScrollY);
     }
+  }
+
+  // The profile page grows out of the header profile icon.
+  function profilePlace_() {
+    var btn = document.getElementById("headerProfileBtn");
+    var el = document.getElementById("panel-profile");
+    if (!btn || !el) return;
+    var r = btn.getBoundingClientRect();
+    el.style.setProperty("--cx", (r.left + r.width / 2) + "px");
+    el.style.setProperty("--cy", (r.top + r.height / 2) + "px");
   }
 
   // ===================================================================
@@ -7877,7 +7955,13 @@
       }
     }
 
+    var set = function (id, v) { var el = document.getElementById(id); if (el) el.textContent = v; };
+    set("pfPosts", String(myEntries.length));
+    set("pfTagged", String(taggedEntries.length));
+    set("pfPoints", formatNum_(myEntries.reduce(function (sum, en) { return sum + (Number(en.amount) || 0); }, 0)));
+
     switchProfileTab_("mine");
+    profilePlace_();
     switchPanel("profile");
   }
 
@@ -8098,36 +8182,10 @@
     document.getElementById("profileCloseBtn").addEventListener("click", function () {
       switchPanel("home");
     });
-    var profilePanelEl_ = document.getElementById("panel-profile");
-    profilePanelEl_.addEventListener("click", function (e) {
-      if (e.target === profilePanelEl_) switchPanel("home");
-    });
-    // Drag the handle down to close the profile sheet.
-    (function () {
-      var grab = document.getElementById("profileGrab");
-      var card = profilePanelEl_.querySelector(".log-modal-card");
-      var startY = 0, dy = 0, dragging = false;
-      grab.addEventListener("pointerdown", function (e) {
-        if (e.pointerType === "touch") return;
-        dragging = true; startY = e.clientY; dy = 0;
-        card.style.transition = "none";
-        try { grab.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
-      });
-      grab.addEventListener("pointermove", function (e) {
-        if (!dragging) return;
-        dy = Math.max(0, e.clientY - startY);
-        card.style.transform = "translateY(" + dy + "px)";
-      });
-      function endDrag() {
-        if (!dragging) return;
-        dragging = false;
-        card.style.transition = "";
-        card.style.transform = "";
-        if (dy > 90) switchPanel("home");
-      }
-      grab.addEventListener("pointerup", endDrag);
-      grab.addEventListener("pointercancel", endDrag);
-    })();
+    // Keep the reveal's origin on the profile icon (set up front so it never drifts while opening).
+    profilePlace_();
+    window.addEventListener("load", profilePlace_);
+    window.addEventListener("resize", profilePlace_);
     document.getElementById("profileSignOutBtn").addEventListener("click", signOut_);
     document.getElementById("inAppGateCopyLinkBtn").addEventListener("click", copyPageLink_);
     document.getElementById("openInChromeBtn").addEventListener("click", function () {
@@ -8467,11 +8525,7 @@
     }
 
     // ----- Swipe actions -----
-    // 1) Swipe down closes the Profile and Log sheets (the Log one only when it holds no draft).
-    bindSheetSwipeDown_({
-      sheet: profilePanelEl_.querySelector(".log-modal-card"),
-      close: function () { switchPanel("home"); }
-    });
+    // 1) Swipe down closes the Log sheet (only when it holds no draft).
     bindSheetSwipeDown_({
       sheet: logSheet,
       skip: ".log-grab",
