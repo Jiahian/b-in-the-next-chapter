@@ -175,6 +175,8 @@ line of defense. Full mechanics: `CLAUDE.md`'s "Sheets auto-coercion
 gotcha". **Entries tagged with 2+ friends before this fix landed are still
 permanently corrupted** — see "Known gaps" below.
 
+**Home layout simplified; Profile is a 90% sheet.** The header is now just the title "B In the Next Chapter!" (left-aligned, no card, shadow or rounded bottom; sticky in the page colour) with the profile button at the far right. The "1000 BY 31 DEC 2026" line moved out of the header into the Points Accumulated card, between the counter and the progress bar. The floating bottom bar and its blur layer are gone: the light/dark toggle moved into the Profile sheet's header (same element id `themeToggleBtn`, so the existing theme code is unchanged), and Add New (`headerLogBtn`) is a lone 56px round + button at the bottom centre in the theme accent. The Profile panel is now a 90% bottom sheet (back arrow, backdrop tap, Esc, or dragging its handle down closes it); the Log form is still a fullscreen page on this branch.
+
 ## Known gaps / open items
 
 - [ ] **Sync profile photos to the backend.** Currently `localStorage`-only per device — doesn't follow the user across devices, and is never visible to other friends (gallery/tagging avatars still render text initials for everyone). Fix direction: upload to the Drive media folder + a new Users-sheet column for the file ID/URL.

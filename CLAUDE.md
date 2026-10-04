@@ -47,11 +47,15 @@ near the bottom of the file. A few things worth knowing before editing it:
 - Data refresh is polling, not push (`POLL_INTERVAL_MS`, currently 20s) —
   there's no websocket/SSE layer; `loadEntries()` diffs against a stored
   `gallerySignature` so an unchanged poll doesn't re-render/flash the gallery.
-- Gallery preview, the Log form, and the Profile panel are all full-bleed
-  fullscreen pages (sticky back-button navbar + independently scrolling
-  content), not modals — a deliberate, repeated redesign (see
-  `docs/DECISIONS.md`). Don't reintroduce centered/backdrop-blurred modal
-  cards for these three without checking that decision first.
+- Gallery preview and the Log form are full-bleed fullscreen pages (sticky
+  back-button navbar + independently scrolling content), not modals — a
+  deliberate, repeated redesign (see `docs/DECISIONS.md`). Don't reintroduce
+  centered/backdrop-blurred modal cards for these without checking that
+  decision first. The **Profile panel is the exception**: a 90% bottom sheet
+  over a dimmed backdrop (close with the back arrow, the backdrop, Esc, or by
+  dragging its handle down). The home screen has no bottom bar: the header is
+  the title (left) and the profile button (right), the light/dark toggle lives
+  in the Profile sheet's header, and Add New is a lone round button.
 - `gifenc.browser.js` is a separate script (loaded via `<script src="gifenc.browser.js">`
   before `config.js`) used client-side to convert uploaded video to an
   animated GIF before upload — it has its own file that must be kept in sync

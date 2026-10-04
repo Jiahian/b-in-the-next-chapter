@@ -159,14 +159,14 @@
   img, video { image-rendering: auto; }
   .pixel { image-rendering: pixelated; }
 
+  /* Just the title (left) and the profile button (right): no box. It stays put
+     while scrolling, in the page colour, so the profile button is always reachable. */
   header.app-header {
-    padding: max(22px, calc(18px + env(safe-area-inset-top))) 0 22px;
-    background: #ffffff;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    padding: max(16px, calc(10px + env(safe-area-inset-top))) 0 12px;
+    background: var(--page);
     border: none;
-    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
-    box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.06);
+    border-radius: 0;
+    box-shadow: none;
     position: sticky; top: 0; z-index: 20;
     width: 100%;
     margin: 0;
@@ -189,19 +189,17 @@
   body.log-mode #panel-home,
   body.log-mode header.app-header,
   body.log-mode #configBanner,
-  body.log-mode .floating-bottom-bar,
-  body.log-mode .bottom-bar-blur-layer,
+  body.log-mode .bottom-bar-log-btn,
   body.profile-mode #panel-home,
   body.profile-mode header.app-header,
   body.profile-mode #configBanner,
-  body.profile-mode .floating-bottom-bar,
-  body.profile-mode .bottom-bar-blur-layer {
+  body.profile-mode .bottom-bar-log-btn {
     filter: blur(7px);
     -webkit-filter: blur(7px);
     pointer-events: none;
     user-select: none;
   }
-  #panel-home, header.app-header, #configBanner, .floating-bottom-bar, .bottom-bar-blur-layer {
+  #panel-home, header.app-header, #configBanner {
     transition: filter 0.22s ease, -webkit-filter 0.22s ease;
   }
   .header-inner {
@@ -210,98 +208,39 @@
     padding: 0 16px;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
+    gap: 12px;
   }
-  .header-titles {
-    flex: 1;
+  .header-title {
+    margin: 0;
     min-width: 0;
-    text-align: center;
-    padding: 0;
-  }
-  .header-titles h1 {
-    margin: 0 0 4px;
     font-size: 22px;
     font-weight: 800;
     color: #0f172a;
     letter-spacing: -0.025em;
     line-height: 1.2;
-    text-align: center;
-  }
-  .header-titles p.sub {
-    margin: 0;
-    font-size: 14px;
-    font-weight: 700;
-    color: #64748b;
-    letter-spacing: 0.07em;
-    text-transform: uppercase;
-    line-height: 1.25;
-    text-align: center;
+    text-align: left;
   }
 
-  /* Floating Bottom Menu Bar Blur Layer & Dock Underlay */
-  .bottom-bar-blur-layer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: calc(78px + max(11px, calc(5px + env(safe-area-inset-bottom))));
-    pointer-events: none;
-    z-index: 30;
-    background: linear-gradient(to top, rgba(248, 250, 252, 0.94) 0%, rgba(248, 250, 252, 0.8) 55%, rgba(248, 250, 252, 0) 100%);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    -webkit-mask-image: linear-gradient(to top, black 0%, black 65%, transparent 100%);
-    mask-image: linear-gradient(to top, black 0%, black 65%, transparent 100%);
-    transition: filter 0.22s ease, -webkit-filter 0.22s ease, background 0.25s ease;
-  }
-
-  /* Floating Bottom Menu Bar */
-  .floating-bottom-bar {
-    position: fixed;
-    bottom: max(8px, calc(2px + env(safe-area-inset-bottom)));
-    left: 50%;
-    transform: translateX(-50%);
-    width: calc(100% - 32px);
-    max-width: 528px;
-    height: 60px;
-    background: #ffffff;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: none;
-    border-radius: var(--radius-lg);
-    box-shadow: 0 8px 30px -4px rgba(15, 23, 42, 0.12), 0 2px 8px -2px rgba(15, 23, 42, 0.06);
-    z-index: 35;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 8px;
-    box-sizing: border-box;
-    margin: 0 auto;
-    transition: filter 0.22s ease, -webkit-filter 0.22s ease, background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
-  }
-
-  .bottom-bar-slot {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-  }
-
+  /* Add New: a lone round button floating at the bottom centre */
   .bottom-bar-log-btn {
+    position: fixed;
+    bottom: max(20px, calc(12px + env(safe-area-inset-bottom)));
+    left: 0; right: 0; margin: 0 auto;
+    z-index: 35;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 48px;
-    height: 48px;
+    width: 56px;
+    height: 56px;
     background: var(--accent);
     color: var(--accent-contrast);
     border: none;
     border-radius: 50%;
     padding: 0;
     cursor: pointer;
-    box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
-    transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 6px 18px rgba(79, 70, 229, 0.4);
+    transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease, filter 0.22s ease, -webkit-filter 0.22s ease;
   }
   .bottom-bar-log-btn:hover {
     background: var(--accent-hover);
@@ -317,7 +256,7 @@
     height: 22px;
   }
 
-  .bottom-bar-profile-btn {
+  .header-profile-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -333,15 +272,15 @@
     font-weight: 800;
     transition: background 0.15s ease, transform 0.15s ease, border-color 0.15s ease, color 0.15s ease;
   }
-  .bottom-bar-profile-btn:hover {
+  .header-profile-btn:hover {
     background: #e2e8f0;
     color: #0f172a;
     transform: scale(1.06);
   }
-  .bottom-bar-profile-btn:active {
+  .header-profile-btn:active {
     transform: scale(0.95);
   }
-  .bottom-bar-profile-btn svg {
+  .header-profile-btn svg {
     display: block;
     width: 20px;
     height: 20px;
@@ -375,6 +314,20 @@
     box-sizing: border-box;
     animation: fadeInOverlay 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
+  /* Profile: a 90% bottom sheet over a dimmed backdrop, not a fullscreen page. */
+  #panel-profile.active { background: rgba(15, 23, 42, 0.45); }
+  #panel-profile .log-modal-card {
+    position: absolute; left: 0; right: 0; bottom: 0; margin: 0 auto;
+    height: 90vh; height: 90dvh; max-height: calc(100dvh - 8px);
+    border-radius: 24px 24px 0 0;
+    box-shadow: 0 -10px 40px rgba(15, 23, 42, 0.25);
+    transition: transform 0.2s ease;
+    animation: profileSheetUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  @keyframes profileSheetUp { from { transform: translateY(40px); opacity: 0.6; } to { transform: none; opacity: 1; } }
+  .profile-grab { flex-shrink: 0; display: flex; justify-content: center; padding: 8px 0 2px; cursor: grab; touch-action: none; }
+  .profile-grab span { width: 38px; height: 5px; border-radius: 3px; background: var(--baseline, #cbd5e1); }
+  .profile-theme-slot { margin-left: auto; padding-right: 8px; display: flex; align-items: center; }
   .section-heading {
     margin: 26px 2px 14px;
     font-size: 17px;
@@ -497,7 +450,16 @@
   }
   .progress-headline {
     text-align: center;
-    margin: 0 0 24px;
+    margin: 0 0 10px;
+  }
+  .points-target {
+    margin: 0 0 22px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #64748b;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
   }
   .progress-headline .value {
     font-size: clamp(66px, 16vw, 86px);
@@ -2801,23 +2763,13 @@
      Google Dark Mode Specific Styling
      =================================================================== */
   [data-theme="dark"] header.app-header {
-    background: #1e1f20;
-    border-bottom: 1px solid #2d2f31;
-    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+    background: #131314;
   }
-  [data-theme="dark"] .header-titles h1 {
+  [data-theme="dark"] .header-title {
     color: #e3e3e3;
   }
-  [data-theme="dark"] .header-titles p.sub {
+  [data-theme="dark"] .points-target {
     color: #9aa0a6;
-  }
-  [data-theme="dark"] .floating-bottom-bar {
-    background: #1e1f20;
-    border: 1px solid #2d2f31;
-    box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.6), 0 2px 8px -2px rgba(0, 0, 0, 0.4);
-  }
-  [data-theme="dark"] .bottom-bar-blur-layer {
-    background: linear-gradient(to top, rgba(19, 19, 20, 0.94) 0%, rgba(19, 19, 20, 0.8) 55%, rgba(19, 19, 20, 0) 100%);
   }
   [data-theme="dark"] .bottom-bar-log-btn,
   [data-theme="dark"] .header-log-btn {
@@ -2830,13 +2782,13 @@
     background: #a8c7fa;
     box-shadow: 0 6px 18px rgba(138, 180, 248, 0.45);
   }
-  [data-theme="dark"] .bottom-bar-profile-btn,
+  [data-theme="dark"] .header-profile-btn,
   [data-theme="dark"] .header-profile-btn {
     background: #2d2f31;
     color: #e3e3e3;
     border-color: #3c4043;
   }
-  [data-theme="dark"] .bottom-bar-profile-btn:hover,
+  [data-theme="dark"] .header-profile-btn:hover,
   [data-theme="dark"] .header-profile-btn:hover {
     background: #3c4043;
     color: #ffffff;
@@ -2955,9 +2907,11 @@
   }
 
   /* Modals in Dark Mode */
-  [data-theme="dark"] #panel-log.active,
-  [data-theme="dark"] #panel-profile.active {
+  [data-theme="dark"] #panel-log.active {
     background: #131314;
+  }
+  [data-theme="dark"] #panel-profile.active {
+    background: rgba(0, 0, 0, 0.6);
   }
   [data-theme="dark"] .log-modal-card {
     background: #1e1f20;
@@ -3268,7 +3222,7 @@
       max-width: 1040px;
     }
 
-    .header-titles h1 {
+    .header-title {
       font-size: 28px;
     }
 
@@ -3357,10 +3311,15 @@
 
 <header class="app-header">
   <div class="header-inner">
-    <div class="header-titles">
-      <h1>B In the Next Chapter!</h1>
-      <p class="sub"><span id="targetLabel">1000</span> BY 31 DEC 2026</p>
-    </div>
+    <h1 class="header-title">B In the Next Chapter!</h1>
+    <button class="header-profile-btn" id="headerProfileBtn" type="button" aria-label="Your profile" title="Your profile">
+      <img id="headerProfileImg" class="header-profile-img" alt="Profile" style="display:none;width:100%;height:100%;border-radius:50%;object-fit:cover;" />
+      <span id="headerProfileInitial" style="display:none;">?</span>
+      <svg class="profile-icon-svg" id="headerProfileIconSvg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+        <circle cx="12" cy="7" r="4"></circle>
+      </svg>
+    </button>
   </div>
 </header>
 
@@ -3382,6 +3341,7 @@
       <div class="progress-headline">
         <span class="value"><span id="totalPoints">0</span></span>
       </div>
+      <p class="points-target"><span id="targetLabel">1000</span> BY 31 DEC 2026</p>
       <div class="meter-track" role="progressbar" id="meterTrack" aria-valuemin="0" aria-valuemax="1000" aria-valuenow="0">
         <span class="meter-flame" id="meterFlame" aria-hidden="true">🔥</span>
         <div class="meter-fill" id="meterFill" style="width:0%"></div>
@@ -3509,6 +3469,7 @@
   <!-- Profile panel: display name, sign out, and the signed-in user's own posts -->
   <section id="panel-profile" class="panel">
     <div class="log-modal-card">
+      <div class="profile-grab" id="profileGrab" aria-hidden="true"><span></span></div>
       <div class="log-modal-header">
         <button type="button" class="log-close-btn" id="profileCloseBtn" aria-label="Back" title="Back">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -3517,6 +3478,29 @@
           </svg>
         </button>
         <h2>Your Profile</h2>
+        <div class="profile-theme-slot">
+          <button type="button" class="theme-toggle-switch" id="themeToggleBtn" role="switch" aria-checked="false" aria-label="Toggle dark mode" title="Toggle dark mode">
+      <span class="theme-toggle-slot slot-moon" aria-hidden="true">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="#ffffff" stroke="none">
+          <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+        </svg>
+      </span>
+      <span class="theme-toggle-slot slot-sun" aria-hidden="true">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="#ffffff" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="4" fill="#ffffff"></circle>
+          <path d="M12 2v2.5"></path>
+          <path d="M12 19.5v2.5"></path>
+          <path d="m4.93 4.93 1.77 1.77"></path>
+          <path d="m17.3 17.3 1.77 1.77"></path>
+          <path d="M2 12h2.5"></path>
+          <path d="M19.5 12h2.5"></path>
+          <path d="m6.7 17.3-1.77 1.77"></path>
+          <path d="m19.07 4.93-1.77 1.77"></path>
+        </svg>
+      </span>
+      <span class="theme-toggle-thumb" aria-hidden="true"></span>
+    </button>
+        </div>
       </div>
 
       <div class="log-modal-content">
@@ -3560,55 +3544,13 @@
 
 </main>
 
-<!-- Floating Bottom Menu Bar Blur Layer & Dock Underlay -->
-<div class="bottom-bar-blur-layer" id="bottomBarBlurLayer" aria-hidden="true"></div>
-
-<!-- Floating Bottom Menu Bar -->
-<nav class="floating-bottom-bar" id="floatingBottomBar" aria-label="Bottom Navigation">
-  <div class="bottom-bar-slot bottom-bar-slot-left">
-    <button type="button" class="theme-toggle-switch" id="themeToggleBtn" role="switch" aria-checked="false" aria-label="Toggle dark mode" title="Toggle dark mode">
-      <span class="theme-toggle-slot slot-moon" aria-hidden="true">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="#ffffff" stroke="none">
-          <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
-        </svg>
-      </span>
-      <span class="theme-toggle-slot slot-sun" aria-hidden="true">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="#ffffff" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="4" fill="#ffffff"></circle>
-          <path d="M12 2v2.5"></path>
-          <path d="M12 19.5v2.5"></path>
-          <path d="m4.93 4.93 1.77 1.77"></path>
-          <path d="m17.3 17.3 1.77 1.77"></path>
-          <path d="M2 12h2.5"></path>
-          <path d="M19.5 12h2.5"></path>
-          <path d="m6.7 17.3-1.77 1.77"></path>
-          <path d="m19.07 4.93-1.77 1.77"></path>
-        </svg>
-      </span>
-      <span class="theme-toggle-thumb" aria-hidden="true"></span>
-    </button>
-  </div>
-
-  <div class="bottom-bar-slot bottom-bar-slot-center">
-    <button class="bottom-bar-log-btn" id="headerLogBtn" type="button" aria-label="Log activity" title="Log activity">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <line x1="12" y1="4" x2="12" y2="20"></line>
-        <line x1="4" y1="12" x2="20" y2="12"></line>
-      </svg>
-    </button>
-  </div>
-
-  <div class="bottom-bar-slot bottom-bar-slot-right">
-    <button class="bottom-bar-profile-btn" id="headerProfileBtn" type="button" aria-label="Your profile" title="Your profile">
-      <img id="headerProfileImg" class="bottom-bar-profile-img" alt="Profile" style="display:none;width:100%;height:100%;border-radius:50%;object-fit:cover;" />
-      <span id="headerProfileInitial" style="display:none;">?</span>
-      <svg class="profile-icon-svg" id="headerProfileIconSvg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-        <circle cx="12" cy="7" r="4"></circle>
-      </svg>
-    </button>
-  </div>
-</nav>
+<!-- Add New: a lone round button at the bottom centre -->
+<button class="bottom-bar-log-btn" id="headerLogBtn" type="button" aria-label="Log activity" title="Log activity">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <line x1="12" y1="4" x2="12" y2="20"></line>
+    <line x1="4" y1="12" x2="20" y2="12"></line>
+  </svg>
+</button>
 
 <!-- Avatar Crop / Edit Modal -->
 <div class="avatar-crop-overlay" id="avatarCropOverlay" aria-hidden="true">
@@ -7322,6 +7264,35 @@
     document.getElementById("profileCloseBtn").addEventListener("click", function () {
       switchPanel("home");
     });
+    var profilePanelEl_ = document.getElementById("panel-profile");
+    profilePanelEl_.addEventListener("click", function (e) {
+      if (e.target === profilePanelEl_) switchPanel("home");
+    });
+    // Drag the handle down to close the profile sheet.
+    (function () {
+      var grab = document.getElementById("profileGrab");
+      var card = profilePanelEl_.querySelector(".log-modal-card");
+      var startY = 0, dy = 0, dragging = false;
+      grab.addEventListener("pointerdown", function (e) {
+        dragging = true; startY = e.clientY; dy = 0;
+        card.style.transition = "none";
+        try { grab.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+      });
+      grab.addEventListener("pointermove", function (e) {
+        if (!dragging) return;
+        dy = Math.max(0, e.clientY - startY);
+        card.style.transform = "translateY(" + dy + "px)";
+      });
+      function endDrag() {
+        if (!dragging) return;
+        dragging = false;
+        card.style.transition = "";
+        card.style.transform = "";
+        if (dy > 90) switchPanel("home");
+      }
+      grab.addEventListener("pointerup", endDrag);
+      grab.addEventListener("pointercancel", endDrag);
+    })();
     document.getElementById("profileSignOutBtn").addEventListener("click", signOut_);
     document.getElementById("inAppGateCopyLinkBtn").addEventListener("click", copyPageLink_);
     document.getElementById("openInChromeBtn").addEventListener("click", function () {
@@ -7431,6 +7402,8 @@
           filterCapsuleState.activeSubmenu = null;
           renderFilterCapsule();
         }
+        var profilePanelEsc = document.getElementById("panel-profile");
+        if (profilePanelEsc && profilePanelEsc.classList.contains("active")) switchPanel("home");
         var logPanel = document.getElementById("panel-log");
         if (logPanel && logPanel.classList.contains("active")) {
           resetForm(true);
