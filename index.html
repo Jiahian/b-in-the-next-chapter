@@ -305,8 +305,8 @@
   .panel { display: none; }
   .panel.active { display: block; }
 
-  /* Log panel fullscreen page (shared with the Profile panel) */
-  #panel-log.active, #panel-profile.active {
+  /* Profile panel fullscreen page */
+  #panel-profile.active {
     position: fixed; inset: 0; z-index: 50;
     background: var(--surface-1, #ffffff);
     overflow: hidden;
@@ -328,6 +328,16 @@
   .profile-grab { flex-shrink: 0; display: flex; justify-content: center; padding: 8px 0 2px; cursor: grab; touch-action: none; }
   .profile-grab span { width: 38px; height: 5px; border-radius: 3px; background: var(--baseline, #cbd5e1); }
   .profile-theme-slot { margin-left: auto; padding-right: 8px; display: flex; align-items: center; }
+  /* The Log panel is a bottom sheet (50% tall, 70% for the heavier steps) over a dimmed
+     backdrop, not a fullscreen page: see the "Log sheet" block below. */
+  #panel-log.active {
+    position: fixed; inset: 0; z-index: 50;
+    background: rgba(15, 23, 42, 0.45);
+    overflow: hidden;
+    padding: 0;
+    box-sizing: border-box;
+    animation: fadeInOverlay 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
   .section-heading {
     margin: 26px 2px 14px;
     font-size: 17px;
@@ -630,6 +640,183 @@
   .log-close-btn:hover {
     background: var(--gridline, rgba(15, 23, 42, 0.08));
   }
+
+  /* ===== Log sheet: media first, then four short steps =====
+     A bottom sheet over a dimmed backdrop. Two heights: 70% (half) and 90%
+     (full); drag the handle, tap it, or focus a field to go to full. It
+     reuses the old form's field ids (fActivity, fAmount, fName, ...), so the
+     validation and submit code are unchanged. */
+  #panel-log .log-sheet {
+    position: absolute;
+    left: 0; right: 0;
+    bottom: var(--log-kb, 0px);
+    margin: 0 auto;
+    max-width: 560px;
+    min-height: 50vh; min-height: 50dvh; height: auto;
+    max-height: calc(100dvh - var(--log-kb, 0px) - 8px);
+    border-radius: 24px 24px 0 0;
+    box-shadow: 0 -10px 40px rgba(15, 23, 42, 0.25);
+    transition: height 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+    animation: logSheetUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  #panel-log .log-sheet[data-snap="full"] { height: 70vh; height: 70dvh; }
+  /* With media, the sheet is exactly as tall as its page needs (JS sets the px height so it can
+     animate between pages), never above 90%. Empty, it is the 50% tray above. */
+  #panel-log .log-sheet[data-has-media="true"] { height: auto; max-height: min(90dvh, calc(100dvh - var(--log-kb, 0px) - 8px)); }
+  #panel-log .log-sheet.dragging { transition: none; }
+  @keyframes logSheetUp { from { transform: translateY(40px); opacity: 0.6; } to { transform: none; opacity: 1; } }
+  .log-grab {
+    flex-shrink: 0; display: flex; justify-content: center;
+    padding: 8px 0 2px; cursor: grab; touch-action: none;
+  }
+  .log-grab span { width: 38px; height: 5px; border-radius: 3px; background: var(--baseline, #cbd5e1); }
+  #panel-log .log-modal-header { border-bottom: none; height: 42px; background: transparent; position: static; }
+  #panel-log .log-modal-content { padding: 14px 16px calc(env(safe-area-inset-bottom, 0px) + 48px); display: flex; flex-direction: column; }
+  #entryForm { flex: 1; display: flex; flex-direction: column; }
+  .log-stage-details { flex: 1; display: flex; flex-direction: column; }
+
+  .log-sheet[data-has-media="false"] .log-stage-details { display: none; }
+  .log-sheet[data-has-media="true"] .log-stage-media { display: none; }
+
+  .log-tray {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    aspect-ratio: 4 / 3; width: min(100%, calc(32dvh * 4 / 3)); margin: 0 auto; overflow: hidden;
+    border: 1.5px dashed var(--baseline, #cbd5e1); border-radius: 18px;
+    background: var(--surface-2, #f8fafc);
+    transition: border-color 0.15s ease;
+  }
+  .log-stage-media.dragover .log-tray { border-color: var(--accent); }
+  .log-tool {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+    background: none; border: none; border-right: 1px solid var(--border, #e2e8f0);
+    color: var(--text-secondary, #64748b); font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer;
+  }
+  .log-tool:last-child { border-right: none; }
+  .log-tool:hover { color: var(--text-primary); background: var(--gridline, #f1f5f9); }
+  .log-tray-hint { margin: 12px 4px 0; font-size: 13px; text-align: center; color: var(--text-muted, #64748b); }
+
+  /* The preview is always the full content width at 4:3, the same on every page. */
+  .log-media {
+    position: relative; flex: none; aspect-ratio: 4 / 3; margin: 0 auto;
+    width: min(100%, 440px);
+    border-radius: 16px; overflow: hidden;
+    background: var(--surface-2, #f8fafc);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .log-media .file-preview {
+    position: absolute; inset: 0; margin: 0;
+    width: 100%; height: 100%; max-height: none; object-fit: cover; border-radius: 0;
+  }
+  .log-media-ph { color: var(--text-muted, #64748b); }
+  .log-pts {
+    position: absolute; left: 10px; bottom: 10px;
+    background: var(--badge-bg, #facc15); color: var(--badge-text, #000);
+    font-size: 13px; font-weight: 800; padding: 4px 10px; border-radius: 999px;
+  }
+  .log-pts.zero { display: none; }
+  .log-media-status {
+    position: absolute; left: 10px; top: 10px; max-width: calc(100% - 56px);
+    background: rgba(0, 0, 0, 0.6); color: #fff; font-size: 12px; font-weight: 600;
+    padding: 4px 9px; border-radius: 8px;
+  }
+  .log-media-status:empty { display: none; }
+  .log-media .file-remove-btn {
+    display: inline-flex; position: absolute; top: 8px; right: 8px; margin: 0;
+    width: 28px; height: 28px; background: rgba(0, 0, 0, 0.6); color: #fff;
+  }
+  .log-media .file-remove-btn:hover { background: rgba(220, 38, 38, 0.85); color: #fff; }
+
+  .log-prog { display: flex; flex: none; gap: 5px; margin: 8px 0 20px; }
+  .log-prog button {
+    flex: 1; height: 6px; border: none; border-radius: 3px; padding: 0; cursor: pointer;
+    background: var(--border, #e2e8f0); transition: background 0.2s ease;
+  }
+  .log-prog button.done { background: var(--accent); }
+  .log-step { display: none; }
+  .log-step.active {
+    display: flex; flex-direction: column; flex: none;
+    justify-content: flex-start; gap: 12px; padding: 24px 0; animation: logStepIn 0.22s ease;
+  }
+  .log-step.active > * { flex: none; }
+  /* Friends: the list opens upwards over the preview, so it never pushes the sheet. */
+  .log-step[data-step="2"] .tag-friends-pills { margin-bottom: 16px; row-gap: 8px; }
+  .log-step[data-step="2"] .tag-friends-panel {
+    top: auto; bottom: calc(100% + 6px); max-height: min(240px, 34dvh);
+  }
+  #panel-log #fName { height: 72px; min-height: 0; resize: none; }
+  @keyframes logStepIn { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: none; } }
+  .log-q {
+    display: flex; align-items: center; gap: 6px;
+    margin: 0; font-size: 17px; font-weight: 700; color: var(--text-primary);
+  }
+  .log-q .opt { font-size: 13px; font-weight: 400; color: var(--text-muted); }
+
+  .log-chip {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 14px; margin: 0 8px 8px 0; border-radius: 999px;
+    border: 1.5px solid var(--border, #e2e8f0); background: var(--surface-1);
+    color: var(--text-primary); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+  .log-chip.sel { border-color: var(--accent); }
+  #logChips { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 4px; }
+  #logChips .log-chip { margin: 0; justify-content: center; padding: 13px 6px; font-size: 14px; }
+  .log-pills { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .log-pills .log-pill { justify-content: center; }
+  .log-pill {
+    position: relative; display: inline-flex; align-items: center; gap: 8px;
+    padding: 9px 14px; border-radius: 12px; cursor: pointer;
+    border: 1px solid var(--border, #e2e8f0); background: transparent;
+    color: var(--text-primary); font: inherit; font-size: 14px; font-weight: 600;
+  }
+  .log-pill i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; background: var(--log-cat, var(--series-spiritual)); }
+  .log-pill svg { color: var(--text-secondary); }
+  #panel-log #fDate {
+    position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; padding: 0;
+    opacity: 0; cursor: pointer; border: none;
+  }
+  .log-chip i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+  .log-amt-row { display: flex; align-items: center; justify-content: center; gap: 16px; }
+  .log-amount { display: flex; align-items: center; gap: 8px; margin: 0; }
+  .log-amount .step-btn {
+    width: 42px; height: 42px; border-radius: 50%; border: none; padding: 0; cursor: pointer;
+    background: var(--surface-2, #f1f5f9); color: var(--text-primary); font-size: 22px; line-height: 1;
+  }
+  #panel-log #fAmount {
+    width: 70px; text-align: center; font-size: 32px; font-weight: 700; padding: 0; height: 42px;
+    border: none; background: transparent; box-shadow: none; -moz-appearance: textfield;
+  }
+  #panel-log #fAmount::-webkit-outer-spin-button, #panel-log #fAmount::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .log-units { display: flex; flex: none; width: max-content; margin: 0; padding: 3px; border-radius: 12px; background: var(--surface-2, #f1f5f9); }
+  .log-units button {
+    border: none; background: none; padding: 9px 14px; border-radius: 9px; cursor: pointer;
+    font: inherit; font-size: 13px; font-weight: 600; color: var(--text-secondary);
+  }
+  .log-units button.on { background: var(--surface-1); color: var(--text-primary); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15); }
+  .log-goal { margin-top: 10px; }
+  .log-goal-row { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--text-muted); margin-bottom: 5px; }
+  .log-goal-row b { color: var(--text-primary); font-weight: 700; }
+  .log-goal-bar { display: flex; height: 8px; border-radius: 4px; overflow: hidden; background: var(--seq-track, #e2e8f0); }
+  .log-goal-bar i { display: block; height: 100%; transition: width 0.18s ease; }
+  #logGoalBase { background: var(--seq-fill, #10b981); }
+  #logGoalAdd { background: var(--badge-bg, #facc15); }
+
+  #panel-log .log-modal-header {
+    display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; padding: 0 12px 0 8px;
+  }
+  #panel-log .log-modal-header h2 { text-align: center; margin: 0; }
+  #panel-log .log-modal-header .log-close-btn { justify-self: start; }
+  #panel-log .log-modal-header .log-head-btn { justify-self: end; }
+  .log-head-btn {
+    flex: none; min-width: 72px; height: 36px; padding: 0 16px; border: none; border-radius: 12px;
+    background: var(--accent); color: var(--accent-contrast, #fff);
+    font: inherit; font-size: 14px; font-weight: 700; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .log-head-btn:hover:not(:disabled) { background: var(--accent-hover); }
+  .log-head-btn:disabled { background: var(--border, #e2e8f0); color: var(--text-muted, #64748b); cursor: default; }
+  .log-head-btn .spinner { border-color: rgba(128, 128, 128, 0.4); border-top-color: currentColor; }
 
   .field { margin-bottom: 16px; }
   .field label, .field-label {
@@ -2907,9 +3094,7 @@
   }
 
   /* Modals in Dark Mode */
-  [data-theme="dark"] #panel-log.active {
-    background: #131314;
-  }
+  [data-theme="dark"] #panel-log.active,
   [data-theme="dark"] #panel-profile.active {
     background: rgba(0, 0, 0, 0.6);
   }
@@ -3364,89 +3549,56 @@
     </div>
   </section>
 
-  <!-- LOG -->
+  <!-- LOG: a bottom sheet (50%, 70% for the heavier steps). Media first, then four steps. -->
   <section id="panel-log" class="panel">
-    <div class="log-modal-card">
+    <div class="log-modal-card log-sheet" id="logSheet" data-snap="half" data-has-media="false">
+      <div class="log-grab" id="logGrab" role="button" tabindex="0" aria-label="Resize sheet"><span></span></div>
       <div class="log-modal-header">
-        <button type="button" class="log-close-btn" id="logCloseBtn" aria-label="Back" title="Back">
+        <button type="button" class="log-close-btn" id="logCloseBtn" aria-label="Close" title="Close">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M19 12H5"></path>
-            <path d="M12 19l-7-7 7-7"></path>
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
           </svg>
         </button>
-        <h2 id="formHeading">Log New Activity</h2>
+        <h2 id="formHeading">Log Activity</h2>
+        <button type="submit" form="entryForm" class="log-head-btn" id="submitBtn">Next</button>
       </div>
       <div class="log-modal-content">
       <form id="entryForm" novalidate>
-        <div class="field">
-          <label for="fActivity">Activity Name</label>
-          <input type="text" id="fActivity" maxlength="200" placeholder="Pray, Exercise, Serve..." required />
-          <div class="field-error" data-for="fActivity">Please write an activity name.</div>
-        </div>
 
-        <div class="field">
-          <label for="fName">What went on?</label>
-          <textarea id="fName" class="field-textarea" maxlength="200" placeholder="What made it memorable?" required></textarea>
-          <div class="field-error" data-for="fName">Please describe the activity</div>
+        <div class="log-stage-media" id="fileDrop">
+          <div class="log-tray" id="logTray">
+            <button type="button" class="log-tool" data-pick="library">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"></path></svg>
+              Library
+            </button>
+            <button type="button" class="log-tool" data-pick="camera">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path><circle cx="12" cy="13" r="3"></circle></svg>
+              Camera
+            </button>
+            <button type="button" class="log-tool" data-pick="video">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 8-6 4 6 4V8Z"></path><rect x="2" y="6" width="14" height="12" rx="2"></rect></svg>
+              Video
+            </button>
+          </div>
+          <p class="log-tray-hint" id="fileDropText">Start with a photo or video. Details come next.</p>
         </div>
+        <input type="file" id="fMedia" accept="image/*,video/*,video/mp4,video/quicktime,video/mov,video/webm,video/3gpp,video/3gpp2,video/x-m4v,video/x-matroska,video/avi,video/x-msvideo,.mov,.MOV,.mp4,.MP4,.m4v,.M4V,.webm,.WEBM,.3gp,.3gpp,.mkv,.MKV,.avi,.AVI,.heic,.HEIC,.heif,.HEIF" />
+        <div class="field-error" data-for="fMedia">A photo or video is required.</div>
 
-        <div class="field">
-          <label>Tag friends <span style="font-weight:400;color:var(--text-muted);">(optional)</span></label>
-          <div class="tag-friends" id="tagFriends">
-            <div class="tag-friends-pills" id="tagFriendsPills"></div>
-            <div class="tag-friends-search-wrap">
-              <input type="text" class="tag-friends-search" id="tagFriendsSearch" placeholder="Search friends to tag&hellip;" autocomplete="off" />
-              <div class="tag-friends-panel" id="tagFriendsPanel">
-                <button type="button" class="tag-friends-selectall" id="tagFriendsSelectAll">Select all</button>
-                <div class="tag-friends-list" id="tagFriendsList"></div>
-              </div>
-            </div>
+        <div class="log-stage-details">
+          <div class="log-prog" id="logProg">
+            <button type="button" data-goto="0" aria-label="Activity"></button>
+            <button type="button" data-goto="1" aria-label="Amount"></button>
+            <button type="button" data-goto="2" aria-label="Friends"></button>
+            <button type="button" data-goto="3" aria-label="Note"></button>
           </div>
-        </div>
-
-        <div class="form-grid-2">
-          <div class="field">
-            <label for="fCategory">Category</label>
-            <div class="select-wrap">
-              <select id="fCategory" required>
-                <option value="Spiritual" selected>Spiritual</option>
-                <option value="Relationship">Relationship</option>
-                <option value="Others">Others</option>
-              </select>
-            </div>
-            <div class="field-error" data-for="fCategory">Please choose a category.</div>
-          </div>
-          <div class="field">
-            <label for="fDate">Date</label>
-            <input type="date" id="fDate" required />
-            <div class="field-error" data-for="fDate">Date can't be in the future.</div>
-          </div>
-        </div>
-
-        <div class="form-grid-2">
-          <div class="field">
-            <label for="fAmount">
-              Amount (1 unit = 1 pt)
-              <button type="button" class="info-icon" id="pointsInfoBtn" aria-label="What counts as a point?">?</button>
-            </label>
-            <input type="number" id="fAmount" step="0.1" min="0.1" placeholder="e.g. 5" required />
-            <div class="field-error" data-for="fAmount">Enter an amount greater than 0.</div>
-          </div>
-          <div class="field align-end">
-            <div class="select-wrap">
-              <select id="fUnits" required>
-                <option value="hours" selected>Hours (hrs)</option>
-                <option value="km">Kilometres (km)</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <div class="field">
-          <label class="field-label">Upload Media (Required)</label>
-          <div class="file-drop-card" id="fileDrop">
-            <span class="upload-badge-btn">Upload</span>
-            <span class="upload-drop-text" id="fileDropText">or drag & drop files here</span>
+          <div class="log-media" id="logMedia">
+            <svg class="log-media-ph" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"></path></svg>
+            <img class="file-preview" id="filePreviewImg" alt="Preview" />
+            <video class="file-preview" id="filePreviewVideo" controls muted playsinline></video>
+            <span class="log-media-status" id="logMediaStatus"></span>
+            <span class="log-pts zero" id="logPts">+0 pts</span>
             <button type="button" class="file-remove-btn" id="fileRemoveBtn" aria-label="Remove media" title="Remove media">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -3454,13 +3606,85 @@
               </svg>
             </button>
           </div>
-          <input type="file" id="fMedia" accept="image/*,video/*,video/mp4,video/quicktime,video/mov,video/webm,video/3gpp,video/3gpp2,video/x-m4v,video/x-matroska,video/avi,video/x-msvideo,.mov,.MOV,.mp4,.MP4,.m4v,.M4V,.webm,.WEBM,.3gp,.3gpp,.mkv,.MKV,.avi,.AVI,.heic,.HEIC,.heif,.HEIF" />
-          <img class="file-preview" id="filePreviewImg" alt="Preview" />
-          <video class="file-preview" id="filePreviewVideo" controls muted></video>
-          <div class="field-error" data-for="fMedia">A photo or video is required.</div>
-        </div>
 
-        <button type="submit" class="btn-submit-log" id="submitBtn">Post It & Clock It</button>
+          <div class="log-step active" data-step="0">
+            <p class="log-q">What did you do?</p>
+            <div id="logChips">
+              <button type="button" class="log-chip" data-cat="Spiritual"><i style="background:var(--series-spiritual)"></i>Spiritual</button>
+              <button type="button" class="log-chip" data-cat="Relationship"><i style="background:var(--series-relationship)"></i>Relationship</button>
+              <button type="button" class="log-chip" data-cat="Others"><i style="background:var(--series-others)"></i>Others</button>
+            </div>
+            <select id="fCategory" required style="display:none;">
+              <option value="Spiritual" selected>Spiritual</option>
+              <option value="Relationship">Relationship</option>
+              <option value="Others">Others</option>
+            </select>
+            <div class="field-error" data-for="fCategory">Please choose a category.</div>
+          </div>
+
+          <div class="log-step" data-step="1">
+            <p class="log-q">
+              How much?
+              <button type="button" class="info-icon" id="pointsInfoBtn" aria-label="What counts as a point?">?</button>
+            </p>
+            <div class="log-amt-row">
+              <div class="log-amount">
+                <button type="button" class="step-btn" id="amtDec" aria-label="Less">&minus;</button>
+                <input type="number" id="fAmount" step="0.1" min="0.1" inputmode="decimal" placeholder="0" required />
+                <button type="button" class="step-btn" id="amtInc" aria-label="More">+</button>
+              </div>
+              <div class="log-units" id="logUnits">
+                <button type="button" data-unit="hours" aria-label="Hours">hrs</button>
+                <button type="button" data-unit="km" aria-label="Kilometres">km</button>
+              </div>
+            </div>
+            <select id="fUnits" required style="display:none;">
+              <option value="hours" selected>Hours (hrs)</option>
+              <option value="km">Kilometres (km)</option>
+            </select>
+            <div class="field-error" data-for="fAmount" style="text-align:center;">Enter an amount greater than 0.</div>
+            <div class="log-goal">
+              <div class="log-goal-row"><span>Team goal</span><b id="logGoalTxt"></b></div>
+              <div class="log-goal-bar"><i id="logGoalBase"></i><i id="logGoalAdd"></i></div>
+            </div>
+          </div>
+
+          <div class="log-step" data-step="2">
+            <p class="log-q">Who was there? <span class="opt">(optional)</span></p>
+            <div class="tag-friends" id="tagFriends">
+              <div class="tag-friends-pills" id="tagFriendsPills"></div>
+              <div class="tag-friends-search-wrap">
+                <input type="text" class="tag-friends-search" id="tagFriendsSearch" placeholder="Search friends to tag&hellip;" autocomplete="off" />
+                <div class="tag-friends-panel" id="tagFriendsPanel">
+                  <button type="button" class="tag-friends-selectall" id="tagFriendsSelectAll">Select all</button>
+                  <div class="tag-friends-list" id="tagFriendsList"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="log-step" data-step="3">
+            <p class="log-q">What made it memorable?</p>
+            <div class="field" style="margin-bottom:0;">
+              <input type="text" id="fActivity" maxlength="200" placeholder="Name it, e.g. Morning run" required />
+              <div class="field-error" data-for="fActivity">Please write an activity name.</div>
+            </div>
+            <div class="field log-grow" style="margin-bottom:0;">
+              <textarea id="fName" class="field-textarea" maxlength="200" placeholder="What went on?" required></textarea>
+              <div class="field-error" data-for="fName">Please describe the activity</div>
+            </div>
+            <div class="log-pills">
+              <button type="button" class="log-pill" id="logCatPill" aria-label="Change category"><i id="logCatDot"></i><span id="logCatTxt">Spiritual</span></button>
+              <label class="log-pill" id="logDatePill">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                <span id="logDateTxt">Today</span>
+                <input type="date" id="fDate" required aria-label="Date" />
+              </label>
+            </div>
+            <div class="field-error" data-for="fDate">Date can't be in the future.</div>
+          </div>
+
+        </div>
       </form>
       </div>
     </div>
@@ -5971,7 +6195,7 @@
           if (!checkbox.checked && idx !== -1) current.splice(idx, 1);
           cfg.setSelected(current);
           renderTagFriendsPills_(cfg);
-          if (checkbox.checked && searchEl) {
+          if (checkbox.checked && searchEl && !cfg.inline) {
             // Clear the search text on select so the list resets to
             // everyone, ready to search for the next friend to tag.
             // Re-render directly rather than relying on the "focus"
@@ -6057,27 +6281,170 @@
   // ===================================================================
   var els = {}; // filled on DOMContentLoaded
 
+  // ===================================================================
+  // Log sheet state. The form is a bottom sheet: pick media first, then walk
+  // four short steps (activity, amount, friends, note). The field ids are the
+  // old form's, so validation and submit are unchanged.
+  // ===================================================================
+  var LOG_LAST_STEP = 3;
+  var logStep_ = 0;
+  var logPickAccept_ = null;
+  var logFitTimer_ = null;
+  var logCatPicked_ = false; // step 1 needs an explicit choice, not the default
+  function logErrorIdFor_(step) { return step === 0 ? "fCategory" : "fAmount"; }
+  function logDateLabel_() {
+    var v = document.getElementById("fDate").value;
+    if (!v) return "Pick a date";
+    if (v === todayISO()) return "Today";
+    var p = v.split("-");
+    return new Date(+p[0], +p[1] - 1, +p[2]).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+  }
+
+  function logHasMedia_() { return !!(state.pendingMedia || state.mediaBusy); }
+  function logHasContent_() {
+    var v = function (id) { var el = document.getElementById(id); return el ? el.value.trim() : ""; };
+    return !!(logHasMedia_() || v("fActivity") || v("fAmount") || v("fName") ||
+      (state.pendingTaggedFriends && state.pendingTaggedFriends.length));
+  }
+  function logAmount_() {
+    var n = Math.round(parseFloat(document.getElementById("fAmount").value) * 10) / 10;
+    return n > 0 ? n : 0;
+  }
+  function logStepValid_(step) {
+    if (step === 0) return logCatPicked_;
+    if (step === 1) return logAmount_() > 0;
+    if (step === 3) return !!(document.getElementById("fActivity").value.trim() && document.getElementById("fName").value.trim());
+    return true;
+  }
+  function logSetSnap_(snap) {
+    var sheet = document.getElementById("logSheet");
+    if (sheet) sheet.setAttribute("data-snap", snap);
+  }
+  function logGoToStep_(n) {
+    logStep_ = Math.max(0, Math.min(LOG_LAST_STEP, n));
+    updateLogUi_();
+  }
+  function logNext_() {
+    if (!logStepValid_(logStep_)) {
+      showError_(logErrorIdFor_(logStep_));
+      return;
+    }
+    clearErrors_();
+    logGoToStep_(logStep_ + 1);
+  }
+  function logShowFirstError_() {
+    var err = document.querySelector("#entryForm .field-error.show");
+    var stepEl = err ? err.closest(".log-step") : null;
+    if (stepEl) logGoToStep_(parseInt(stepEl.getAttribute("data-step"), 10));
+  }
+
+  // Sizes the sheet to this page's content (CSS caps it at 90%) and animates there.
+  var logFitKey_ = "";
+  function logFitSheet_() {
+    var sheet = document.getElementById("logSheet");
+    if (!sheet) return;
+    if (!logHasMedia_()) { sheet.style.height = ""; return; }
+    var prev = sheet.getBoundingClientRect().height;
+    if (!prev) { sheet.style.height = ""; return; }
+    sheet.style.transition = "none";
+    sheet.style.height = "auto";
+    var next = sheet.getBoundingClientRect().height;
+    sheet.style.height = prev + "px";
+    void sheet.offsetHeight;
+    sheet.style.transition = "";
+    sheet.style.height = next + "px";
+  }
+
+  // Re-syncs everything the sheet shows from the form's current values.
+  function updateLogUi_() {
+    var sheet = document.getElementById("logSheet");
+    if (!sheet) return;
+    sheet.setAttribute("data-has-media", logHasMedia_() ? "true" : "false");
+
+    sheet.querySelectorAll(".log-step").forEach(function (el) {
+      el.classList.toggle("active", parseInt(el.getAttribute("data-step"), 10) === logStep_);
+    });
+    sheet.querySelectorAll("#logProg button").forEach(function (b) {
+      b.classList.toggle("done", parseInt(b.getAttribute("data-goto"), 10) <= logStep_);
+    });
+
+    var cat = document.getElementById("fCategory").value || "Spiritual";
+    sheet.querySelectorAll("#logChips .log-chip").forEach(function (c) {
+      c.classList.toggle("sel", logCatPicked_ && c.getAttribute("data-cat") === cat);
+    });
+    document.getElementById("logCatTxt").textContent = cat;
+    document.getElementById("logDateTxt").textContent = logDateLabel_();
+
+    var units = document.getElementById("fUnits").value;
+    sheet.querySelectorAll("#logUnits button").forEach(function (b) {
+      b.classList.toggle("on", b.getAttribute("data-unit") === units);
+    });
+
+    // Media frame takes the category's colour; the pill and goal bar are live.
+    var catColour = logCatPicked_ ? "var(--series-" + cat.toLowerCase() + ")" : "var(--baseline, #cbd5e1)";
+    var media = document.getElementById("logMedia");
+    if (media) media.style.setProperty("--log-cat", catColour);
+    sheet.style.setProperty("--log-cat", catColour);
+    var pts = logAmount_();
+    var ptsEl = document.getElementById("logPts");
+    if (ptsEl) {
+      ptsEl.textContent = "+" + formatNum_(pts) + " pt" + (pts === 1 ? "" : "s");
+      ptsEl.classList.toggle("zero", !(pts > 0));
+    }
+    var total = computeTotals(state.entries || []).total;
+    var basePct = Math.min(100, total / TARGET_POINTS * 100);
+    // A small entry is a sliver of 1,000, so keep it at least visible.
+    var addPct = pts > 0 ? Math.max(1.2, Math.min(100 - basePct, pts / TARGET_POINTS * 100)) : 0;
+    document.getElementById("logGoalBase").style.width = basePct + "%";
+    document.getElementById("logGoalAdd").style.width = addPct + "%";
+    document.getElementById("logGoalTxt").textContent =
+      formatNum_(total) + " → " + formatNum_(total + pts) + " / " + formatNum_(TARGET_POINTS);
+
+    var btn = document.getElementById("submitBtn");
+    if (btn && !btn.dataset.saving) {
+      if (state.mediaBusy) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner" aria-label="Preparing media"></span>';
+      } else {
+        var friendsPicked = state.pendingTaggedFriends && state.pendingTaggedFriends.length;
+        btn.textContent = logStep_ === LOG_LAST_STEP ? "Post"
+          : (logStep_ === 2 && !friendsPicked ? "Skip" : "Next");
+        btn.disabled = !logStepValid_(logStep_);
+      }
+    }
+
+    // Re-fit only when something that changes the page's height changed (not on every keystroke).
+    var fitKey = [logHasMedia_(), logStep_, state.pendingTaggedFriends.length,
+      document.querySelectorAll("#entryForm .field-error.show").length].join("|");
+    if (fitKey !== logFitKey_) { logFitKey_ = fitKey; logFitSheet_(); }
+  }
+
   function resetForm(toCreateMode) {
     document.getElementById("entryForm").reset();
     document.getElementById("fDate").value = todayISO();
     document.getElementById("fDate").max = todayISO();
     state.pendingMedia = null;
+    state.mediaBusy = false;
     state.pendingTaggedFriends = [];
     renderTagFriendsPills_(LOG_TAG_FRIENDS_CFG);
     var tagFriendsWrap = document.getElementById("tagFriends");
     if (tagFriendsWrap) tagFriendsWrap.classList.remove("open");
-    document.getElementById("filePreviewImg").classList.remove("show");
-    document.getElementById("filePreviewVideo").classList.remove("show");
-    var fileDrop = document.getElementById("fileDrop");
-    fileDrop.classList.remove("has-file");
-    var fileDropText = document.getElementById("fileDropText");
-    if (fileDropText) fileDropText.textContent = "or drag and drop files here";
+    var imgPrev = document.getElementById("filePreviewImg");
+    var vidPrev = document.getElementById("filePreviewVideo");
+    imgPrev.removeAttribute("src"); imgPrev.classList.remove("show");
+    vidPrev.removeAttribute("src"); vidPrev.classList.remove("show");
+    document.getElementById("logMediaStatus").textContent = "";
     clearErrors_();
+    logStep_ = 0;
+    logCatPicked_ = false;
+    logFitKey_ = "";
+    document.getElementById("logSheet").style.height = "";
+    logSetSnap_("half");
     if (toCreateMode) {
       state.editingId = null;
-      document.getElementById("formHeading").textContent = "Log New Activity";
-      document.getElementById("submitBtn").textContent = "Post It & Clock It";
+      document.getElementById("formHeading").textContent = "Log Activity";
     }
+    updateLogUi_();
   }
 
   function clearErrors_() {
@@ -6107,11 +6474,11 @@
   function handleFileChosen(file) {
     if (!file) return;
     var isVideo = isVideoFile(file);
-    var fileDrop = document.getElementById("fileDrop");
-    var fileDropText = document.getElementById("fileDropText");
+    var statusEl = document.getElementById("logMediaStatus");
     var imgPrev = document.getElementById("filePreviewImg");
     var vidPrev = document.getElementById("filePreviewVideo");
-    var submitBtn = document.getElementById("submitBtn");
+    function setStatus(text) { if (statusEl) statusEl.textContent = text || ""; }
+    function setBusy(on) { state.mediaBusy = on; updateLogUi_(); }
 
     if (isVideo) {
       var MAX_VIDEO_BYTES = 20 * 1024 * 1024;
@@ -6119,16 +6486,14 @@
         showToast("That video is over 20MB and may fail to upload — trim it or pick a shorter clip.", true);
         return;
       }
-      fileDrop.classList.add("has-file");
-      if (fileDropText) fileDropText.textContent = "Converting video to GIF… 0%";
-      if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.dataset.origText = submitBtn.textContent;
-        submitBtn.innerHTML = '<span class="spinner"></span> Converting video to GIF…';
-      }
+      state.pendingMedia = null;
+      imgPrev.classList.remove("show");
+      vidPrev.classList.remove("show");
+      setStatus("Converting video to GIF… 0%");
+      setBusy(true);
 
       convertVideoToGif(file, function (pct) {
-        if (fileDropText) fileDropText.textContent = "Converting video to GIF… " + pct + "%";
+        setStatus("Converting video to GIF… " + pct + "%");
       }).then(function (gifBlob) {
         var baseName = (file.name || "video").replace(/\.[^/.]+$/, "");
         var gifName = baseName + ".gif";
@@ -6138,15 +6503,12 @@
             filename: gifName,
             mimeType: "image/gif"
           };
-          if (fileDropText) fileDropText.textContent = gifName + " (GIF ready)";
           var url = URL.createObjectURL(gifBlob);
           imgPrev.src = url;
           imgPrev.classList.add("show");
           vidPrev.classList.remove("show");
-          if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.textContent = submitBtn.dataset.origText || "Post It & Clock It";
-          }
+          setStatus("");
+          setBusy(false);
           showToast("Video converted to animated GIF!");
         });
       }).catch(function (err) {
@@ -6159,28 +6521,25 @@
             filename: file.name || "video.mp4",
             mimeType: mime
           };
-          if (fileDropText) fileDropText.textContent = (file.name || "Video") + " (Video ready)";
           var url = URL.createObjectURL(file);
           imgPrev.classList.remove("show");
           vidPrev.src = url;
           vidPrev.classList.add("show");
-          if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.textContent = submitBtn.dataset.origText || "Post It & Clock It";
-          }
+          setStatus("");
+          setBusy(false);
           showToast("Video ready to upload!");
         }).catch(function () {
-          if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.textContent = submitBtn.dataset.origText || "Post It & Clock It";
-          }
-          if (fileDropText) fileDropText.textContent = "Could not process file. Try another.";
+          setStatus("");
+          setBusy(false);
           showToast("Could not process video file.", true);
         });
       });
       return;
     }
 
+    state.pendingMedia = null;
+    setStatus("Preparing photo…");
+    setBusy(true);
     var prep = prepareImageFile(file);
     prep.then(function (finalBlob) {
       return readFileAsBase64(finalBlob).then(function (base64) {
@@ -6189,18 +6548,24 @@
           filename: file.name || "upload.jpg",
           mimeType: finalBlob.type || file.type || "image/jpeg"
         };
-        fileDrop.classList.add("has-file");
-        if (fileDropText) fileDropText.textContent = file.name || "File selected";
         var url = URL.createObjectURL(finalBlob);
         imgPrev.src = url;
         imgPrev.classList.add("show");
         vidPrev.classList.remove("show");
+        setStatus("");
+        setBusy(false);
       });
+    }).catch(function () {
+      setStatus("");
+      setBusy(false);
+      showToast("Could not process that photo. Try another.", true);
     });
   }
 
   function submitForm(e) {
     e.preventDefault();
+    // Steps 1 to 3 only move forward (Enter in a field does the same).
+    if (logStep_ < LOG_LAST_STEP) { logNext_(); return; }
     clearErrors_();
 
     var name = document.getElementById("fName").value.trim();
@@ -6219,7 +6584,7 @@
     if (!(amount > 0) || isNaN(amount)) { showError_("fAmount"); valid = false; }
     if (!units) { showError_("fAmount"); valid = false; }
     if (!state.editingId && !state.pendingMedia) { showError_("fMedia"); valid = false; }
-    if (!valid) return;
+    if (!valid) { logShowFirstError_(); return; }
 
     if (!isConfigured) {
       showToast("The app isn't connected to your backend yet.", true);
@@ -6236,10 +6601,12 @@
 
     var btn = document.getElementById("submitBtn");
     btn.disabled = true;
+    btn.dataset.saving = "1";
     var originalLabel = btn.textContent;
     btn.innerHTML = '<span class="spinner"></span> Saving…';
 
     apiWrite(payload).then(function (res) {
+      delete btn.dataset.saving;
       btn.disabled = false;
       btn.textContent = originalLabel;
       if (!res.ok) {
@@ -6252,6 +6619,7 @@
       switchPanel("home");
       loadEntries();
     }).catch(function () {
+      delete btn.dataset.saving;
       btn.disabled = false;
       btn.textContent = originalLabel;
       showToast("Network error — check your connection and try again.", true);
@@ -7314,31 +7682,50 @@
       switchPanel("log");
     });
 
+    // ----- Log sheet wiring -----
     var fileDrop = document.getElementById("fileDrop");
-    var fileRemoveBtn = document.getElementById("fileRemoveBtn");
-    fileDrop.addEventListener("click", function (e) {
-      if (fileRemoveBtn && (e.target === fileRemoveBtn || fileRemoveBtn.contains(e.target))) {
-        return;
-      }
-      document.getElementById("fMedia").click();
-    });
-    if (fileRemoveBtn) {
-      fileRemoveBtn.addEventListener("click", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        state.pendingMedia = null;
-        var fMediaInput = document.getElementById("fMedia");
-        if (fMediaInput) fMediaInput.value = "";
-        var imgPrev = document.getElementById("filePreviewImg");
-        var vidPrev = document.getElementById("filePreviewVideo");
-        if (imgPrev) { imgPrev.src = ""; imgPrev.classList.remove("show"); }
-        if (vidPrev) { vidPrev.src = ""; vidPrev.classList.remove("show"); }
-        var fileDropCard = document.getElementById("fileDrop");
-        if (fileDropCard) fileDropCard.classList.remove("has-file");
-        var fileDropTxt = document.getElementById("fileDropText");
-        if (fileDropTxt) fileDropTxt.textContent = "or drag and drop files here";
-      });
+    var fMediaInput = document.getElementById("fMedia");
+    var logSheet = document.getElementById("logSheet");
+    var logPanel = document.getElementById("panel-log");
+    var logForm = document.getElementById("entryForm");
+
+    function closeLog_() {
+      resetForm(true);
+      switchPanel("home");
     }
+
+    // Media tray: Library / Camera / Video all feed the one file input.
+    document.querySelectorAll("#logTray [data-pick]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        if (logPickAccept_ === null) logPickAccept_ = fMediaInput.getAttribute("accept");
+        var kind = btn.getAttribute("data-pick");
+        fMediaInput.removeAttribute("capture");
+        fMediaInput.setAttribute("accept", logPickAccept_);
+        if (kind === "camera") {
+          fMediaInput.setAttribute("accept", "image/*");
+          fMediaInput.setAttribute("capture", "environment");
+        } else if (kind === "video") {
+          fMediaInput.setAttribute("accept", "video/*");
+          fMediaInput.setAttribute("capture", "environment");
+        }
+        fMediaInput.value = "";
+        fMediaInput.click();
+      });
+    });
+    document.getElementById("fileRemoveBtn").addEventListener("click", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      state.pendingMedia = null;
+      state.mediaBusy = false;
+      fMediaInput.value = "";
+      var imgPrev = document.getElementById("filePreviewImg");
+      var vidPrev = document.getElementById("filePreviewVideo");
+      imgPrev.removeAttribute("src"); imgPrev.classList.remove("show");
+      vidPrev.removeAttribute("src"); vidPrev.classList.remove("show");
+      document.getElementById("logMediaStatus").textContent = "";
+      logSetSnap_("half");
+      updateLogUi_();
+    });
     fileDrop.addEventListener("dragover", function (e) {
       e.preventDefault();
       e.stopPropagation();
@@ -7357,15 +7744,137 @@
         handleFileChosen(e.dataTransfer.files[0]);
       }
     });
-    document.getElementById("fMedia").addEventListener("change", function (e) {
+    fMediaInput.addEventListener("change", function (e) {
       handleFileChosen(e.target.files[0]);
     });
 
-    document.getElementById("entryForm").addEventListener("submit", submitForm);
-    document.getElementById("logCloseBtn").addEventListener("click", function () {
-      resetForm(true);
-      switchPanel("home");
+    // Steps: chips, stepper, units, progress bar, live updates.
+    document.querySelectorAll("#logChips .log-chip").forEach(function (chip) {
+      chip.addEventListener("click", function () {
+        logCatPicked_ = true;
+        document.getElementById("fCategory").value = chip.getAttribute("data-cat");
+        clearErrors_();
+        updateLogUi_();
+        setTimeout(function () { if (logStep_ === 0) logGoToStep_(1); }, 180);
+      });
     });
+    function bumpAmount_(delta) {
+      var cur = parseFloat(document.getElementById("fAmount").value);
+      if (isNaN(cur)) cur = 0;
+      var next = Math.round((cur + delta) * 10) / 10;
+      if (next <= 0) return;
+      document.getElementById("fAmount").value = next;
+      clearErrors_();
+      updateLogUi_();
+    }
+    document.getElementById("amtDec").addEventListener("click", function () { bumpAmount_(-0.5); });
+    document.getElementById("amtInc").addEventListener("click", function () { bumpAmount_(0.5); });
+    document.querySelectorAll("#logUnits button").forEach(function (b) {
+      b.addEventListener("click", function () {
+        document.getElementById("fUnits").value = b.getAttribute("data-unit");
+        updateLogUi_();
+      });
+    });
+    document.querySelectorAll("#logProg button").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var target = parseInt(b.getAttribute("data-goto"), 10);
+        for (var s = logStep_; s < target; s++) {
+          if (!logStepValid_(s)) { showError_(logErrorIdFor_(s)); logGoToStep_(s); return; }
+        }
+        logGoToStep_(target);
+      });
+    });
+    // Step 4 pills: the category pill cycles through the three categories;
+    // the date pill opens the date picker laid invisibly over it.
+    document.getElementById("logCatPill").addEventListener("click", function () {
+      var order = ["Spiritual", "Relationship", "Others"];
+      var sel = document.getElementById("fCategory");
+      sel.value = order[(order.indexOf(sel.value) + 1) % order.length];
+      updateLogUi_();
+    });
+    document.getElementById("fDate").addEventListener("click", function () {
+      if (this.showPicker) { try { this.showPicker(); } catch (err) { /* ignore */ } }
+    });
+    logForm.addEventListener("input", updateLogUi_);
+    logForm.addEventListener("change", updateLogUi_);
+    // Typing needs room (and the keyboard takes half the screen): go to 90%.
+    logForm.addEventListener("focusin", function (e) {
+      var t = e.target;
+      if (t && t.id !== "tagFriendsSearch" &&
+          (t.tagName === "TEXTAREA" || (t.tagName === "INPUT" && t.type !== "file"))) logSetSnap_("full");
+    });
+
+    logForm.addEventListener("submit", submitForm);
+    document.getElementById("logCloseBtn").addEventListener("click", closeLog_);
+
+    // Tapping the dimmed backdrop closes the sheet, unless there's work in it.
+    logPanel.addEventListener("click", function (e) {
+      if (e.target === logPanel && !logHasContent_()) closeLog_();
+    });
+
+    // Drag the handle between 70% and 90%; a tap toggles; dragging well below
+    // 70% closes an empty sheet (a sheet with content springs back instead).
+    (function () {
+      var grab = document.getElementById("logGrab");
+      var startY = 0, startH = 0, dragging = false, moved = false;
+      function toggleSnap_() {
+        logSetSnap_(logSheet.getAttribute("data-snap") === "full" ? "half" : "full");
+      }
+      grab.addEventListener("pointerdown", function (e) {
+        dragging = true; moved = false;
+        startY = e.clientY;
+        startH = logSheet.getBoundingClientRect().height;
+        logSheet.classList.add("dragging");
+        try { grab.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+      });
+      grab.addEventListener("pointermove", function (e) {
+        if (!dragging) return;
+        var dy = startY - e.clientY;
+        if (Math.abs(dy) > 4) moved = true;
+        var vh = window.innerHeight;
+        logSheet.style.height = Math.max(vh * 0.3, Math.min(vh * 0.9, startH + dy)) + "px";
+      });
+      function endDrag(e) {
+        if (!dragging) return;
+        dragging = false;
+        logSheet.classList.remove("dragging");
+        var h = logSheet.getBoundingClientRect().height;
+        var vh = window.innerHeight;
+        logSheet.style.height = "";
+        // With media the sheet is sized to its page: the handle springs back (only the X closes it).
+        if (logHasMedia_()) { logFitKey_ = ""; updateLogUi_(); return; }
+        if (!moved) { toggleSnap_(); return; }
+        if (h < vh * 0.4 && !logHasContent_()) { closeLog_(); return; }
+        logSetSnap_(h > vh * 0.6 ? "full" : "half");
+      }
+      grab.addEventListener("pointerup", endDrag);
+      grab.addEventListener("pointercancel", endDrag);
+      grab.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleSnap_(); }
+      });
+    })();
+
+    // Re-fit on rotation / resize, and when a tagged-friend pill is added or removed.
+    window.addEventListener("resize", function () {
+      if (logPanel.classList.contains("active")) { logFitKey_ = ""; updateLogUi_(); }
+    });
+    if (window.MutationObserver) {
+      new MutationObserver(function () { logFitKey_ = ""; updateLogUi_(); })
+        .observe(document.getElementById("tagFriendsPills"), { childList: true });
+    }
+
+    // Keep the sheet above the on-screen keyboard (iOS doesn't resize dvh for it).
+    if (window.visualViewport) {
+      var syncKeyboard_ = function () {
+        if (!logPanel.classList.contains("active")) return;
+        var vv = window.visualViewport;
+        var kb = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+        logSheet.style.setProperty("--log-kb", kb + "px");
+      };
+      window.visualViewport.addEventListener("resize", syncKeyboard_);
+      window.visualViewport.addEventListener("scroll", syncKeyboard_);
+    }
+    updateLogUi_();
 
     var pointsOverlay = document.getElementById("pointsInfoOverlay");
     function closePointsInfoModal() {
