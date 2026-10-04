@@ -213,8 +213,12 @@
   }
   .header-title {
     margin: 0;
+    flex: 1;
     min-width: 0;
-    font-size: 22px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: clamp(17px, 5.4vw, 22px);
     font-weight: 800;
     color: #0f172a;
     letter-spacing: -0.025em;
@@ -575,6 +579,96 @@
     font-weight: 700;
     font-size: 14px;
     font-variant-numeric: tabular-nums;
+  }
+
+  /* ===== Points summary =====
+     The counter lives in the header as a small progress ring. Tapping it opens the
+     points and category breakdown as a circular reveal that grows from the icon and
+     covers the page; the icon turns into a close button in the same spot. The two
+     cards moved here from the home page with their ids, so the render code is unchanged. */
+  .points-btn {
+    flex: none; width: 40px; height: 40px; padding: 0; border: none; border-radius: 50%; cursor: pointer;
+    background: var(--surface-1, #ffffff); box-shadow: 0 0 0 1px var(--border, #e2e8f0);
+    -webkit-tap-highlight-color: transparent; transition: transform 0.15s ease;
+  }
+  .points-btn:active { transform: scale(0.94); }
+  .points-btn svg { display: block; }
+  .pb-track { stroke: var(--seq-track, #e2e8f0); }
+  .pb-fill { stroke: #10b981; transition: stroke-dasharray 0.6s ease; }
+  .pb-num { font-size: 11px; font-weight: 800; fill: var(--accent); font-family: inherit; }
+  .pb-num.sm { font-size: 9.5px; }
+
+  .points-overlay {
+    --pts-bg: #4f46e5; --pts-fg: #ffffff; --pts-muted: #c7d2fe;
+    position: fixed; inset: 0; z-index: 40;
+    overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+    background: var(--pts-bg); color: var(--pts-fg);
+    clip-path: circle(0px at var(--cx, 54px) var(--cy, 32px));
+    visibility: hidden;
+    transition: clip-path 0.5s cubic-bezier(0.65, 0, 0.35, 1), visibility 0s 0.5s;
+  }
+  .points-overlay.open {
+    clip-path: circle(150vmax at var(--cx, 54px) var(--cy, 32px));
+    visibility: visible;
+    transition: clip-path 0.7s cubic-bezier(0.65, 0, 0.35, 1), visibility 0s;
+  }
+  [data-theme="dark"] .points-overlay { --pts-bg: #312e81; }
+  body.points-open { overflow: hidden; }
+  .po-inner {
+    max-width: 480px; margin: 0 auto;
+    padding: calc(max(16px, env(safe-area-inset-top)) + 76px) 22px calc(env(safe-area-inset-bottom, 0px) + 40px);
+  }
+  .points-close {
+    position: fixed; z-index: 2;
+    left: var(--bx, 14px); top: var(--by, 10px); width: var(--bs, 40px); height: var(--bs, 40px);
+    display: flex; align-items: center; justify-content: center;
+    border: none; border-radius: 50%; padding: 0; cursor: pointer;
+    background: #ffffff; color: #4f46e5;
+    opacity: 0; transform: rotate(-90deg) scale(0.8);
+    transition: opacity 0.2s, transform 0.35s;
+  }
+  .points-overlay.open .points-close { opacity: 1; transform: none; transition: opacity 0.25s 0.25s, transform 0.4s 0.25s; }
+
+  #pointsOverlay .card { background: transparent; border: none; box-shadow: none; padding: 0; margin: 0; }
+  #pointsOverlay .card-points-acc { margin-bottom: 34px; }
+  #pointsOverlay .points-acc-title { color: var(--pts-muted); }
+  #pointsOverlay .progress-headline .value { color: #ffffff; }
+  #pointsOverlay .points-target { color: var(--pts-muted); }
+  #pointsOverlay .meter-track { background: rgba(255, 255, 255, 0.22); border: none; animation: none; }
+  #pointsOverlay .meter-fill { background: #ffffff; animation: none; }
+  #pointsOverlay .card-points-category h2 { color: var(--pts-muted); }
+  #pointsOverlay .legend-label { color: #ffffff; text-align: left; width: 96px; flex-basis: 96px; }
+  #pointsOverlay .legend-track { background: rgba(255, 255, 255, 0.2); border: none; }
+  #pointsOverlay .legend-value { color: var(--pts-muted); }
+  #pointsOverlay .legend-list li:nth-child(1) .legend-fill { background: #c4b5fd !important; }
+  #pointsOverlay .legend-list li:nth-child(2) .legend-fill { background: #fda4af !important; }
+  #pointsOverlay .legend-list li:nth-child(3) .legend-fill { background: #93c5fd !important; }
+
+  /* the pieces fade up in turn; the bars fill once it has opened */
+  #pointsOverlay .points-acc-title, #pointsOverlay .progress-headline, #pointsOverlay .points-target,
+  #pointsOverlay .meter-track, #pointsOverlay .card-points-category {
+    opacity: 0; transform: translateY(10px); transition: opacity 0.25s, transform 0.25s;
+  }
+  #pointsOverlay.open .points-acc-title, #pointsOverlay.open .progress-headline, #pointsOverlay.open .points-target,
+  #pointsOverlay.open .meter-track, #pointsOverlay.open .card-points-category {
+    opacity: 1; transform: none; transition: opacity 0.4s, transform 0.4s;
+  }
+  #pointsOverlay.open .points-acc-title { transition-delay: 0.3s; }
+  #pointsOverlay.open .progress-headline { transition-delay: 0.35s; }
+  #pointsOverlay.open .points-target { transition-delay: 0.4s; }
+  #pointsOverlay.open .meter-track { transition-delay: 0.5s; }
+  #pointsOverlay.open .card-points-category { transition-delay: 0.6s; }
+  #pointsOverlay:not(.open) .meter-fill, #pointsOverlay:not(.open) .legend-fill { width: 0 !important; }
+  #pointsOverlay:not(.open) .meter-flame { left: 0 !important; }
+  #pointsOverlay .meter-fill, #pointsOverlay .legend-fill { transition: width 0.3s ease; }
+  #pointsOverlay .meter-flame { transition: left 0.3s ease; }
+  #pointsOverlay.open .meter-fill { transition: width 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.6s; }
+  #pointsOverlay.open .meter-flame { transition: left 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.6s; }
+  #pointsOverlay.open .legend-fill { transition: width 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.8s; }
+  #pointsOverlay.open .legend-list li:nth-child(2) .legend-fill { transition-delay: 0.9s; }
+  #pointsOverlay.open .legend-list li:nth-child(3) .legend-fill { transition-delay: 1s; }
+  @media (prefers-reduced-motion: reduce) {
+    .points-overlay, .points-overlay *, .points-close, .pb-fill { transition-duration: 0.01s !important; transition-delay: 0s !important; }
   }
 
   /* Form */
@@ -3503,6 +3597,13 @@
 
 <header class="app-header">
   <div class="header-inner">
+    <button type="button" class="points-btn" id="pointsBtn" aria-label="Points summary" aria-expanded="false" aria-controls="pointsOverlay">
+      <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true">
+        <circle class="pb-track" cx="20" cy="20" r="16" fill="none" stroke-width="4"></circle>
+        <circle class="pb-fill" id="pointsRingFill" cx="20" cy="20" r="16" fill="none" stroke-width="4" stroke-linecap="round" pathLength="100" stroke-dasharray="0 100" transform="rotate(-90 20 20)"></circle>
+        <text class="pb-num" id="pointsBtnNum" x="20" y="24" text-anchor="middle">0</text>
+      </svg>
+    </button>
     <h1 class="header-title">B In the Next Chapter!</h1>
     <button class="header-profile-btn" id="headerProfileBtn" type="button" aria-label="Your profile" title="Your profile">
       <img id="headerProfileImg" class="header-profile-img" alt="Profile" style="display:none;width:100%;height:100%;border-radius:50%;object-fit:cover;" />
@@ -3526,24 +3627,6 @@
 
     <div class="card card-countdown">
       <div id="countdownBody"></div>
-    </div>
-
-    <div class="card card-points-acc">
-      <h2 class="points-acc-title">POINTS ACCUMULATED</h2>
-      <div class="progress-headline">
-        <span class="value"><span id="totalPoints">0</span></span>
-      </div>
-      <p class="points-target"><span id="targetLabel">1000</span> BY 31 DEC 2026</p>
-      <div class="meter-track" role="progressbar" id="meterTrack" aria-valuemin="0" aria-valuemax="1000" aria-valuenow="0">
-        <span class="meter-flame" id="meterFlame" aria-hidden="true">🔥</span>
-        <div class="meter-fill" id="meterFill" style="width:0%"></div>
-      </div>
-      <p class="status-line" id="statusLine">Just getting started — log your first activity!</p>
-    </div>
-
-    <div class="card card-points-category">
-      <h2>Points clocked by category</h2>
-      <ul class="legend-list" id="legendList"></ul>
     </div>
 
     <div class="gallery-header-row">
@@ -3774,6 +3857,32 @@
   </section>
 
 </main>
+
+<!-- Points summary: opens as a circular reveal from the header counter icon -->
+<div class="points-overlay" id="pointsOverlay" role="dialog" aria-modal="true" aria-label="Points summary" aria-hidden="true">
+  <button type="button" class="points-close" id="pointsClose" aria-label="Close points summary">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+  </button>
+  <div class="po-inner">
+    <div class="card card-points-acc">
+      <h2 class="points-acc-title">POINTS ACCUMULATED</h2>
+      <div class="progress-headline">
+        <span class="value"><span id="totalPoints">0</span></span>
+      </div>
+      <p class="points-target"><span id="targetLabel">1000</span> BY 31 DEC 2026</p>
+      <div class="meter-track" role="progressbar" id="meterTrack" aria-valuemin="0" aria-valuemax="1000" aria-valuenow="0">
+        <span class="meter-flame" id="meterFlame" aria-hidden="true">🔥</span>
+        <div class="meter-fill" id="meterFill" style="width:0%"></div>
+      </div>
+      <p class="status-line" id="statusLine">Just getting started — log your first activity!</p>
+    </div>
+
+    <div class="card card-points-category">
+      <h2>Points clocked by category</h2>
+      <ul class="legend-list" id="legendList"></ul>
+    </div>
+  </div>
+</div>
 
 <!-- Add New: a lone round button at the bottom centre -->
 <button class="bottom-bar-log-btn" id="headerLogBtn" type="button" aria-label="Log activity" title="Log activity">
@@ -4688,6 +4797,19 @@
     track.setAttribute("aria-valuenow", String(totals.total));
     track.setAttribute("aria-valuemax", String(TARGET_POINTS));
     document.getElementById("statusLine").textContent = statusLineFor(totals.total);
+
+    // The header counter: a progress ring with the whole-number total inside.
+    var pbNum = document.getElementById("pointsBtnNum");
+    if (pbNum) {
+      var shown = totals.total >= 1000 ? Math.floor(totals.total / 1000) + "k" : String(Math.round(totals.total));
+      pbNum.textContent = shown;
+      pbNum.classList.toggle("sm", shown.length >= 3);
+    }
+    var pbRing = document.getElementById("pointsRingFill");
+    if (pbRing) pbRing.setAttribute("stroke-dasharray", pct + " 100");
+    var pbBtn = document.getElementById("pointsBtn");
+    if (pbBtn) pbBtn.setAttribute("aria-label", "Points: " + formatNum_(totals.total) + " of " + formatNum_(TARGET_POINTS) + ". Open summary");
+    state.lastTotal = totals.total;
 
     // Only celebrate on a crossing observed WITHIN this session (prevTotal
     // came from a real backend load, not the synthetic zero-state render
@@ -7636,6 +7758,62 @@
     });
 
     document.getElementById("headerProfileBtn").addEventListener("click", openProfilePanel_);
+
+    // Points summary: a circular reveal from the header counter icon.
+    var pointsOverlay_ = document.getElementById("pointsOverlay");
+    var pointsBtn_ = document.getElementById("pointsBtn");
+    var pointsRaf_ = 0;
+    function pointsPlace_() {
+      var r = pointsBtn_.getBoundingClientRect();
+      var s = pointsOverlay_.style;
+      s.setProperty("--cx", (r.left + r.width / 2) + "px");
+      s.setProperty("--cy", (r.top + r.height / 2) + "px");
+      s.setProperty("--bx", r.left + "px");
+      s.setProperty("--by", r.top + "px");
+      s.setProperty("--bs", r.width + "px");
+    }
+    function pointsCountUp_(to) {
+      var el = document.getElementById("totalPoints");
+      cancelAnimationFrame(pointsRaf_);
+      if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) { el.textContent = formatNum_(to); return; }
+      el.textContent = "0";
+      var start = null;
+      setTimeout(function () {
+        pointsRaf_ = requestAnimationFrame(function step(now) {
+          if (start === null) start = now;
+          var p = Math.min(1, (now - start) / 1100);
+          el.textContent = formatNum_(to * (1 - Math.pow(1 - p, 3)));
+          if (p < 1) pointsRaf_ = requestAnimationFrame(step); else el.textContent = formatNum_(to);
+        });
+      }, 350);
+    }
+    function openPoints_() {
+      pointsPlace_();
+      pointsOverlay_.scrollTop = 0;
+      pointsOverlay_.classList.add("open");
+      pointsOverlay_.setAttribute("aria-hidden", "false");
+      pointsBtn_.setAttribute("aria-expanded", "true");
+      document.body.classList.add("points-open");
+      pointsCountUp_(state.lastTotal || 0);
+    }
+    function closePoints_() {
+      if (!pointsOverlay_.classList.contains("open")) return;
+      cancelAnimationFrame(pointsRaf_);
+      document.getElementById("totalPoints").textContent = formatNum_(state.lastTotal || 0);
+      pointsOverlay_.classList.remove("open");
+      pointsOverlay_.setAttribute("aria-hidden", "true");
+      pointsBtn_.setAttribute("aria-expanded", "false");
+      document.body.classList.remove("points-open");
+    }
+    pointsBtn_.addEventListener("click", openPoints_);
+    document.getElementById("pointsClose").addEventListener("click", closePoints_);
+    pointsOverlay_.addEventListener("click", function (e) {
+      if (e.target === pointsOverlay_ || e.target.classList.contains("po-inner")) closePoints_();
+    });
+    // Keep the reveal's origin on the icon (set up front so it never drifts while opening).
+    pointsPlace_();
+    window.addEventListener("load", pointsPlace_);
+    window.addEventListener("resize", pointsPlace_);
     document.getElementById("profileCloseBtn").addEventListener("click", function () {
       switchPanel("home");
     });
@@ -7911,6 +8089,7 @@
 
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape") {
+        closePoints_();
         closePreviewModal();
         closeEditModal();
         if (filterCapsuleState.open) {

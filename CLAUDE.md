@@ -60,9 +60,14 @@ near the bottom of the file. A few things worth knowing before editing it:
     `updateLogUi_()`.
   - The **Profile panel** is a 90% bottom sheet over a dimmed backdrop (close
     with the back arrow, the backdrop, Esc, or by dragging its handle down).
-  - The home screen has no bottom bar: the header is the title (left) and the
-    profile button (right), the light/dark toggle lives in the Profile sheet's
-    header, and Add New is a lone round button.
+  - The home screen has no bottom bar: the header is the counter icon, the
+    title and the profile button (right); the light/dark toggle lives in the
+    Profile sheet's header, and Add New is a lone round button.
+  - The points total and category breakdown are not on the home page: they are
+    the `#pointsOverlay` circular reveal opened from the header counter
+    (`#pointsBtn`). The two cards kept their ids (`totalPoints`, `meterFill`,
+    `legendList`, ...), so `renderProgress` and `renderCategoryBreakdown` are
+    unchanged apart from updating the header ring.
 - `gifenc.browser.js` is a separate script (loaded via `<script src="gifenc.browser.js">`
   before `config.js`) used client-side to convert uploaded video to an
   animated GIF before upload — it has its own file that must be kept in sync

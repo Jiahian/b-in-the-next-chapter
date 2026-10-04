@@ -98,6 +98,7 @@ whoever owns the backend.
 - A short status line under the bar reflects progress at a glance (e.g., early: "Just getting started", mid: "🔥 Almost there!", complete: "🎉 Goal reached!").
 - Progress bar, headline number, and status line update as new entries are submitted or edited/deleted (by anyone in the group, on any device) — see §8 for the sync-speed trade-off (near-real-time, not instant push).
 - Target: **1,000 points**.
+- **Where it lives:** the points total and the category breakdown (§6.3) are not on the home page. The header shows a small circular counter at the left (a progress ring with the whole-number total inside); tapping it opens both as a full-screen **circular reveal** that grows from the icon: the total counts up, the progress and category bars fill, and the icon turns into a close button in the same spot (also closes by tapping the background or pressing Esc). The "1000 BY 31 DEC 2026" line sits between the number and the progress bar.
 
 ### 6.3 Points by category — bar chart
 
