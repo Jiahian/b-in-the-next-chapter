@@ -777,6 +777,7 @@
   }
   .log-step.active > * { flex: none; }
   /* Friends: the list opens upwards over the preview, so it never pushes the sheet. */
+  .log-step[data-step="2"] .tag-friends-pills { margin-bottom: 16px; row-gap: 8px; }
   .log-step[data-step="2"] .tag-friends-panel {
     top: auto; bottom: calc(100% + 6px); max-height: min(240px, 34dvh);
   }
@@ -795,7 +796,7 @@
     color: var(--text-primary); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
   }
   .log-chip.sel { border-color: var(--accent); }
-  #logChips { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  #logChips { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 4px; }
   #logChips .log-chip { margin: 0; justify-content: center; padding: 13px 6px; font-size: 14px; }
   .log-pills { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .log-pills .log-pill { justify-content: center; }
