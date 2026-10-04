@@ -98,13 +98,13 @@ whoever owns the backend.
 - A short status line under the bar reflects progress at a glance (e.g., early: "Just getting started", mid: "🔥 Almost there!", complete: "🎉 Goal reached!").
 - Progress bar, headline number, and status line update as new entries are submitted or edited/deleted (by anyone in the group, on any device) — see §8 for the sync-speed trade-off (near-real-time, not instant push).
 - Target: **1,000 points**.
-- **Where it lives:** the points total and the category breakdown (§6.3) are not on the home page. The header shows a small circular counter at the left (a progress ring with the whole-number total inside); tapping it opens both as a full-screen **circular reveal** that grows from the icon: the total counts up, the progress and category bars fill, and the icon turns into a close button in the same spot (also closes by tapping the background or pressing Esc). The "1000 BY 31 DEC 2026" line sits between the number and the progress bar.
+- **Where it lives:** the points total and the category breakdown (§6.3) are not on the home page. The header shows a small circular counter at the left (a progress ring with the whole-number total inside); tapping it opens both as a full-screen **circular reveal** that grows from the icon: the total counts up, the progress and category bars fill, and the icon turns into a close button in the same spot (also closes by tapping the background or pressing Esc). The progress is a three-quarter **arc gauge**: the total sits inside the dial with "of 1,000 points" under it, an emerald arc and the flame fill from the bottom-left start, the percentage to goal travels beside the flame, and the row under the arc reads "0 · BY 31 DEC 2026 · 1000", with the deadline centred between the two ends.
 
 ### 6.3 Points by category — bar chart
 
-- One row per category (Spiritual / Relationship / Others): category name, a horizontal bar, and the point total.
-- Each bar fills proportionally toward the overall 1,000-point target (not toward the other categories' totals), so the three bars visually show each category's individual contribution to the shared goal.
-- Labeled with name and point total on every row (not color-only, for accessibility) — no separate legend needed.
+- Shown in the points reveal (§6.2) as three side-by-side columns, one per category (Spiritual / Relationship / Others): the category name, its point total, a vertical bar, and its share of all points as a percentage.
+- Each bar's height is the category's **share of the total points** (so the three always show how the group's points split), while the progress toward the 1,000-point goal is the bar above them.
+- Labeled with name, point total and percentage in every column (not colour-only, for accessibility) — no separate legend needed.
 - Updates as entries are submitted, edited, or deleted.
 
 ### 6.4 Photo/video gallery
