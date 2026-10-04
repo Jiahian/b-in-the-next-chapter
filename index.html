@@ -614,7 +614,6 @@
     visibility: visible;
     transition: clip-path 0.7s cubic-bezier(0.65, 0, 0.35, 1), visibility 0s;
   }
-  [data-theme="dark"] .points-overlay { --pts-bg: #312e81; }
   body.points-open { overflow: hidden; }
   .po-inner {
     max-width: 480px; margin: 0 auto;
@@ -634,9 +633,11 @@
   #pointsOverlay .card { background: transparent; border: none; box-shadow: none; padding: 0; margin: 0; }
   #pointsOverlay .card-points-acc { margin-bottom: 34px; }
   #pointsOverlay .points-acc-title { color: var(--pts-muted); }
-  #pointsOverlay .progress-headline .value { color: #ffffff; }
+  #pointsOverlay .progress-headline .value { color: #ffffff; transition: color 0.4s ease; }
+  /* once the reveal has finished, the total turns the countdown's yellow */
+  #pointsOverlay.revealed .progress-headline .value { color: var(--countdown-accent, #facc15); }
   #pointsOverlay .points-target { color: var(--pts-muted); }
-  #pointsOverlay .meter-track { background: rgba(255, 255, 255, 0.22); border: none; animation: none; }
+  #pointsOverlay .meter-track { background: rgba(255, 255, 255, 0.22); border: none; animation: none; margin: 0 15px; }
   #pointsOverlay .meter-fill { background: #ffffff; animation: none; }
   #pointsOverlay .card-points-category h2 { color: var(--pts-muted); }
   #pointsOverlay .legend-label { color: #ffffff; text-align: left; width: 96px; flex-basis: 96px; }
@@ -7796,17 +7797,29 @@
       pointsOverlay_.setAttribute("aria-hidden", "false");
       pointsBtn_.setAttribute("aria-expanded", "true");
       document.body.classList.add("points-open");
+      clearTimeout(pointsRevealTimer_);
+      pointsRevealTimer_ = setTimeout(function () {
+        if (pointsOverlay_.classList.contains("open")) pointsOverlay_.classList.add("revealed");
+      }, 850); // fallback in case the transitionend event never arrives
       pointsCountUp_(state.lastTotal || 0);
     }
     function closePoints_() {
       if (!pointsOverlay_.classList.contains("open")) return;
       cancelAnimationFrame(pointsRaf_);
       document.getElementById("totalPoints").textContent = formatNum_(state.lastTotal || 0);
-      pointsOverlay_.classList.remove("open");
+      clearTimeout(pointsRevealTimer_);
+      pointsOverlay_.classList.remove("open", "revealed");
       pointsOverlay_.setAttribute("aria-hidden", "true");
       pointsBtn_.setAttribute("aria-expanded", "false");
       document.body.classList.remove("points-open");
     }
+    // The total turns yellow once the circular reveal has finished growing.
+    var pointsRevealTimer_ = 0;
+    pointsOverlay_.addEventListener("transitionend", function (e) {
+      if (e.target === pointsOverlay_ && e.propertyName === "clip-path" && pointsOverlay_.classList.contains("open")) {
+        pointsOverlay_.classList.add("revealed");
+      }
+    });
     pointsBtn_.addEventListener("click", openPoints_);
     document.getElementById("pointsClose").addEventListener("click", closePoints_);
     pointsOverlay_.addEventListener("click", function (e) {
