@@ -2056,27 +2056,6 @@
     width: 100%;
     box-sizing: border-box;
   }
-  /* "Who was there" — poster + tagged friends, compact card version.
-     Avatars float against the text's first line, like an icon leading a
-     paragraph; if the text wraps, later lines run the full width below. */
-  .meta-people {
-    display: flow-root; margin-bottom: 6px; min-width: 0;
-  }
-  .meta-avatars { display: flex; float: left; flex-shrink: 0; margin-right: 6px; }
-  .meta-avatar {
-    width: 22px; height: 22px; border-radius: 50%;
-    background: var(--gridline); color: var(--text-primary);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 9px; font-weight: 800; line-height: 1;
-    border: 2px solid var(--surface-1);
-    margin-left: -7px;
-  }
-  .meta-avatar:first-child { margin-left: 0; }
-  .meta-people-text {
-    font-size: 10px; font-weight: 400; color: var(--text-secondary);
-    line-height: 1.2;
-    min-width: 0;
-  }
   .gallery-item .meta-bottom {
     display: flex;
     align-items: center;
@@ -2136,6 +2115,48 @@
     min-width: 0;
     flex: 1;
   }
+  /* Photo-first tile: the photo fills the card; a dark strip along its bottom carries
+     the full title, a category dot with the date and amount, and who was there. The
+     story is read in the preview that opens on tap. */
+  .gallery-masonry, .gallery-masonry-col { gap: 8px; }
+  /* The photo and the strip share one grid cell. The strip carries a top margin, so a long
+     title makes the tile taller instead of covering the photo: at least 88px of it stays clear. */
+  .gallery-tile {
+    display: grid;
+    border-radius: 14px;
+    background: var(--gridline);
+  }
+  .gallery-tile .thumb { grid-area: 1 / 1; align-self: stretch; min-height: 150px; }
+  .gallery-tile .pts-pill { right: auto; bottom: auto; top: 8px; left: auto; right: 8px; font-size: 11px; padding: 3px 9px; }
+  .tile-info {
+    grid-area: 1 / 1; align-self: end; position: relative; z-index: 1;
+    margin-top: 88px;
+    padding: 9px 10px 10px;
+    background: rgba(15, 23, 42, 0.72);
+    color: #ffffff;
+    min-width: 0;
+  }
+  .tile-title {
+    font-size: 14px; font-weight: 600; line-height: 1.3;
+    overflow-wrap: break-word; word-break: break-word; white-space: normal;
+  }
+  .tile-meta {
+    display: flex; align-items: center; gap: 6px;
+    margin-top: 3px; font-size: 11px; color: #cbd5e1; line-height: 1.3;
+  }
+  .tile-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; background: #93c5fd; }
+  .tile-dot.cat-spiritual { background: #c084fc; }
+  .tile-dot.cat-relationship { background: #fb7185; }
+  .tile-dot.cat-others { background: #93c5fd; }
+  .tile-people { display: flex; margin-top: 6px; }
+  .tile-avatar {
+    width: 20px; height: 20px; border-radius: 50%;
+    background: #e2e8f0; color: #0f172a; border: 1.5px solid #ffffff;
+    margin-left: -6px; box-sizing: border-box;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 800; line-height: 1;
+  }
+  .tile-avatar:first-child { margin-left: 0; }
   .empty-state { text-align: center; padding: 44px 16px; color: var(--text-muted); font-size: 16px; }
 
   /* Post Preview Modal (Expanded View matching Gallery Item exactly) */
@@ -5088,33 +5109,16 @@
     return (name || "?").trim().charAt(0).toUpperCase() || "?";
   }
 
-  // Compact "who was there" row for a gallery card: poster + up to 2 tagged
-  // friends as overlapping avatar circles (3 max), plus a one-line summary.
-  // Legacy entries (no owner on record) render nothing here.
-  function buildPeopleSummaryHtml_(entry) {
+  // "Who was there" on a gallery tile: the poster and first tagged friend as initials,
+  // then a +N for anyone else. Legacy entries (no owner on record) render nothing here.
+  function buildTilePeopleHtml_(entry) {
     if (!entry.userId) return "";
-    var taggedFriendIds = entry.tagged_friends || [];
-    var avatarIds = [entry.userId].concat(taggedFriendIds).slice(0, 3);
-
-    var avatarsHtml = avatarIds.map(function (id, idx) {
-      return '<span class="meta-avatar" style="z-index:' + (avatarIds.length - idx) + ';">' +
-        escapeHtml_(userInitial_(id)) + '</span>';
+    var ids = [entry.userId].concat(entry.tagged_friends || []);
+    var html = ids.slice(0, 2).map(function (id, idx) {
+      return '<span class="tile-avatar" style="z-index:' + (ids.length - idx) + ';">' + escapeHtml_(userInitial_(id)) + '</span>';
     }).join("");
-
-    var posterName = escapeHtml_(userDisplayName_(entry.userId));
-    var text;
-    if (taggedFriendIds.length === 0) {
-      text = posterName;
-    } else if (taggedFriendIds.length === 1) {
-      text = posterName + " and " + escapeHtml_(userDisplayName_(taggedFriendIds[0])) + " were there";
-    } else {
-      text = posterName + " and " + taggedFriendIds.length + " friends were there";
-    }
-
-    return '<div class="meta-people">' +
-      '<div class="meta-avatars">' + avatarsHtml + '</div>' +
-      '<span class="meta-people-text">' + text + '</span>' +
-    '</div>';
+    if (ids.length > 2) html += '<span class="tile-avatar">+' + (ids.length - 2) + '</span>';
+    return '<div class="tile-people">' + html + '</div>';
   }
 
   // Tagged friends only, full reveal in the preview — the poster is shown
@@ -5136,7 +5140,7 @@
 
   function createGalleryItemEl(entry, onClick) {
     var item = document.createElement("div");
-    item.className = "gallery-item";
+    item.className = "gallery-item gallery-tile";
     var catKey = String(entry.category || "others").toLowerCase().replace(/[^a-z0-9]/g, "");
     var catClass = "cat-" + (catKey === "spiritual" || catKey === "relationship" ? catKey : "others");
     var imgSrc = escapeHtml_(driveImageUrl(entry.driveFileId));
@@ -5149,18 +5153,6 @@
     var mediaHtml = entry.mediaType === "video"
       ? '<div class="video-fallback">▶️</div>'
       : '<img loading="lazy" decoding="async" referrerpolicy="no-referrer" src="' + imgSrc + '" alt="' + altText + '" onerror="if(this.src.indexOf(\'lh3.googleusercontent.com\')!==-1){this.src=\'https://drive.google.com/thumbnail?id=' + encodeURIComponent(entry.driveFileId || '') + '&sz=w800\';}else if(this.src.indexOf(\'drive.google.com/thumbnail\')!==-1){this.src=\'https://drive.google.com/uc?export=view&id=' + encodeURIComponent(entry.driveFileId || '') + '\';}else{this.onerror=null;this.outerHTML=\'<div class=&quot;video-fallback&quot; style=&quot;background:var(--card);color:var(--text-muted);&quot;>📷</div>\';}" />';
-    
-    var rawWhatWentOn = (entry.activityDesc || "").trim();
-    var whatWentOn = "";
-    if (rawWhatWentOn) {
-      var words = rawWhatWentOn.split(/\s+/);
-      if (words.length > 12) {
-        whatWentOn = words.slice(0, 12).join(" ") + "...";
-      } else {
-        whatWentOn = rawWhatWentOn;
-      }
-    }
-    var descHtml = whatWentOn ? '<div class="meta-desc">' + escapeHtml_(whatWentOn) + '</div>' : '';
     
     var unitDisplay = (entry.units || 'pts').toLowerCase();
     if (unitDisplay === 'hours' || unitDisplay === 'hour' || unitDisplay === 'hr') {
@@ -5176,14 +5168,13 @@
         mediaHtml +
         '<span class="pts-pill">+' + formatNum_(entry.amount) + ' pts</span>' +
       '</div>' +
-      '<div class="meta">' +
-        '<div class="meta-title" title="' + altText + '">' + altText + '</div>' +
-        descHtml +
-        buildPeopleSummaryHtml_(entry) +
-        '<div class="meta-bottom">' +
-          '<div class="meta-amount">' + escapeHtml_(formatDateShort_(entry.date)) + ' &middot; ' + formatNum_(entry.amount) + ' ' + escapeHtml_(unitDisplay) + '</div>' +
-          '<span class="meta-cat ' + catClass + '">' + escapeHtml_(entry.category || 'General') + '</span>' +
+      '<div class="tile-info">' +
+        '<div class="tile-title">' + altText + '</div>' +
+        '<div class="tile-meta">' +
+          '<span class="tile-dot ' + catClass + '" title="' + escapeHtml_(entry.category || 'General') + '"></span>' +
+          '<span>' + escapeHtml_(formatDateShort_(entry.date)) + ' &middot; ' + formatNum_(entry.amount) + ' ' + escapeHtml_(unitDisplay) + '</span>' +
         '</div>' +
+        buildTilePeopleHtml_(entry) +
       '</div>';
 
     var thumbEl = item.querySelector(".thumb");
