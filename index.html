@@ -8484,11 +8484,26 @@
     //    left edge) closes the top layer instead of leaving the app. One history entry is kept
     //    while any layer is open; going back consumes it and closes the topmost layer.
     var layerQ_ = function (sel) { return document.querySelector(sel); };
+    // The small dialogs sit above the sheets, so they are checked (and closed) first.
+    var DIALOG_IDS_ = ["celebrateOverlay", "deleteConfirmOverlay", "resizeImageOverlay", "avatarCropOverlay", "pointsInfoOverlay"];
+    function openDialog_() {
+      for (var i = 0; i < DIALOG_IDS_.length; i++) {
+        var el = document.getElementById(DIALOG_IDS_[i]);
+        if (el && el.classList.contains("show")) return DIALOG_IDS_[i];
+      }
+      return "";
+    }
     function anyLayerOpen_() {
-      return !!(layerQ_("#photoViewer.show") || layerQ_("#postPreviewOverlay.show") || layerQ_("#editActivityOverlay.show") ||
+      return !!(openDialog_() || layerQ_("#photoViewer.show") || layerQ_("#postPreviewOverlay.show") || layerQ_("#editActivityOverlay.show") ||
         layerQ_("#panel-profile.active") || layerQ_("#panel-log.active") || layerQ_("#pointsOverlay.open"));
     }
     function closeTopLayer_() {
+      var dialog = openDialog_();
+      if (dialog === "celebrateOverlay") { layerQ_("#celebrateOverlay").classList.remove("show"); return true; }
+      if (dialog === "deleteConfirmOverlay") { layerQ_("#deleteConfirmOverlay").classList.remove("show"); pendingDeleteId = null; return true; }
+      if (dialog === "resizeImageOverlay") { closeResizeModal(); return true; }
+      if (dialog === "avatarCropOverlay") { closeAvatarCropper_(); return true; }
+      if (dialog === "pointsInfoOverlay") { closePointsInfoModal(); return true; }
       if (layerQ_("#photoViewer.show")) { layerQ_("#photoViewer").classList.remove("show"); return true; }
       if (layerQ_("#postPreviewOverlay.show")) { if (!previewClosing_) closePreviewModal(); return true; }
       if (layerQ_("#editActivityOverlay.show")) { closeEditModal(); return true; }
@@ -8523,7 +8538,7 @@
     });
     if (window.MutationObserver) {
       var layerObserver_ = new MutationObserver(syncBackEntry_);
-      ["photoViewer", "postPreviewOverlay", "editActivityOverlay", "panel-profile", "panel-log", "pointsOverlay"].forEach(function (id) {
+      ["photoViewer", "postPreviewOverlay", "editActivityOverlay", "panel-profile", "panel-log", "pointsOverlay"].concat(DIALOG_IDS_).forEach(function (id) {
         var el = document.getElementById(id);
         if (el) layerObserver_.observe(el, { attributes: true, attributeFilter: ["class"] });
       });
