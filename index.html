@@ -11,9 +11,9 @@
 <script>
   (function () {
     try {
+      // Light unless the person has switched it themselves: the phone's own dark setting is not followed.
       var saved = localStorage.getItem("bnext_theme");
-      var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-      var theme = saved || (prefersDark ? "dark" : "light");
+      var theme = saved === "dark" ? "dark" : "light";
       document.documentElement.setAttribute("data-theme", theme);
       if (theme === "dark") {
         document.documentElement.classList.add("dark-theme");
