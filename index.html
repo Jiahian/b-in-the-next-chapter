@@ -2353,6 +2353,26 @@
   }
   .post-preview-sheet .thumb.ratio-3-4 .preview-fullphoto-btn { display: inline-flex; }
   .preview-fullphoto-btn[hidden] { display: none !important; }
+  /* Our own pull-to-refresh replaces the browser's, which would reload the whole page. */
+  html, body { overscroll-behavior-y: contain; }
+  .ptr {
+    position: fixed; top: 64px; left: 50%; width: 38px; height: 38px; margin-left: -19px;
+    border-radius: 50%; z-index: 30; pointer-events: none;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--surface-1, #ffffff); color: var(--accent, #4f46e5);
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.18);
+    opacity: 0; transform: translateY(-56px);
+  }
+  .ptr.snap { transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.22s ease; }
+  .ptr.spin svg { animation: ptrSpin 0.7s linear infinite; }
+  @keyframes ptrSpin { to { transform: rotate(360deg); } }
+  .edge-back {
+    position: fixed; left: 0; top: 50%; width: 38px; height: 38px; margin-top: -19px;
+    border-radius: 50%; z-index: 80; pointer-events: none;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(15, 23, 42, 0.65); color: #ffffff;
+    opacity: 0; transform: translateX(-46px);
+  }
   .photo-viewer {
     display: none; position: fixed; inset: 0; z-index: 70;
     background: rgba(0, 0, 0, 0.94);
@@ -4059,6 +4079,14 @@
   </div>
 </div>
 
+<!-- Pull-to-refresh spinner and the back-swipe hint (both only appear while a gesture is in progress) -->
+<div class="ptr" id="ptr" aria-hidden="true">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"></path><path d="M21 3v5h-5"></path></svg>
+</div>
+<div class="edge-back" id="edgeBack" aria-hidden="true">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg>
+</div>
+
 <!-- Full photo viewer: opened from a post's photo, closes on tap or Esc -->
 <div class="photo-viewer" id="photoViewer" role="dialog" aria-label="Full photo">
   <img id="photoViewerImg" alt="Full photo" referrerpolicy="no-referrer" />
@@ -5686,6 +5714,59 @@
     sheet.addEventListener("touchcancel", endDrag);
   }
 
+  // Swipe down to close a sheet (Profile, Log): from anywhere on it once its content is scrolled to
+  // the top. cfg.canClose() can refuse (an unfinished post), in which case the sheet springs back.
+  function bindSheetSwipeDown_(cfg) {
+    var sheet = cfg.sheet;
+    if (!sheet) return;
+    var scroller = sheet.querySelector(".log-modal-content") || sheet;
+    var startY = 0, lastY = 0, lastT = 0, vel = 0, dy = 0, tracking = false, dragging = false;
+    sheet.addEventListener("touchstart", function (e) {
+      if (e.touches.length !== 1) return;
+      if (cfg.skip && e.target.closest(cfg.skip)) return;
+      if (e.target.closest("textarea, select")) return;
+      tracking = true; dragging = false; dy = 0; vel = 0;
+      startY = lastY = e.touches[0].clientY; lastT = Date.now();
+    }, { passive: true });
+    sheet.addEventListener("touchmove", function (e) {
+      if (!tracking) return;
+      var y = e.touches[0].clientY, d = y - startY;
+      if (!dragging) {
+        if (d > 8 && scroller.scrollTop <= 0) { dragging = true; sheet.style.transition = "none"; }
+        else return;
+      }
+      e.preventDefault();
+      dy = Math.max(0, d);
+      var now = Date.now();
+      vel = (y - lastY) / Math.max(1, now - lastT);
+      lastY = y; lastT = now;
+      sheet.style.transform = "translateY(" + dy + "px)";
+    }, { passive: false });
+    function reset() { sheet.style.transform = ""; sheet.style.transition = ""; }
+    function endDrag() {
+      if (!tracking) return;
+      tracking = false;
+      if (!dragging) return;
+      dragging = false;
+      var far = dy > 110 || vel > 0.6;
+      if (far && (!cfg.canClose || cfg.canClose())) {
+        var from = dy;
+        var out = sheet.animate([{ transform: "translateY(" + from + "px)" }, { transform: "translateY(100%)" }],
+          { duration: 200, easing: "ease-in", fill: "forwards" });
+        out.onfinish = function () { cfg.close(); out.cancel(); reset(); };
+        return;
+      }
+      var back = dy;
+      reset();
+      if (far && cfg.blockedMessage) showToast(cfg.blockedMessage);
+      if (previewMotionOk_() && back > 0) {
+        sheet.animate([{ transform: "translateY(" + back + "px)" }, { transform: "translateY(0)" }], { duration: 240, easing: PREVIEW_EASE });
+      }
+    }
+    sheet.addEventListener("touchend", endDrag);
+    sheet.addEventListener("touchcancel", endDrag);
+  }
+
   // ===================================================================
   // Edit Activity fullscreen page
   // ===================================================================
@@ -7024,11 +7105,11 @@
       renderFilterCapsule();
       renderGallery();
       hideLoadingScreen_();
-      return;
+      return Promise.resolve();
     }
-    if (!auth.idToken) return;
+    if (!auth.idToken) return Promise.resolve();
     var isFirstLoad = !state.loaded;
-    apiList().then(function (res) {
+    return apiList().then(function (res) {
       if (!res.ok) {
         if (handleAuthError_(res)) { hideLoadingScreen_(); return; }
         showToast(res.error || "Couldn't load entries.", true);
@@ -8027,6 +8108,7 @@
       var card = profilePanelEl_.querySelector(".log-modal-card");
       var startY = 0, dy = 0, dragging = false;
       grab.addEventListener("pointerdown", function (e) {
+        if (e.pointerType === "touch") return;
         dragging = true; startY = e.clientY; dy = 0;
         card.style.transition = "none";
         try { grab.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
@@ -8383,6 +8465,158 @@
         if (e.target === this || e.target.id === "previewBackdrop") closePreviewModal();
       });
     }
+
+    // ----- Swipe actions -----
+    // 1) Swipe down closes the Profile and Log sheets (the Log one only when it holds no draft).
+    bindSheetSwipeDown_({
+      sheet: profilePanelEl_.querySelector(".log-modal-card"),
+      close: function () { switchPanel("home"); }
+    });
+    bindSheetSwipeDown_({
+      sheet: logSheet,
+      skip: ".log-grab",
+      canClose: function () { return !logHasContent_(); },
+      blockedMessage: "You have an unfinished post. Tap \u2715 to discard it.",
+      close: closeLog_
+    });
+
+    // 2) Back: the system back gesture or button (and, in the installed app, a swipe in from the
+    //    left edge) closes the top layer instead of leaving the app. One history entry is kept
+    //    while any layer is open; going back consumes it and closes the topmost layer.
+    var layerQ_ = function (sel) { return document.querySelector(sel); };
+    function anyLayerOpen_() {
+      return !!(layerQ_("#photoViewer.show") || layerQ_("#postPreviewOverlay.show") || layerQ_("#editActivityOverlay.show") ||
+        layerQ_("#panel-profile.active") || layerQ_("#panel-log.active") || layerQ_("#pointsOverlay.open"));
+    }
+    function closeTopLayer_() {
+      if (layerQ_("#photoViewer.show")) { layerQ_("#photoViewer").classList.remove("show"); return true; }
+      if (layerQ_("#postPreviewOverlay.show")) { if (!previewClosing_) closePreviewModal(); return true; }
+      if (layerQ_("#editActivityOverlay.show")) { closeEditModal(); return true; }
+      if (layerQ_("#panel-log.active")) {
+        if (logHasContent_()) { showToast("You have an unfinished post. Tap \u2715 to discard it."); return false; }
+        closeLog_();
+        return true;
+      }
+      if (layerQ_("#panel-profile.active")) { switchPanel("home"); return true; }
+      if (layerQ_("#pointsOverlay.open")) { closePoints_(); return true; }
+      return false;
+    }
+    var backSentinel_ = false, backPending_ = false, ignorePops_ = 0;
+    function syncBackEntry_() {
+      if (backPending_) return;
+      var open = anyLayerOpen_();
+      if (open && !backSentinel_) {
+        try { history.pushState({ bnLayer: true }, ""); backSentinel_ = true; } catch (err) { /* ignore */ }
+      } else if (!open && backSentinel_) {
+        backSentinel_ = false;
+        backPending_ = true;
+        ignorePops_++;
+        history.back();
+      }
+    }
+    window.addEventListener("popstate", function () {
+      if (ignorePops_ > 0) { ignorePops_--; backPending_ = false; syncBackEntry_(); return; }
+      if (!backSentinel_) return;
+      backSentinel_ = false;
+      closeTopLayer_();
+      setTimeout(syncBackEntry_, 0);
+    });
+    if (window.MutationObserver) {
+      var layerObserver_ = new MutationObserver(syncBackEntry_);
+      ["photoViewer", "postPreviewOverlay", "editActivityOverlay", "panel-profile", "panel-log", "pointsOverlay"].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) layerObserver_.observe(el, { attributes: true, attributeFilter: ["class"] });
+      });
+    }
+    // The edge swipe only runs in the installed app; a browser already has its own back gesture.
+    var standalone_ = window.navigator.standalone === true || (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches);
+    if (standalone_) {
+      var edgeEl_ = document.getElementById("edgeBack");
+      var edgeX = 0, edgeY = 0, edgeTracking = false, edgeActive = false, edgeDx = 0;
+      document.addEventListener("touchstart", function (e) {
+        edgeTracking = false; edgeActive = false; edgeDx = 0;
+        if (e.touches.length !== 1 || e.touches[0].clientX > 24 || !anyLayerOpen_()) return;
+        edgeTracking = true; edgeX = e.touches[0].clientX; edgeY = e.touches[0].clientY;
+      }, { passive: true });
+      document.addEventListener("touchmove", function (e) {
+        if (!edgeTracking) return;
+        var dx = e.touches[0].clientX - edgeX, dy2 = e.touches[0].clientY - edgeY;
+        if (!edgeActive) {
+          if (dx > 8 && dx > Math.abs(dy2) * 1.5) edgeActive = true;
+          else { if (Math.abs(dy2) > 14) edgeTracking = false; return; }
+        }
+        e.preventDefault();
+        edgeDx = Math.max(0, dx);
+        var p = Math.min(1, edgeDx / 90);
+        edgeEl_.style.opacity = String(p);
+        edgeEl_.style.transform = "translateX(" + (-46 + p * 62) + "px)";
+      }, { passive: false });
+      var edgeEnd = function () {
+        if (!edgeTracking) return;
+        edgeTracking = false;
+        var go = edgeActive && edgeDx > 80;
+        edgeActive = false;
+        edgeEl_.style.opacity = "0"; edgeEl_.style.transform = "translateX(-46px)";
+        if (go && backSentinel_) history.back();
+      };
+      document.addEventListener("touchend", edgeEnd);
+      document.addEventListener("touchcancel", edgeEnd);
+    }
+
+    // 3) Pull down at the top of the gallery to refresh it.
+    (function () {
+      var ptr = document.getElementById("ptr");
+      if (!ptr) return;
+      var tracking = false, pulling = false, refreshing = false, startY = 0, pull = 0;
+      var READY = 56;
+      document.addEventListener("touchstart", function (e) {
+        tracking = false; pulling = false;
+        if (refreshing || e.touches.length !== 1 || anyLayerOpen_()) return;
+        if ((window.scrollY || window.pageYOffset || 0) > 0) return;
+        if (!document.getElementById("panel-home").classList.contains("active")) return;
+        if (e.target.closest(".filter-capsule-root, input, textarea, select")) return;
+        tracking = true; startY = e.touches[0].clientY; pull = 0;
+        ptr.classList.remove("snap");
+      }, { passive: true });
+      document.addEventListener("touchmove", function (e) {
+        if (!tracking) return;
+        var d = e.touches[0].clientY - startY;
+        if (!pulling) {
+          if (d > 8 && (window.scrollY || window.pageYOffset || 0) <= 0) pulling = true;
+          else { if (d < -4) tracking = false; return; }
+        }
+        e.preventDefault();
+        pull = Math.min(90, d * 0.5);
+        ptr.style.opacity = String(Math.min(1, pull / 40));
+        ptr.style.transform = "translateY(" + (pull - READY) + "px)";
+        ptr.firstElementChild.style.transform = "rotate(" + (pull * 4) + "deg)";
+      }, { passive: false });
+      function endPull() {
+        if (!tracking) return;
+        tracking = false;
+        if (!pulling) return;
+        pulling = false;
+        ptr.classList.add("snap");
+        if (pull < READY) { ptr.style.opacity = "0"; ptr.style.transform = "translateY(-" + READY + "px)"; return; }
+        refreshing = true;
+        ptr.firstElementChild.style.transform = "";
+        ptr.classList.add("spin");
+        ptr.style.opacity = "1";
+        ptr.style.transform = "translateY(0px)";
+        var started = Date.now();
+        var done = function () {
+          setTimeout(function () {
+            ptr.classList.remove("spin");
+            ptr.style.opacity = "0";
+            ptr.style.transform = "translateY(-" + READY + "px)";
+            refreshing = false;
+          }, Math.max(0, 700 - (Date.now() - started)));
+        };
+        loadEntries().then(done, done);
+      }
+      document.addEventListener("touchend", endPull);
+      document.addEventListener("touchcancel", endPull);
+    })();
 
     // Edit Activity modal bindings
     var editFileDrop = document.getElementById("editFileDrop");
