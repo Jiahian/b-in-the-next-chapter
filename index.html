@@ -2186,47 +2186,53 @@
     cursor: default;
     transform: none !important;
   }
+  /* The back button and poster float over the photo; the card below overlaps its bottom edge. */
   .post-preview-sheet .preview-navbar {
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    flex-shrink: 0;
+    position: absolute;
+    top: 10px; left: 10px; right: 56px;
+    z-index: 12;
     display: flex;
     align-items: center;
-    height: 50px;
-    padding: 0 8px;
-    background: var(--surface-1, #ffffff);
-    border-bottom: 1px solid var(--gridline, #e2e8f0);
+    gap: 8px;
+    pointer-events: none;
   }
+  .post-preview-sheet .preview-navbar > * { pointer-events: auto; }
   .post-preview-sheet .preview-back-btn {
     width: 34px;
     height: 34px;
     border-radius: 50%;
     border: none;
-    background: transparent;
-    color: var(--text-primary, #1e293b);
+    background: rgba(15, 23, 42, 0.55);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+    color: #ffffff;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     padding: 0;
+    flex-shrink: 0;
     transition: background 0.15s ease;
   }
   .post-preview-sheet .preview-back-btn:hover {
-    background: var(--gridline, rgba(15, 23, 42, 0.08));
+    background: rgba(15, 23, 42, 0.8);
   }
   .preview-navbar-poster {
-    display: flex; align-items: center; gap: 8px; min-width: 0; overflow: hidden;
-    margin-left: 4px;
+    display: flex; align-items: center; gap: 7px; min-width: 0; overflow: hidden;
+    background: rgba(15, 23, 42, 0.55);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+    border-radius: 999px;
+    padding: 3px 12px 3px 3px;
   }
   .preview-navbar-poster-avatar {
     flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%;
-    background: var(--gridline); color: var(--text-primary);
+    background: #eef1f6; color: #0f172a;
     display: flex; align-items: center; justify-content: center;
     font-size: 12.5px; font-weight: 800; line-height: 1;
   }
   .preview-navbar-poster-name {
-    font-size: 14px; font-weight: 700; color: var(--text-primary);
+    font-size: 14px; font-weight: 700; color: #ffffff;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   .post-preview-sheet .preview-scroll-content {
@@ -2236,10 +2242,11 @@
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
   }
+  .post-preview-sheet .thumb { cursor: zoom-in; }
   .post-preview-sheet .thumb .preview-top-actions {
     position: absolute;
-    top: 8px;
-    right: 8px;
+    top: 10px;
+    right: 10px;
     display: flex;
     align-items: center;
     gap: 6px;
@@ -2249,8 +2256,8 @@
     position: relative;
   }
   .post-preview-sheet .preview-menu-btn {
-    width: 28px;
-    height: 28px;
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
     background: rgba(15, 23, 42, 0.65);
     color: #ffffff;
@@ -2308,8 +2315,49 @@
     color: #4f46e5;
   }
   .post-preview-sheet .meta {
-    padding: 15px 16px 16px;
+    position: relative;
+    z-index: 2;
+    margin-top: -28px;
+    padding: 10px 16px 28px;
+    border-radius: 22px 22px 0 0;
+    background: #ffffff;
   }
+  .post-preview-sheet .meta::before {
+    content: "";
+    display: block;
+    width: 36px; height: 4px; border-radius: 2px;
+    background: var(--baseline, #cbd5e1);
+    margin: 0 auto 14px;
+  }
+  .preview-chips {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  .preview-chips .meta-amount { flex: 0 1 auto; color: var(--text-muted); }
+  .preview-chips .pts-pill {
+    position: static; margin-left: auto;
+    box-shadow: none; font-size: 11px; padding: 3px 9px;
+  }
+  .preview-fullphoto-btn {
+    display: none;
+    position: absolute; right: 10px; bottom: 40px; z-index: 3;
+    align-items: center; gap: 5px;
+    background: rgba(15, 23, 42, 0.55);
+    -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+    color: #ffffff; border: none; border-radius: 999px;
+    font: inherit; font-size: 11px; font-weight: 600;
+    padding: 4px 10px; cursor: pointer;
+  }
+  .post-preview-sheet .thumb.ratio-3-4 .preview-fullphoto-btn { display: inline-flex; }
+  .preview-fullphoto-btn[hidden] { display: none !important; }
+  .photo-viewer {
+    display: none; position: fixed; inset: 0; z-index: 70;
+    background: rgba(0, 0, 0, 0.94);
+    align-items: center; justify-content: center;
+    cursor: zoom-out;
+  }
+  .photo-viewer.show { display: flex; }
+  .photo-viewer img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
   .post-preview-sheet .meta-bottom {
     display: flex;
     align-items: center;
@@ -2323,15 +2371,38 @@
   /* Tagged friends only (the poster now has their own spot in the navbar) —
      fully revealed in the preview. Grid caps rows at 5 people; a 6th+
      tagged friend wraps to the next row. */
-  .preview-people-section { margin-bottom: 12px; }
+  .preview-people-section { margin: 0; padding-top: 14px; border-top: 1px solid var(--gridline, #e2e8f0); }
+  .preview-people-row {
+    display: flex; align-items: center; justify-content: space-between;
+    width: 100%; padding: 0; background: none; border: none; cursor: pointer; font: inherit;
+  }
+  .preview-stack { display: flex; align-items: center; }
+  .preview-stack-av {
+    width: 30px; height: 30px; border-radius: 50%; box-sizing: border-box;
+    background: var(--gridline); color: var(--text-primary);
+    border: 2px solid #ffffff; margin-left: -8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800; line-height: 1;
+  }
+  .preview-stack-av:first-child { margin-left: 0; }
+  .preview-stack-av.more { background: #e2e8f0; color: #334155; font-size: 11px; }
+  .preview-people-all {
+    display: inline-flex; align-items: center; gap: 2px;
+    font-size: 14px; font-weight: 700; color: var(--accent, #4f46e5);
+  }
+  .preview-people-all svg { transition: transform 0.2s ease; }
+  .preview-people-section.open .preview-people-all svg { transform: rotate(90deg); }
+  .preview-people-label { margin-top: 8px; font-size: 12px; color: var(--text-muted); }
   .preview-people-heading {
     margin: 0 0 8px; font-size: 12px; font-weight: 700;
     color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em;
   }
   .preview-people {
-    display: grid; grid-template-columns: repeat(5, minmax(64px, 1fr));
+    display: none; margin-top: 14px;
+    grid-template-columns: repeat(5, minmax(64px, 1fr));
     gap: 10px;
   }
+  .preview-people-section.open .preview-people { display: grid; }
   .preview-person {
     display: flex; flex-direction: column; align-items: center; gap: 4px; width: 64px;
   }
@@ -2351,16 +2422,16 @@
     flex-shrink: 0;
   }
   .post-preview-sheet .meta-title {
-    font-size: 16px;
-    line-height: 1.45;
-    margin: 2px 0 6px;
-    font-weight: 600;
+    font-size: 20px;
+    line-height: 1.25;
+    margin: 0 0 10px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
   }
   .post-preview-sheet .meta-desc {
-    font-size: 14px;
-    line-height: 1.7;
-    margin: 6px 0 16px;
-    letter-spacing: 0.01em;
+    font-size: 15px;
+    line-height: 1.6;
+    margin: 0 0 18px;
   }
   .post-preview-sheet .meta-amount {
     font-size: 12px;
@@ -3319,6 +3390,9 @@
   [data-theme="dark"] .post-preview-sheet.gallery-item {
     background: #1e1f20;
   }
+  [data-theme="dark"] .post-preview-sheet .meta { background: #1e1f20; }
+  [data-theme="dark"] .preview-stack-av { border-color: #1e1f20; }
+  [data-theme="dark"] .preview-stack-av.more { background: #3c4043; color: #e3e3e3; }
   [data-theme="dark"] .post-preview-sheet .preview-dropdown-menu {
     background: #282a2c;
     border-color: #3c4043;
@@ -3951,23 +4025,38 @@
       </div>
     </div>
 
-      <span class="pts-pill" id="previewPointsPill">+0 pts</span>
+      <button type="button" class="preview-fullphoto-btn" id="previewFullPhotoBtn" aria-label="View the full photo">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6"></path><path d="M9 21H3v-6"></path><path d="M21 3l-7 7"></path><path d="M3 21l7-7"></path></svg>
+        <span>Full photo</span>
+      </button>
     </div>
 
     <div class="meta">
       <div class="meta-title" id="previewTitle"></div>
+      <div class="preview-chips">
+        <span class="meta-cat" id="previewAreaBadge">General</span>
+        <span class="meta-amount" id="previewAmount"></span>
+        <span class="pts-pill" id="previewPointsPill">+0 pts</span>
+      </div>
       <div class="meta-desc" id="previewFullDesc"></div>
       <div class="preview-people-section" id="previewPeopleSection">
-        <p class="preview-people-heading">Tagged friends:</p>
+        <button type="button" class="preview-people-row" id="previewPeopleToggle" aria-expanded="false" aria-controls="previewPeople">
+          <span class="preview-stack" id="previewPeopleStack"></span>
+          <span class="preview-people-all"><span id="previewPeopleAll">All</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+          </span>
+        </button>
+        <div class="preview-people-label">Tagged friends</div>
         <div class="preview-people" id="previewPeople"></div>
-      </div>
-      <div class="meta-bottom">
-        <div class="meta-amount" id="previewAmount"></div>
-        <span class="meta-cat" id="previewAreaBadge">General</span>
       </div>
     </div>
     </div>
   </div>
+</div>
+
+<!-- Full photo viewer: opened from a post's photo, closes on tap or Esc -->
+<div class="photo-viewer" id="photoViewer" role="dialog" aria-label="Full photo">
+  <img id="photoViewerImg" alt="Full photo" referrerpolicy="no-referrer" />
 </div>
 
 <!-- Edit Activity fullscreen page (opened on clicking any gallery post) -->
@@ -5126,8 +5215,21 @@
     var container = document.getElementById("previewPeople");
     if (!container || !section) return;
     var taggedIds = entry.tagged_friends || [];
+    section.classList.remove("open");
+    var toggle = document.getElementById("previewPeopleToggle");
+    if (toggle) toggle.setAttribute("aria-expanded", "false");
     if (!taggedIds.length) { container.innerHTML = ""; section.style.display = "none"; return; }
     section.style.display = "";
+    // A tidy row: up to five avatars and a +N, with "All N" (or "See names") to open the full list.
+    var shown = taggedIds.slice(0, 5);
+    var stackHtml = shown.map(function (id) {
+      return '<span class="preview-stack-av">' + escapeHtml_(userInitial_(id)) + '</span>';
+    }).join("");
+    if (taggedIds.length > shown.length) {
+      stackHtml += '<span class="preview-stack-av more">+' + (taggedIds.length - shown.length) + '</span>';
+    }
+    document.getElementById("previewPeopleStack").innerHTML = stackHtml;
+    document.getElementById("previewPeopleAll").textContent = taggedIds.length > 5 ? "All " + taggedIds.length : "See names";
     container.innerHTML = taggedIds.map(function (id) {
       return '<div class="preview-person">' +
         '<span class="preview-person-avatar">' + escapeHtml_(userInitial_(id)) + '</span>' +
@@ -5424,6 +5526,8 @@
 
     var imgEl = document.getElementById("previewMediaImg");
     var vidEl = document.getElementById("previewMediaVideo");
+    var fullBtn_ = document.getElementById("previewFullPhotoBtn");
+    if (fullBtn_) fullBtn_.hidden = entry.mediaType === "video";
     if (imgEl && vidEl) {
       if (entry.mediaType === "video") {
         imgEl.style.display = "none";
@@ -5555,6 +5659,8 @@
     var overlay = document.getElementById("postPreviewOverlay");
     previewClosing_ = false;
     previewFromEl_ = null;
+    var viewerEl_ = document.getElementById("photoViewer");
+    if (viewerEl_) viewerEl_.classList.remove("show");
     if (overlay) {
       // Drop the finished (forwards-filled) animations so the next opening starts clean.
       if (overlay.getAnimations) overlay.getAnimations({ subtree: true }).forEach(function (a) { a.cancel(); });
@@ -8175,6 +8281,8 @@
 
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape") {
+        var photoViewerEsc = document.getElementById("photoViewer");
+        if (photoViewerEsc && photoViewerEsc.classList.contains("show")) { photoViewerEsc.classList.remove("show"); return; }
         closePoints_();
         closePreviewModal();
         closeEditModal();
@@ -8228,6 +8336,30 @@
 
     var previewCloseBtn = document.getElementById("previewCloseBtn");
     if (previewCloseBtn) previewCloseBtn.addEventListener("click", closePreviewModal);
+
+    // "All N" opens and closes the full list of tagged friends.
+    var peopleToggle = document.getElementById("previewPeopleToggle");
+    if (peopleToggle) peopleToggle.addEventListener("click", function () {
+      var section = document.getElementById("previewPeopleSection");
+      var open = section.classList.toggle("open");
+      peopleToggle.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+
+    // Tapping the photo opens it uncovered, full screen; tap or Esc to close.
+    var photoViewer = document.getElementById("photoViewer");
+    var previewMediaBox = document.getElementById("previewMediaBox");
+    if (photoViewer && previewMediaBox) {
+      previewMediaBox.addEventListener("click", function (e) {
+        if (e.target.closest(".preview-top-actions")) return;
+        var entry = state.previewingEntry;
+        if (!entry || entry.mediaType === "video") return;
+        var src = document.getElementById("previewMediaImg").src;
+        if (!src || src.indexOf("data:image/gif") === 0) return;
+        document.getElementById("photoViewerImg").src = src;
+        photoViewer.classList.add("show");
+      });
+      photoViewer.addEventListener("click", function () { photoViewer.classList.remove("show"); });
+    }
 
     var postPreviewOverlay = document.getElementById("postPreviewOverlay");
     if (postPreviewOverlay) {
