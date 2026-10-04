@@ -47,11 +47,16 @@ near the bottom of the file. A few things worth knowing before editing it:
 - Data refresh is polling, not push (`POLL_INTERVAL_MS`, currently 20s) —
   there's no websocket/SSE layer; `loadEntries()` diffs against a stored
   `gallerySignature` so an unchanged poll doesn't re-render/flash the gallery.
-- Gallery preview, the Log form, and the Profile panel are all full-bleed
-  fullscreen pages (sticky back-button navbar + independently scrolling
-  content), not modals — a deliberate, repeated redesign (see
-  `docs/DECISIONS.md`). Don't reintroduce centered/backdrop-blurred modal
-  cards for these three without checking that decision first.
+- Gallery preview and the Profile panel are full-bleed fullscreen pages
+  (sticky back-button navbar + independently scrolling content), not modals —
+  a deliberate, repeated redesign (see `docs/DECISIONS.md`). Don't
+  reintroduce centered/backdrop-blurred modal cards for these without
+  checking that decision first. The **Log form is the exception**: it is a
+  bottom sheet (70% tall, 90% when dragged up or when a field is focused),
+  media first, then four steps. It reuses the old form's field ids
+  (`fActivity`, `fAmount`, `fUnits`, `fName`, `fCategory`, `fDate`,
+  `fMedia`, `submitBtn`), so keep those when editing it; the sheet's state
+  lives in `logStep_` and `updateLogUi_()`.
 - `gifenc.browser.js` is a separate script (loaded via `<script src="gifenc.browser.js">`
   before `config.js`) used client-side to convert uploaded video to an
   animated GIF before upload — it has its own file that must be kept in sync

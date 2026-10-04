@@ -175,6 +175,8 @@ line of defense. Full mechanics: `CLAUDE.md`'s "Sheets auto-coercion
 gotcha". **Entries tagged with 2+ friends before this fix landed are still
 permanently corrupted** — see "Known gaps" below.
 
+**Log form is now a media-first bottom sheet** (replacing the fullscreen page, at the owner's request). The + button opens a 70% sheet showing only Library / Camera / Video; the chosen media sits in a preview frame, then four steps collect the category, amount, friends, and the name and note. It expands to 90% by dragging or tapping the handle, entering the last step, or focusing any field (which also covers the on-screen keyboard; `visualViewport` lifts the sheet above it). The old form's field ids and submit/validation code were kept on purpose, so only the layout changed; the "fullscreen page" rule still holds for the gallery preview and Profile. Step 1 is the three existing categories (an explicit pick is required; the media frame's border stays grey until then), so the Category dropdown is gone; the last step shows the choice as a pill that cycles on tap, next to a date pill that opens the native picker. The hidden `fCategory` select still carries the value for the existing submit code, and the activity name now lives in the last step because the gallery and backend need a title. Not yet checked on a real phone: the keyboard offset and the camera/video capture buttons.
+
 ## Known gaps / open items
 
 - [ ] **Sync profile photos to the backend.** Currently `localStorage`-only per device — doesn't follow the user across devices, and is never visible to other friends (gallery/tagging avatars still render text initials for everyone). Fix direction: upload to the Drive media folder + a new Users-sheet column for the file ID/URL.

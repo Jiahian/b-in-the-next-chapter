@@ -138,7 +138,7 @@ whoever owns the backend.
 - Form validates all fields client-side before allowing submission (in particular: no future dates, amount > 0 with max 1 decimal, media file present).
 - The same form is reused for **editing** an existing entry (pre-filled from the gallery's edit action), with the option to keep the existing photo/video or replace it.
 - **Video-to-GIF conversion**: a chosen video is automatically converted client-side to a short animated GIF (~5 seconds, 9fps, capped at 360px on the long edge) before upload, so the gallery can show it as a simple, consistently-playable image rather than needing a native video embed. If conversion fails (unsupported format, slow device, etc.), the app falls back to uploading the original video file as-is.
-- The form is a fullscreen page with a sticky top navbar and a back-arrow button, the same pattern shared with the gallery preview (§6.4) and Profile page (§6.8).
+- The form is a **bottom sheet**, 70% of the screen tall, that can be dragged (or tapped, or focused into a text field) up to 90%. It is **media first**: the empty sheet shows only Library / Camera / Video; once a photo or video is chosen it appears in a preview frame (outlined in the category's colour, with a live "+N pts" pill) and the details follow in four short steps: category (tap Spiritual, Relationship or Others), amount and units (with a live team-goal bar), friends to tag (optional, skippable), then the activity name, the note, and two pills: the category (tap to cycle) and the date (tap to change, shows "Today" by default). Tapping the dimmed area closes an empty sheet; a sheet with content only closes from its ✕.
 
 ### 6.7 Access control — Google Sign-In
 
