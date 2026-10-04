@@ -357,8 +357,8 @@
     display: flex; align-items: center; justify-content: center;
   }
   #panel-profile .profile-avatar-wrap { width: 136px; height: 136px; }
-  #panel-profile .profile-avatar-inner { border: none; background: #1e293b; }
-  #panel-profile .profile-avatar-initial { background: #1e293b; color: #ffffff; font-size: 52px; }
+  #panel-profile .profile-avatar-inner { border: none; background: #facc15; }
+  #panel-profile .profile-avatar-initial { background: #facc15; color: #1e1b4b; font-size: 52px; }
   #panel-profile .profile-avatar-edit-btn {
     right: 0; bottom: 0; width: 30px; height: 30px;
     background: #ffffff; color: #4f46e5; border: none; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.25);
@@ -383,6 +383,14 @@
     background: transparent; color: #e0e7ff; border: 1px solid rgba(255, 255, 255, 0.35);
     font-size: 13px; font-weight: 600;
   }
+  /* The profile page looks the same in light and dark mode: its posts stay the light cards. */
+  [data-theme="dark"] #panel-profile .gallery-item,
+  [data-theme="dark"] #panel-profile .gallery-item:hover,
+  [data-theme="dark"] #panel-profile .gallery-tile { background: #ffffff; border: none; box-shadow: 0 4px 24px -4px rgba(0, 0, 0, 0.04); }
+  [data-theme="dark"] #panel-profile .gallery-item .thumb { background: #f1f5f9; }
+  [data-theme="dark"] #panel-profile .tile-info { background: #ffffff; color: #0f172a; }
+  [data-theme="dark"] #panel-profile .tile-meta { color: #64748b; }
+  [data-theme="dark"] #panel-profile .tile-avatar { background: #e2e8f0; color: #0f172a; border-color: #ffffff; }
   /* the pieces fade up in turn once the circle has grown */
   .pf-hero, .pf-stats, #panel-profile .profile-tabs, #panel-profile .profile-tab-panel, #profileSignOutBtn {
     opacity: 0; transform: translateY(10px); transition: opacity 0.25s, transform 0.25s;
