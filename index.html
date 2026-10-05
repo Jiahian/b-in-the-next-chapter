@@ -832,7 +832,8 @@
   }
   .log-step.active > * { flex: none; }
   /* Friends: the list opens upwards over the preview, so it never pushes the sheet. */
-  .log-step[data-step="2"] .tag-friends-pills { margin-bottom: 16px; row-gap: 8px; }
+  .log-step[data-step="2"] { padding-top: 20px; }
+  .log-step[data-step="2"] .tag-friends-pills { margin-top: 16px; row-gap: 8px; }
   .log-step[data-step="2"] .tag-friends-panel {
     top: auto; bottom: calc(100% + 6px); max-height: min(240px, 34dvh);
   }
@@ -3828,7 +3829,6 @@
           <div class="log-step" data-step="2">
             <p class="log-q">Who was there? <span class="opt">(optional)</span></p>
             <div class="tag-friends" id="tagFriends">
-              <div class="tag-friends-pills" id="tagFriendsPills"></div>
               <div class="tag-friends-search-wrap">
                 <input type="text" class="tag-friends-search" id="tagFriendsSearch" placeholder="Search friends to tag&hellip;" autocomplete="off" />
                 <div class="tag-friends-panel" id="tagFriendsPanel">
@@ -3836,6 +3836,7 @@
                   <div class="tag-friends-list" id="tagFriendsList"></div>
                 </div>
               </div>
+              <div class="tag-friends-pills" id="tagFriendsPills"></div>
             </div>
           </div>
 
