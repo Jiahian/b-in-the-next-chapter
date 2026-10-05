@@ -528,7 +528,7 @@
   .nudge svg { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; }
   .nudge svg path { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
   .nudge-txt {
-    position: absolute; font-family: 'Caveat', cursive; font-weight: 600; font-size: 19.8px; line-height: 1;
+    position: absolute; font-family: 'Caveat', cursive; font-weight: 600; font-size: 17px; line-height: 1;
     white-space: nowrap; transform: rotate(-3deg); transform-origin: left center;
   }
 
@@ -3672,7 +3672,7 @@
     <div class="card card-countdown">
       <div class="nudge" id="nudgeHint" role="button" tabindex="0" aria-label="Nudge me: open the guide">
         <svg width="10" height="10" aria-hidden="true"><path id="nudgeArrow" d=""></path><path id="nudgeHead" d=""></path></svg>
-        <span class="nudge-txt" id="nudgeTxt">Nudge me!</span>
+        <span class="nudge-txt" id="nudgeTxt">Psst.. Nudge me!</span>
       </div>
       <p class="countdown-title">Countdown to 31 Dec 2026</p>
       <div id="countdownBody"></div>
@@ -8442,7 +8442,7 @@
         "M" + f(tx - 6.3) + " " + f(ty + 5.4) + " L" + f(tx) + " " + f(ty) + " L" + f(tx + 3.6) + " " + f(ty + 7.2));
       var t = document.getElementById("nudgeTxt");
       t.style.left = f(tx + 14.4) + "px";
-      t.style.top = f(ty + 23.4 - 9.9) + "px";
+      t.style.top = f(ty + 23.4 - 8.5) + "px";
       nudge_.style.height = Math.max(8, Math.round(ty + 34)) + "px";
     }
     nudgePlace_();
