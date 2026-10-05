@@ -206,7 +206,7 @@
   .faq-page {
     --faq-bg: #f1f5f9; --faq-ink: #0f172a; --faq-indigo: #4f46e5;
     position: fixed; inset: 0; z-index: 60; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain;
-    -webkit-overflow-scrolling: touch; background: var(--faq-bg); color: var(--faq-ink);
+    -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; background: var(--faq-bg); color: var(--faq-ink);
     clip-path: circle(0px at var(--cx, 50%) var(--cy, 32px)); visibility: hidden;
     transition: clip-path 0.5s cubic-bezier(0.65, 0, 0.35, 1), visibility 0s 0.5s;
   }
@@ -217,11 +217,11 @@
   body.faq-open { overflow: hidden; }
   /* the info is drawn 15% smaller: laid out 1/0.85 wider, then scaled back to the screen's width */
   .faq-inner {
-    width: auto; max-width: 565px; margin: 0 -8.82%; box-sizing: border-box;
-    transform: scale(0.85); transform-origin: top center;
-    padding: calc(max(16px, env(safe-area-inset-top)) + 56px) 24px calc(max(16px, env(safe-area-inset-bottom)) + 40px);
+    width: auto; max-width: 565px; margin: auto -8.82%; box-sizing: border-box; /* auto top and bottom centre it in the page */
+    transform: scale(0.85); transform-origin: center;
+    padding: calc(max(16px, env(safe-area-inset-top), env(safe-area-inset-bottom)) + 40px) 24px;
   }
-  @media (min-width: 600px) { .faq-inner { width: 565px; margin: 0 auto; } }
+  @media (min-width: 600px) { .faq-inner { width: 565px; margin: auto; } }
   .faq-title { margin: 0 0 20px; font-size: 28px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; color: var(--faq-ink); }
   .faq-lead { margin: 0 0 18px; font-size: 16px; font-weight: 800; line-height: 1.45; color: var(--faq-ink); }
   .faq-list { margin: 0 0 22px; padding: 0; list-style: none; counter-reset: faq; display: flex; flex-direction: column; gap: 14px; }
