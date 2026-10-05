@@ -622,7 +622,7 @@
   #pointsOverlay.revealed .progress-headline .value { color: var(--countdown-accent, #facc15); }
   #pointsOverlay .card-points-category h2 { color: var(--pts-muted); text-align: center; margin: 0 0 12px; }
   /* the arc gauge: the total sits inside a three-quarter dial; the % travels with the flame */
-  .gauge { position: relative; width: 260px; height: 212px; margin: 6px auto 0; }
+  .gauge { position: relative; width: 260px; height: 192px; margin: 6px auto 0; }
   .gauge svg { display: block; position: absolute; inset: 0; overflow: visible; }
   .gauge-flame { position: absolute; font-size: 22px; line-height: 1; transform: translate(-50%, -50%); filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.25)); pointer-events: none; }
   .gauge-pct { position: absolute; transform: translate(-50%, -50%); font-size: 10px; font-weight: 800; color: #ffffff; white-space: nowrap; font-variant-numeric: tabular-nums; pointer-events: none; }
@@ -630,11 +630,6 @@
   #pointsOverlay .progress-headline { margin: 0; }
   #pointsOverlay .progress-headline .value { font-size: 54px; letter-spacing: -0.03em; }
   .gauge-sub { font-size: 12px; font-weight: 700; color: var(--pts-muted); margin-top: 6px; }
-  .gauge-row { position: absolute; left: 0; right: 0; top: 192px; height: 16px; display: grid; grid-template-columns: 1fr auto 1fr; column-gap: 36px; align-items: center; font-size: 11px; font-weight: 700; color: var(--pts-muted); }
-  .gauge-row span { white-space: nowrap; }
-  .gauge-row .l { text-align: right; }
-  .gauge-row .r { text-align: left; }
-  .gauge-row .by { letter-spacing: 0.05em; }
   /* every size here is 76.5% of the first design (85% x 90%): width, padding, type, bar height */
   .cat-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6.3px; width: 76.5%; margin: 0 auto; }
   .cat-col { background: rgba(255, 255, 255, 0.13); border-radius: 10.8px; padding: 9px 6.3px 7.7px; text-align: center; }
@@ -3959,7 +3954,7 @@
     <div class="card card-points-acc">
       <h2 class="points-acc-title">POINTS ACCUMULATED</h2>
       <div class="gauge" id="meterTrack" role="progressbar" aria-valuemin="0" aria-valuemax="1000" aria-valuenow="0">
-        <svg width="260" height="212" viewBox="0 0 260 212" aria-hidden="true">
+        <svg width="260" height="192" viewBox="0 0 260 192" aria-hidden="true">
           <circle cx="130" cy="112" r="94" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="16" stroke-linecap="round" pathLength="100" stroke-dasharray="75 100" transform="rotate(135 130 112)"></circle>
           <circle id="gaugeFill" cx="130" cy="112" r="94" fill="none" stroke="#10b981" stroke-width="16" stroke-linecap="round" pathLength="100" stroke-dasharray="0 100" transform="rotate(135 130 112)"></circle>
         </svg>
@@ -3968,11 +3963,6 @@
         <div class="gauge-center">
           <div class="progress-headline"><span class="value"><span id="totalPoints">0</span></span></div>
           <div class="gauge-sub">of <span id="targetPoints">1,000</span> points</div>
-        </div>
-        <div class="gauge-row">
-          <span class="l">0</span>
-          <span class="by">BY 31 DEC 2026</span>
-          <span class="r" id="targetLabel">1000</span>
         </div>
       </div>
       <p class="status-line" id="statusLine">Just getting started — log your first activity!</p>
@@ -4943,8 +4933,6 @@
     document.getElementById("totalPoints").textContent = formatNum_(totals.total);
     var tpEl = document.getElementById("targetPoints");
     if (tpEl) tpEl.textContent = formatNum_(TARGET_POINTS);
-    var tlEl = document.getElementById("targetLabel");
-    if (tlEl) tlEl.textContent = String(TARGET_POINTS);
     var pct = Math.max(0, Math.min(100, (totals.total / TARGET_POINTS) * 100));
     var track = document.getElementById("meterTrack");
     track.setAttribute("aria-valuenow", String(totals.total));
