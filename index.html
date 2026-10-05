@@ -202,6 +202,57 @@
   #panel-home, header.app-header, #configBanner {
     transition: filter 0.22s ease, -webkit-filter 0.22s ease;
   }
+  /* FAQ page: a full yellow page. It spreads out from the header title after the title's letters sweep
+     to yellow; it looks the same in light and dark mode, like the profile page. */
+  .faq-page {
+    --faq-yellow: #facc15; --faq-ink: #0f172a;
+    position: fixed; inset: 0; z-index: 60; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch; background: var(--faq-yellow); color: var(--faq-ink);
+    clip-path: circle(0px at var(--cx, 50%) var(--cy, 32px)); visibility: hidden;
+    transition: clip-path 0.5s cubic-bezier(0.65, 0, 0.35, 1), visibility 0s 0.5s;
+  }
+  .faq-page.open {
+    clip-path: circle(150vmax at var(--cx, 50%) var(--cy, 32px)); visibility: visible;
+    transition: clip-path 0.7s 0.3s cubic-bezier(0.65, 0, 0.35, 1), visibility 0s 0.3s;
+  }
+  body.faq-open { overflow: hidden; }
+  .faq-inner {
+    width: 100%; max-width: 480px; margin: 0 auto; box-sizing: border-box;
+    padding: calc(max(16px, env(safe-area-inset-top)) + 56px) 24px calc(max(16px, env(safe-area-inset-bottom)) + 40px);
+  }
+  .faq-title { margin: 0 0 20px; font-size: 28px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; color: var(--faq-ink); }
+  .faq-lead { margin: 0 0 18px; font-size: 16px; font-weight: 800; line-height: 1.45; color: var(--faq-ink); }
+  .faq-list { margin: 0 0 22px; padding-left: 22px; display: flex; flex-direction: column; gap: 12px; }
+  .faq-list li { font-size: 15px; line-height: 1.5; color: #292524; }
+  .faq-callout { background: rgba(255, 255, 255, 0.55); border-radius: 14px; padding: 14px 16px; font-size: 14px; line-height: 1.55; color: #292524; margin-bottom: 24px; }
+  .faq-gotit {
+    display: block; width: 100%; border: none; border-radius: 12px; padding: 14px 18px; cursor: pointer;
+    background: var(--faq-ink); color: #ffffff; font: inherit; font-size: 15px; font-weight: 700;
+  }
+  /* the pieces fade up in turn once the yellow has nearly spread */
+  .faq-title, .faq-lead, .faq-list, .faq-callout, .faq-gotit {
+    opacity: 0; transform: translateY(10px); transition: opacity 0.2s, transform 0.2s;
+  }
+  .faq-page.open .faq-title, .faq-page.open .faq-lead, .faq-page.open .faq-list, .faq-page.open .faq-callout, .faq-page.open .faq-gotit {
+    opacity: 1; transform: none; transition: opacity 0.4s, transform 0.4s;
+  }
+  .faq-page.open .faq-title { transition-delay: 0.75s; }
+  .faq-page.open .faq-lead { transition-delay: 0.82s; }
+  .faq-page.open .faq-list { transition-delay: 0.9s; }
+  .faq-page.open .faq-callout { transition-delay: 0.98s; }
+  .faq-page.open .faq-gotit { transition-delay: 1.05s; }
+  @media (prefers-reduced-motion: reduce) {
+    .faq-page, .faq-page * , .header-title::after { transition-duration: 0.01s !important; transition-delay: 0s !important; }
+  }
+  /* The header title is the button that opens it: its letters sweep to yellow from where it was tapped. */
+  .header-title { position: relative; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .header-title::after {
+    content: attr(data-text); position: absolute; inset: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    color: #facc15; pointer-events: none;
+    clip-path: circle(0px at var(--tx, 50%) var(--ty, 50%));
+    transition: clip-path 0.3s ease-in 0.3s;
+  }
+  .header-title.faq-on::after { clip-path: circle(150px at var(--tx, 50%) var(--ty, 50%)); transition: clip-path 0.3s ease-out; }
   .header-inner {
     max-width: 560px;
     margin: 0 auto;
@@ -1374,19 +1425,6 @@
   }
 
   /* Points info modal */
-  .points-info-sheet {
-    background: #ffffff;
-    width: 100%;
-    max-width: 440px;
-    border-radius: 24px;
-    padding: 28px 24px 24px;
-    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.2);
-    border: none;
-    position: relative;
-    max-height: 90vh;
-    overflow-y: auto;
-    animation: modalPopIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  }
   @keyframes modalPopIn {
     from { opacity: 0; transform: scale(0.95) translateY(8px); }
     to { opacity: 1; transform: scale(1) translateY(0); }
@@ -1394,89 +1432,6 @@
   @keyframes fadeInOverlay {
     from { opacity: 0; }
     to { opacity: 1; }
-  }
-  .points-info-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-bottom: 16px;
-    margin-bottom: 20px;
-    border-bottom: none;
-  }
-  .points-info-header h3 {
-    margin: 0;
-    font-size: 19px;
-    font-weight: 800;
-    color: #0f172a;
-    letter-spacing: -0.02em;
-  }
-  .points-info-close {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    border: none;
-    background: #f1f5f9;
-    color: #64748b;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-  }
-  .points-info-close:hover {
-    background: #e2e8f0;
-    color: #0f172a;
-  }
-  .points-info-lead {
-    margin: 0 0 16px;
-    font-size: 15px;
-    font-weight: 800;
-    color: #0f172a;
-    line-height: 1.45;
-  }
-  .points-info-list {
-    margin: 0 0 20px;
-    padding-left: 22px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-  .points-info-list li {
-    font-size: 14px;
-    color: #334155;
-    line-height: 1.5;
-  }
-  .points-info-callout {
-    background: #f8fafc;
-    border: none;
-    border-radius: 14px;
-    padding: 14px 16px;
-    font-size: 13.5px;
-    line-height: 1.55;
-    color: #475569;
-    margin-bottom: 22px;
-  }
-  .btn-points-gotit {
-    background: #4f46e5;
-    color: #ffffff;
-    border: none;
-    border-radius: 12px;
-    padding: 14px 18px;
-    font-size: 15px;
-    font-weight: 700;
-    width: 100%;
-    cursor: pointer;
-    box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .btn-points-gotit:hover {
-    background: #4338ca;
-    box-shadow: 0 6px 20px rgba(79, 70, 229, 0.45);
-    transform: translateY(-1px);
   }
 
   input[type="text"], input[type="date"], input[type="number"], input[type="password"], select, textarea {
@@ -3453,42 +3408,6 @@
     background: #a8c7fa;
     box-shadow: 0 6px 20px rgba(138, 180, 248, 0.4);
   }
-  [data-theme="dark"] .points-info-sheet {
-    background: #1e1f20;
-    border: 1px solid #3c4043;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
-  }
-  [data-theme="dark"] .points-info-header h3 {
-    color: #e3e3e3;
-  }
-  [data-theme="dark"] .points-info-close {
-    background: #282a2c;
-    color: #9aa0a6;
-  }
-  [data-theme="dark"] .points-info-close:hover {
-    background: #303134;
-    color: #e3e3e3;
-  }
-  [data-theme="dark"] .points-info-lead {
-    color: #e3e3e3;
-  }
-  [data-theme="dark"] .points-info-list li {
-    color: #c4c7c5;
-  }
-  [data-theme="dark"] .points-info-callout {
-    background: #282a2c;
-    border: 1px solid #3c4043;
-    color: #c4c7c5;
-  }
-  [data-theme="dark"] .btn-points-gotit {
-    background: #8ab4f8;
-    color: #131314;
-    box-shadow: 0 4px 14px rgba(138, 180, 248, 0.3);
-  }
-  [data-theme="dark"] .btn-points-gotit:hover {
-    background: #a8c7fa;
-    box-shadow: 0 6px 20px rgba(138, 180, 248, 0.4);
-  }
   [data-theme="dark"] .post-preview-sheet.gallery-item {
     background: #1e1f20;
   }
@@ -3706,7 +3625,7 @@
         <text class="pb-num" id="pointsBtnNum" x="20" y="24" text-anchor="middle">0</text>
       </svg>
     </button>
-    <h1 class="header-title">B In the Next Chapter!</h1>
+    <h1 class="header-title" id="headerTitle" role="button" tabindex="0" aria-haspopup="dialog" data-text="B In the Next Chapter!">B In the Next Chapter!</h1>
     <button class="header-profile-btn" id="headerProfileBtn" type="button" aria-label="Your profile" title="Your profile">
       <img id="headerProfileImg" class="header-profile-img" alt="Profile" style="display:none;width:100%;height:100%;border-radius:50%;object-fit:cover;" />
       <span id="headerProfileInitial" style="display:none;">?</span>
@@ -3853,7 +3772,6 @@
           <div class="log-step" data-step="3">
             <p class="log-q">
               Amount to log
-              <button type="button" class="info-icon" id="pointsInfoBtn" aria-label="What counts as a point?">?</button>
             </p>
             <div class="log-amt-row">
               <div class="log-amount">
@@ -4054,27 +3972,22 @@
   </div>
 </div>
 
-<!-- Points info modal -->
-<div class="modal-overlay" id="pointsInfoOverlay" style="align-items:center;justify-content:center;padding:16px;z-index:60;">
-  <div class="points-info-sheet">
-    <div class="points-info-header">
-      <h3>What counts as a point?</h3>
-      <button type="button" class="points-info-close" id="pointsInfoCloseBtn" aria-label="Close">✕</button>
+<!-- FAQ: what counts as a point. A full yellow page that spreads out from the header title. -->
+<div class="faq-page" id="faqPage" role="dialog" aria-modal="true" aria-label="What counts as a point?" aria-hidden="true">
+  <div class="faq-inner">
+    <h2 class="faq-title">What counts as a point?</h2>
+    <p class="faq-lead">Any activity completed out of personal initiative can be clocked!</p>
+    <ol class="faq-list">
+      <li>Distance accumulated in a physical/sports activity</li>
+      <li>Time spent with a friend/CG mates</li>
+      <li>Time spent reaching out/meeting another's needs</li>
+      <li>Personal time spent praying for something</li>
+      <li>Joining prayer meetings</li>
+    </ol>
+    <div class="faq-callout">
+      The list is non-exhaustive. There are no hard and fast rules! As long as an effort/initiative is made, feel free to clock it! ☺️
     </div>
-    <div class="points-info-body">
-      <p class="points-info-lead">Any activity completed out of personal initiative can be clocked!</p>
-      <ol class="points-info-list">
-        <li>Distance accumulated in a physical/sports activity</li>
-        <li>Time spent with a friend/CG mates</li>
-        <li>Time spent reaching out/meeting another's needs</li>
-        <li>Personal time spent praying for something</li>
-        <li>Joining prayer meetings</li>
-      </ol>
-      <div class="points-info-callout">
-        The list is non-exhaustive. There are no hard and fast rules! As long as an effort/initiative is made, feel free to clock it! ☺️
-      </div>
-      <button type="button" class="btn-points-gotit" id="pointsInfoGotItBtn">Got it!</button>
-    </div>
+    <button type="button" class="faq-gotit" id="faqGotItBtn">Got it!</button>
   </div>
 </div>
 
@@ -8418,19 +8331,41 @@
     }
     updateLogUi_();
 
-    var pointsOverlay = document.getElementById("pointsInfoOverlay");
-    function closePointsInfoModal() {
-      pointsOverlay.classList.remove("show");
+    // FAQ page (what counts as a point): opens from the header title with a yellow reveal.
+    var faqPage_ = document.getElementById("faqPage");
+    var headerTitle_ = document.getElementById("headerTitle");
+    var faqCloseTimer_ = 0;
+    function openFaq_(e) {
+      if (faqPage_.classList.contains("open")) return;
+      var r = headerTitle_.getBoundingClientRect();
+      var px = e && e.clientX ? e.clientX : r.left + r.width / 2;
+      var py = e && e.clientY ? e.clientY : r.top + r.height / 2;
+      headerTitle_.style.setProperty("--tx", Math.max(0, Math.min(r.width, px - r.left)) + "px");
+      headerTitle_.style.setProperty("--ty", Math.max(0, Math.min(r.height, py - r.top)) + "px");
+      faqPage_.style.setProperty("--cx", px + "px");
+      faqPage_.style.setProperty("--cy", py + "px");
+      clearTimeout(faqCloseTimer_);
+      faqPage_.scrollTop = 0;
+      headerTitle_.classList.add("faq-on");
+      faqPage_.classList.add("open");
+      faqPage_.setAttribute("aria-hidden", "false");
+      document.body.classList.add("faq-open");
     }
-    document.getElementById("pointsInfoBtn").addEventListener("click", function (e) {
-      e.preventDefault();
-      pointsOverlay.classList.add("show");
+    function closeFaq_() {
+      if (!faqPage_.classList.contains("open")) return;
+      if (faqPage_.contains(document.activeElement)) headerTitle_.focus();
+      faqPage_.classList.remove("open");
+      faqPage_.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("faq-open");
+      // the title goes back to dark once the yellow page has shrunk away
+      clearTimeout(faqCloseTimer_);
+      faqCloseTimer_ = setTimeout(function () { headerTitle_.classList.remove("faq-on"); }, 450);
+    }
+    headerTitle_.addEventListener("click", openFaq_);
+    headerTitle_.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openFaq_(); }
     });
-    document.getElementById("pointsInfoCloseBtn").addEventListener("click", closePointsInfoModal);
-    document.getElementById("pointsInfoGotItBtn").addEventListener("click", closePointsInfoModal);
-    pointsOverlay.addEventListener("click", function (e) {
-      if (e.target === this) closePointsInfoModal();
-    });
+    document.getElementById("faqGotItBtn").addEventListener("click", closeFaq_);
 
     // Filter Capsule Global Listeners (click outside & escape)
     document.addEventListener("click", function (e) {
@@ -8448,6 +8383,7 @@
       if (e.key === "Escape") {
         var photoViewerEsc = document.getElementById("photoViewer");
         if (photoViewerEsc && photoViewerEsc.classList.contains("show")) { photoViewerEsc.classList.remove("show"); return; }
+        if (faqPage_.classList.contains("open")) { closeFaq_(); return; }
         closePoints_();
         closePreviewModal();
         closeEditModal();
@@ -8556,7 +8492,7 @@
     //    while any layer is open; going back consumes it and closes the topmost layer.
     var layerQ_ = function (sel) { return document.querySelector(sel); };
     // The small dialogs sit above the sheets, so they are checked (and closed) first.
-    var DIALOG_IDS_ = ["celebrateOverlay", "deleteConfirmOverlay", "resizeImageOverlay", "avatarCropOverlay", "pointsInfoOverlay"];
+    var DIALOG_IDS_ = ["celebrateOverlay", "deleteConfirmOverlay", "resizeImageOverlay", "avatarCropOverlay"];
     function openDialog_() {
       for (var i = 0; i < DIALOG_IDS_.length; i++) {
         var el = document.getElementById(DIALOG_IDS_[i]);
@@ -8565,16 +8501,16 @@
       return "";
     }
     function anyLayerOpen_() {
-      return !!(openDialog_() || layerQ_("#photoViewer.show") || layerQ_("#postPreviewOverlay.show") || layerQ_("#editActivityOverlay.show") ||
+      return !!(layerQ_("#faqPage.open") || openDialog_() || layerQ_("#photoViewer.show") || layerQ_("#postPreviewOverlay.show") || layerQ_("#editActivityOverlay.show") ||
         layerQ_("#panel-profile.active") || layerQ_("#panel-log.active") || layerQ_("#pointsOverlay.open"));
     }
     function closeTopLayer_() {
+      if (layerQ_("#faqPage.open")) { closeFaq_(); return true; }
       var dialog = openDialog_();
       if (dialog === "celebrateOverlay") { layerQ_("#celebrateOverlay").classList.remove("show"); return true; }
       if (dialog === "deleteConfirmOverlay") { layerQ_("#deleteConfirmOverlay").classList.remove("show"); pendingDeleteId = null; return true; }
       if (dialog === "resizeImageOverlay") { closeResizeModal(); return true; }
       if (dialog === "avatarCropOverlay") { closeAvatarCropper_(); return true; }
-      if (dialog === "pointsInfoOverlay") { closePointsInfoModal(); return true; }
       if (layerQ_("#photoViewer.show")) { layerQ_("#photoViewer").classList.remove("show"); return true; }
       if (layerQ_("#postPreviewOverlay.show")) { if (!previewClosing_) closePreviewModal(); return true; }
       if (layerQ_("#editActivityOverlay.show")) { closeEditModal(); return true; }
@@ -8609,7 +8545,7 @@
     });
     if (window.MutationObserver) {
       var layerObserver_ = new MutationObserver(syncBackEntry_);
-      ["photoViewer", "postPreviewOverlay", "editActivityOverlay", "panel-profile", "panel-log", "pointsOverlay"].concat(DIALOG_IDS_).forEach(function (id) {
+      ["photoViewer", "postPreviewOverlay", "editActivityOverlay", "panel-profile", "panel-log", "pointsOverlay", "faqPage"].concat(DIALOG_IDS_).forEach(function (id) {
         var el = document.getElementById(id);
         if (el) layerObserver_.observe(el, { attributes: true, attributeFilter: ["class"] });
       });
