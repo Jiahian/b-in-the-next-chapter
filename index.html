@@ -6738,7 +6738,7 @@
     if (!v) return "Pick a date";
     var p = v.split("-");
     var mon = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][+p[1] - 1];
-    return p[2] + mon + p[0]; // ddmmmyyyy, e.g. 05Oct2026
+    return +p[2] + " " + mon + " " + p[0]; // e.g. 5 Oct 2026
   }
 
   function logHasMedia_() { return !!(state.pendingMedia || state.mediaBusy); }
