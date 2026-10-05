@@ -202,11 +202,12 @@
   #panel-home, header.app-header, #configBanner {
     transition: filter 0.22s ease, -webkit-filter 0.22s ease;
   }
-  /* FAQ page: a full light grey page that spreads out from the header title; it looks the same in light and dark mode, like the profile page. */
+  /* FAQ page: a full light grey page, five short slides, that spreads out from the header title;
+     it looks the same in light and dark mode, like the profile page. */
   .faq-page {
-    --faq-bg: #f1f5f9; --faq-ink: #0f172a; --faq-indigo: #4f46e5;
-    position: fixed; inset: 0; z-index: 60; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain;
-    -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; background: var(--faq-bg); color: var(--faq-ink);
+    --faq-bg: #f1f5f9; --faq-ink: #0f172a; --faq-text: #334155; --faq-indigo: #4f46e5;
+    position: fixed; inset: 0; z-index: 60; display: flex; flex-direction: column; overflow: hidden;
+    background: var(--faq-bg); color: var(--faq-ink);
     clip-path: circle(0px at var(--cx, 50%) var(--cy, 32px)); visibility: hidden;
     transition: clip-path 0.5s cubic-bezier(0.65, 0, 0.35, 1), visibility 0s 0.5s;
   }
@@ -215,46 +216,52 @@
     transition: clip-path 0.7s cubic-bezier(0.65, 0, 0.35, 1), visibility 0s;
   }
   body.faq-open { overflow: hidden; }
-  /* the info is drawn 15% smaller: laid out 1/0.85 wider, then scaled back to the screen's width */
-  .faq-inner {
-    width: auto; max-width: 565px; margin: auto -8.82%; box-sizing: border-box; /* auto top and bottom centre it in the page */
-    transform: scale(0.85); transform-origin: center;
-    padding: calc(max(16px, env(safe-area-inset-top), env(safe-area-inset-bottom)) + 40px) 24px;
+  .faq-prog {
+    flex: none; display: flex; gap: 6px; width: 100%; max-width: 480px; margin: 0 auto; box-sizing: border-box;
+    padding: calc(max(16px, env(safe-area-inset-top)) + 8px) 24px 0;
   }
-  @media (min-width: 600px) { .faq-inner { width: 565px; margin: auto; } }
-  .faq-title { margin: 0 0 20px; font-size: 28px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; color: var(--faq-ink); }
-  .faq-lead { margin: 0 0 18px; font-size: 16px; font-weight: 800; line-height: 1.45; color: var(--faq-ink); }
-  .faq-list { margin: 0 0 22px; padding: 0; list-style: none; counter-reset: faq; display: flex; flex-direction: column; gap: 14px; }
-  .faq-list li { counter-increment: faq; display: flex; align-items: flex-start; gap: 12px; font-size: 15px; line-height: 1.5; color: #334155; }
-  .faq-list li::before {
-    content: counter(faq); flex: none; width: 28px; height: 28px; border-radius: 50%; margin-top: -1px;
-    display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800;
-    background: #c4b5fd; color: var(--faq-ink);
+  .faq-prog button {
+    flex: 1; height: 6px; border: none; border-radius: 3px; padding: 0; cursor: pointer;
+    background: #dbe2ea; transition: background 0.2s ease;
   }
-  .faq-list li:nth-child(2)::before { background: #fda4af; }
-  .faq-list li:nth-child(3)::before { background: #93c5fd; }
-  .faq-list li:nth-child(4)::before { background: #6ee7b7; }
-  .faq-list li:nth-child(5)::before { background: var(--faq-indigo); color: #ffffff; }
-  .faq-callout { background: #ffffff; border-radius: 16px; padding: 14px 16px; font-size: 14px; line-height: 1.55; color: #475569; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06); }
+  .faq-prog button.done { background: var(--faq-indigo); }
+  .faq-body {
+    flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+    display: flex; flex-direction: column;
+  }
+  .faq-slide {
+    display: none; width: 100%; max-width: 480px; margin: auto; box-sizing: border-box; padding: 24px;
+  }
+  .faq-slide.active { display: block; animation: faqSlideIn 0.25s ease; }
+  @keyframes faqSlideIn { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: none; } }
+  .faq-title { margin: 0 0 22px; font-size: 32px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; color: var(--faq-ink); }
+  .faq-slide p { margin: 0 0 16px; font-size: 17px; line-height: 1.55; color: var(--faq-text); }
+  .faq-slide p strong { color: var(--faq-ink); font-weight: 800; }
+  .faq-slide p.faq-lead { font-size: 19px; font-weight: 800; color: var(--faq-ink); line-height: 1.4; margin-top: 26px; margin-bottom: 0; }
+  .faq-badge {
+    display: flex; align-items: center; justify-content: center; width: 52px; height: 52px; border-radius: 50%;
+    margin-bottom: 18px; font-size: 22px; font-weight: 800; color: var(--faq-ink); background: var(--c, #c4b5fd);
+  }
+  .faq-sub { margin: -12px 0 22px; font-size: 17px; font-weight: 600; color: var(--faq-text); }
+  .faq-tip { margin-top: 22px; background: var(--t, #ffffff); border-radius: 16px; padding: 16px 18px; font-size: 16px; line-height: 1.5; color: var(--faq-text); }
+  .faq-tip b { color: var(--faq-ink); font-weight: 800; }
+  .faq-foot {
+    flex: none; width: 100%; max-width: 480px; margin: 0 auto; box-sizing: border-box;
+    padding: 12px 24px calc(max(16px, env(safe-area-inset-bottom)) + 12px);
+  }
   .faq-gotit {
-    display: block; width: 100%; border: none; border-radius: 12px; padding: 14px 18px; cursor: pointer;
-    background: var(--faq-indigo); color: #ffffff; font: inherit; font-size: 15px; font-weight: 700;
+    display: block; width: 100%; border: none; border-radius: 12px; padding: 15px 18px; cursor: pointer;
+    background: var(--faq-indigo); color: #ffffff; font: inherit; font-size: 16px; font-weight: 700;
     box-shadow: 0 4px 14px rgba(79, 70, 229, 0.4);
   }
   /* the pieces fade up in turn once the grey has nearly spread */
-  .faq-title, .faq-lead, .faq-list, .faq-callout, .faq-gotit {
-    opacity: 0; transform: translateY(10px); transition: opacity 0.2s, transform 0.2s;
-  }
-  .faq-page.open .faq-title, .faq-page.open .faq-lead, .faq-page.open .faq-list, .faq-page.open .faq-callout, .faq-page.open .faq-gotit {
-    opacity: 1; transform: none; transition: opacity 0.4s, transform 0.4s;
-  }
-  .faq-page.open .faq-title { transition-delay: 0.45s; }
-  .faq-page.open .faq-lead { transition-delay: 0.52s; }
-  .faq-page.open .faq-list { transition-delay: 0.6s; }
-  .faq-page.open .faq-callout { transition-delay: 0.68s; }
-  .faq-page.open .faq-gotit { transition-delay: 0.75s; }
+  .faq-prog, .faq-body, .faq-foot { opacity: 0; transform: translateY(10px); transition: opacity 0.2s, transform 0.2s; }
+  .faq-page.open .faq-prog, .faq-page.open .faq-body, .faq-page.open .faq-foot { opacity: 1; transform: none; transition: opacity 0.4s, transform 0.4s; }
+  .faq-page.open .faq-prog { transition-delay: 0.4s; }
+  .faq-page.open .faq-body { transition-delay: 0.5s; }
+  .faq-page.open .faq-foot { transition-delay: 0.65s; }
   @media (prefers-reduced-motion: reduce) {
-    .faq-page, .faq-page * { transition-duration: 0.01s !important; transition-delay: 0s !important; }
+    .faq-page, .faq-page * { transition-duration: 0.01s !important; transition-delay: 0s !important; animation-duration: 0.01s !important; }
   }
   /* The header title is the button that opens the FAQ page. */
   .header-title { cursor: pointer; -webkit-tap-highlight-color: transparent; }
@@ -3977,23 +3984,49 @@
   </div>
 </div>
 
-<!-- FAQ: what counts as a point. A full grey page that spreads out from the header title. -->
-<div class="faq-page" id="faqPage" role="dialog" aria-modal="true" aria-label="What counts as a point?" aria-hidden="true">
-  <div class="faq-inner">
-    <h2 class="faq-title">What counts as a point?</h2>
-    <p class="faq-lead">Any activity completed out of personal initiative can be clocked!</p>
-    <ol class="faq-list">
-      <li>Distance accumulated in a physical/sports activity</li>
-      <li>Time spent with a friend/CG mates</li>
-      <li>Time spent reaching out/meeting another's needs</li>
-      <li>Personal time spent praying for something</li>
-      <li>Joining prayer meetings</li>
-    </ol>
-    <div class="faq-callout">
-      The list is non-exhaustive. There are no hard and fast rules! As long as an effort/initiative is made, feel free to clock it! ☺️
-    </div>
-    <button type="button" class="faq-gotit" id="faqGotItBtn">Got it!</button>
+<!-- FAQ: how the app works, in five short slides. A full grey page that spreads out from the header title. -->
+<div class="faq-page" id="faqPage" role="dialog" aria-modal="true" aria-label="How the app works" aria-hidden="true">
+  <div class="faq-prog" id="faqProg">
+    <button type="button" data-goto="0" aria-label="Purpose of the app"></button>
+    <button type="button" data-goto="1" aria-label="Spiritual growth"></button>
+    <button type="button" data-goto="2" aria-label="Relationships"></button>
+    <button type="button" data-goto="3" aria-label="Others"></button>
+    <button type="button" data-goto="4" aria-label="No hard and fast rules"></button>
   </div>
+  <div class="faq-body" id="faqBody">
+    <section class="faq-slide active" data-slide="0">
+      <h2 class="faq-title">Purpose of the app</h2>
+      <p>Welcome to our new chapter together! To help us stay intentional in building our faith and deepening our bonds, we’re launching our very own B Zone activity tracker app!</p>
+      <p>Our goal is simple: <strong>Hit 1,000 points together by 31 December 2026.</strong></p>
+      <p>Whether you are investing in your personal spiritual walk, hanging out with CG members, or making new friends, every intentional effort counts toward our shared milestone.</p>
+      <p class="faq-lead">So how do you Log Your Activities?</p>
+    </section>
+    <section class="faq-slide" data-slide="1">
+      <div class="faq-badge" style="--c:#c4b5fd">1</div>
+      <h2 class="faq-title">Spiritual Growth</h2>
+      <p class="faq-sub">(Building Your Spirit-Man)</p>
+      <p><strong>Activities:</strong> Personal devotions, prayer walks, listening to Christian podcasts, audio Bible, or worship sessions.</p>
+      <div class="faq-tip" style="--t:#ede9fe"><b>Tip!</b> If you’re praying or listening to an audio Bible while running/walking, log the distance (km) as Spiritual points!</div>
+    </section>
+    <section class="faq-slide" data-slide="2">
+      <div class="faq-badge" style="--c:#fda4af">2</div>
+      <h2 class="faq-title">Relationships</h2>
+      <p class="faq-sub">(Connecting with your spiritual family)</p>
+      <p><strong>Activities:</strong> Catching up over coffee, playing sports, board game nights, or having heart-to-heart chats.</p>
+      <div class="faq-tip" style="--t:#ffe4e6"><b>Tip!</b> Ask how someone's week went, or simply share what have been going on in your week!</div>
+    </section>
+    <section class="faq-slide" data-slide="3">
+      <div class="faq-badge" style="--c:#93c5fd">3</div>
+      <h2 class="faq-title">Others</h2>
+      <p class="faq-sub">(Reaching Out to New Friends)</p>
+      <p><strong>Activities:</strong> Building friendships with people outside our CG, inviting new friends to church events, or serving others.</p>
+    </section>
+    <section class="faq-slide" data-slide="4">
+      <p>There is no hard &amp; fast rules. The activity list is non-exhaustive! Any effort done out of personal initiative to grow, connect, or reach out counts.</p>
+      <p class="faq-lead" style="margin-top:0">Let's stay intentional, cheer each other on, and move together as one. Let the point-clocking begin!</p>
+    </section>
+  </div>
+  <div class="faq-foot"><button type="button" class="faq-gotit" id="faqGotItBtn">Next</button></div>
 </div>
 
 <!-- Post Preview Modal (Exact gallery post card layout with expanded full text) -->
@@ -8336,9 +8369,18 @@
     }
     updateLogUi_();
 
-    // FAQ page (what counts as a point): opens from the header title with a grey reveal.
+    // FAQ page (how the app works): five slides, opened from the header title with a grey reveal.
     var faqPage_ = document.getElementById("faqPage");
     var headerTitle_ = document.getElementById("headerTitle");
+    var faqSlides_ = faqPage_.querySelectorAll(".faq-slide");
+    var faqStep_ = 0;
+    function faqGo_(n) {
+      faqStep_ = Math.max(0, Math.min(faqSlides_.length - 1, n));
+      faqSlides_.forEach(function (el, i) { el.classList.toggle("active", i === faqStep_); });
+      faqPage_.querySelectorAll("#faqProg button").forEach(function (b, i) { b.classList.toggle("done", i <= faqStep_); });
+      document.getElementById("faqGotItBtn").textContent = faqStep_ === faqSlides_.length - 1 ? "Got it!" : "Next";
+      document.getElementById("faqBody").scrollTop = 0;
+    }
     function openFaq_(e) {
       if (faqPage_.classList.contains("open")) return;
       var r = headerTitle_.getBoundingClientRect();
@@ -8346,7 +8388,7 @@
       var py = e && e.clientY ? e.clientY : r.top + r.height / 2;
       faqPage_.style.setProperty("--cx", px + "px");
       faqPage_.style.setProperty("--cy", py + "px");
-      faqPage_.scrollTop = 0;
+      faqGo_(0);
       faqPage_.classList.add("open");
       faqPage_.setAttribute("aria-hidden", "false");
       document.body.classList.add("faq-open");
@@ -8362,7 +8404,25 @@
     headerTitle_.addEventListener("keydown", function (e) {
       if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openFaq_(); }
     });
-    document.getElementById("faqGotItBtn").addEventListener("click", closeFaq_);
+    document.getElementById("faqGotItBtn").addEventListener("click", function () {
+      if (faqStep_ < faqSlides_.length - 1) faqGo_(faqStep_ + 1); else closeFaq_();
+    });
+    faqPage_.querySelectorAll("#faqProg button").forEach(function (b) {
+      b.addEventListener("click", function () { faqGo_(parseInt(b.getAttribute("data-goto"), 10)); });
+    });
+    var faqTouchX_ = null;
+    faqPage_.addEventListener("touchstart", function (e) { faqTouchX_ = e.touches.length === 1 ? e.touches[0].clientX : null; }, { passive: true });
+    faqPage_.addEventListener("touchend", function (e) {
+      if (faqTouchX_ === null) return;
+      var dx = e.changedTouches[0].clientX - faqTouchX_;
+      faqTouchX_ = null;
+      if (Math.abs(dx) > 50) faqGo_(faqStep_ + (dx < 0 ? 1 : -1));
+    });
+    document.addEventListener("keydown", function (e) {
+      if (!faqPage_.classList.contains("open")) return;
+      if (e.key === "ArrowRight") faqGo_(faqStep_ + 1);
+      else if (e.key === "ArrowLeft") faqGo_(faqStep_ - 1);
+    });
 
     // Filter Capsule Global Listeners (click outside & escape)
     document.addEventListener("click", function (e) {
