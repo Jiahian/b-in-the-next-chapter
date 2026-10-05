@@ -329,7 +329,7 @@
   #panel-profile.active {
     clip-path: circle(150vmax at var(--cx, calc(100% - 36px)) var(--cy, 32px));
     visibility: visible;
-    transition: clip-path 0.7s cubic-bezier(0.65, 0, 0.35, 1), visibility 0s;
+    transition: clip-path 0.85s cubic-bezier(0.65, 0, 0.35, 1), visibility 0s;
   }
   /* The grey page follows the emerald circle out from the same point, a beat later. */
   #panel-profile::before {
@@ -339,7 +339,7 @@
   }
   #panel-profile.active::before {
     clip-path: circle(150vmax at var(--cx, calc(100% - 36px)) var(--cy, 32px));
-    transition: clip-path 0.7s 0.2s cubic-bezier(0.65, 0, 0.35, 1);
+    transition: clip-path 0.85s 0.25s cubic-bezier(0.65, 0, 0.35, 1);
   }
   body.profile-open { overflow: hidden; }
   .pf-inner {
@@ -410,10 +410,10 @@
   #panel-profile.active .profile-tab-panel, #panel-profile.active #profileSignOutBtn {
     opacity: 1; transform: none; transition: opacity 0.4s, transform 0.4s;
   }
-  #panel-profile.active .pf-hero { transition-delay: 0.3s; }
-  #panel-profile.active .pf-stats { transition-delay: 0.4s; }
-  #panel-profile.active .profile-tabs, #panel-profile.active .profile-tab-panel { transition-delay: 0.5s; }
-  #panel-profile.active #profileSignOutBtn { transition-delay: 0.55s; }
+  #panel-profile.active .pf-hero { transition-delay: 0.85s; }
+  #panel-profile.active .pf-stats { transition-delay: 0.95s; }
+  #panel-profile.active .profile-tabs, #panel-profile.active .profile-tab-panel { transition-delay: 1.05s; }
+  #panel-profile.active #profileSignOutBtn { transition-delay: 1.1s; }
   @media (prefers-reduced-motion: reduce) {
     #panel-profile, #panel-profile::before, #panel-profile *, .pf-close, .pf-theme { transition-duration: 0.01s !important; transition-delay: 0s !important; }
   }
