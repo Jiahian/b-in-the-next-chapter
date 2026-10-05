@@ -317,11 +317,11 @@
   /* Profile page: full screen, in light grey. It opens as a circular reveal from
      the header profile icon (the same motion as the points summary, which grows from the counter). */
   #panel-profile {
-    --pf-bg: #f1f5f9; --pf-muted: #64748b; --pf-ink: #0f172a; --pf-accent: #4f46e5;
+    --pf-bg: #f1f5f9; --pf-reveal: #10b981; --pf-muted: #64748b; --pf-ink: #0f172a; --pf-accent: #4f46e5;
     display: block;
     position: fixed; inset: 0; z-index: 50;
     overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
-    background: var(--pf-bg); color: var(--pf-ink);
+    background: var(--pf-reveal); color: var(--pf-ink);
     clip-path: circle(0px at var(--cx, calc(100% - 36px)) var(--cy, 32px));
     visibility: hidden;
     transition: clip-path 0.5s cubic-bezier(0.65, 0, 0.35, 1), visibility 0s 0.5s;
@@ -331,8 +331,19 @@
     visibility: visible;
     transition: clip-path 0.7s cubic-bezier(0.65, 0, 0.35, 1), visibility 0s;
   }
+  /* The grey page follows the emerald circle out from the same point, a beat later. */
+  #panel-profile::before {
+    content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none; background: var(--pf-bg);
+    clip-path: circle(0px at var(--cx, calc(100% - 36px)) var(--cy, 32px));
+    transition: clip-path 0.3s ease-in;
+  }
+  #panel-profile.active::before {
+    clip-path: circle(150vmax at var(--cx, calc(100% - 36px)) var(--cy, 32px));
+    transition: clip-path 0.7s 0.2s cubic-bezier(0.65, 0, 0.35, 1);
+  }
   body.profile-open { overflow: hidden; }
   .pf-inner {
+    position: relative; z-index: 1;
     width: 100%; max-width: 480px; margin: 0 auto; box-sizing: border-box;
     padding: calc(max(16px, env(safe-area-inset-top)) + 62px) 22px calc(max(16px, env(safe-area-inset-bottom)) + 44px);
   }
@@ -404,7 +415,7 @@
   #panel-profile.active .profile-tabs, #panel-profile.active .profile-tab-panel { transition-delay: 0.5s; }
   #panel-profile.active #profileSignOutBtn { transition-delay: 0.55s; }
   @media (prefers-reduced-motion: reduce) {
-    #panel-profile, #panel-profile *, .pf-close, .pf-theme { transition-duration: 0.01s !important; transition-delay: 0s !important; }
+    #panel-profile, #panel-profile::before, #panel-profile *, .pf-close, .pf-theme { transition-duration: 0.01s !important; transition-delay: 0s !important; }
   }
   /* The Log panel is a bottom sheet (50% tall, 70% for the heavier steps) over a dimmed
      backdrop, not a fullscreen page: see the "Log sheet" block below. */
