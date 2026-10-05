@@ -157,6 +157,8 @@ flow. The post preview modal now shows the poster's avatar/name in its
 navbar and labels the people grid "Tagged friends:", listing only actual
 tagged friends (the poster no longer double-counts in that list).
 
+**Log sheet step order is category, name and note, friends, amount.** The amount page moved from step 2 to the last step (swapped with the name/note page), so Post now lands on the amount page and the name/note page is a forward-validated step. Field ids and submit validation are unchanged; only `data-step`, the progress-bar labels and the `logStep_` validation/error mapping moved. The earlier four-step description above (category, amount, friends, note) is the pre-swap order.
+
 ## Data-integrity bug: `tagged_friends` corruption (resolved)
 
 Google Sheets auto-detects digit-only strings and silently converts them to

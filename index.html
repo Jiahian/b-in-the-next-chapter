@@ -3770,9 +3770,9 @@
         <div class="log-stage-details">
           <div class="log-prog" id="logProg">
             <button type="button" data-goto="0" aria-label="Activity"></button>
-            <button type="button" data-goto="1" aria-label="Amount"></button>
+            <button type="button" data-goto="1" aria-label="Note"></button>
             <button type="button" data-goto="2" aria-label="Friends"></button>
-            <button type="button" data-goto="3" aria-label="Note"></button>
+            <button type="button" data-goto="3" aria-label="Amount"></button>
           </div>
           <div class="log-media" id="logMedia">
             <svg class="log-media-ph" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"></path></svg>
@@ -3804,6 +3804,41 @@
           </div>
 
           <div class="log-step" data-step="1">
+            <p class="log-q">What made it memorable?</p>
+            <div class="field" style="margin-bottom:0;">
+              <input type="text" id="fActivity" maxlength="200" placeholder="Name it, e.g. Morning run" required />
+              <div class="field-error" data-for="fActivity">Please write an activity name.</div>
+            </div>
+            <div class="field log-grow" style="margin-bottom:0;">
+              <textarea id="fName" class="field-textarea" maxlength="200" placeholder="What went on?" required></textarea>
+              <div class="field-error" data-for="fName">Please describe the activity</div>
+            </div>
+            <div class="log-pills">
+              <button type="button" class="log-pill" id="logCatPill" aria-label="Change category"><i id="logCatDot"></i><span id="logCatTxt">Spiritual</span></button>
+              <label class="log-pill" id="logDatePill">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                <span id="logDateTxt">Today</span>
+                <input type="date" id="fDate" required aria-label="Date" />
+              </label>
+            </div>
+            <div class="field-error" data-for="fDate">Date can't be in the future.</div>
+          </div>
+
+          <div class="log-step" data-step="2">
+            <p class="log-q">Who was there? <span class="opt">(optional)</span></p>
+            <div class="tag-friends" id="tagFriends">
+              <div class="tag-friends-pills" id="tagFriendsPills"></div>
+              <div class="tag-friends-search-wrap">
+                <input type="text" class="tag-friends-search" id="tagFriendsSearch" placeholder="Search friends to tag&hellip;" autocomplete="off" />
+                <div class="tag-friends-panel" id="tagFriendsPanel">
+                  <button type="button" class="tag-friends-selectall" id="tagFriendsSelectAll">Select all</button>
+                  <div class="tag-friends-list" id="tagFriendsList"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="log-step" data-step="3">
             <p class="log-q">
               How much?
               <button type="button" class="info-icon" id="pointsInfoBtn" aria-label="What counts as a point?">?</button>
@@ -3828,41 +3863,6 @@
               <div class="log-goal-row"><span>Team goal</span><b id="logGoalTxt"></b></div>
               <div class="log-goal-bar"><i id="logGoalBase"></i><i id="logGoalAdd"></i></div>
             </div>
-          </div>
-
-          <div class="log-step" data-step="2">
-            <p class="log-q">Who was there? <span class="opt">(optional)</span></p>
-            <div class="tag-friends" id="tagFriends">
-              <div class="tag-friends-pills" id="tagFriendsPills"></div>
-              <div class="tag-friends-search-wrap">
-                <input type="text" class="tag-friends-search" id="tagFriendsSearch" placeholder="Search friends to tag&hellip;" autocomplete="off" />
-                <div class="tag-friends-panel" id="tagFriendsPanel">
-                  <button type="button" class="tag-friends-selectall" id="tagFriendsSelectAll">Select all</button>
-                  <div class="tag-friends-list" id="tagFriendsList"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="log-step" data-step="3">
-            <p class="log-q">What made it memorable?</p>
-            <div class="field" style="margin-bottom:0;">
-              <input type="text" id="fActivity" maxlength="200" placeholder="Name it, e.g. Morning run" required />
-              <div class="field-error" data-for="fActivity">Please write an activity name.</div>
-            </div>
-            <div class="field log-grow" style="margin-bottom:0;">
-              <textarea id="fName" class="field-textarea" maxlength="200" placeholder="What went on?" required></textarea>
-              <div class="field-error" data-for="fName">Please describe the activity</div>
-            </div>
-            <div class="log-pills">
-              <button type="button" class="log-pill" id="logCatPill" aria-label="Change category"><i id="logCatDot"></i><span id="logCatTxt">Spiritual</span></button>
-              <label class="log-pill" id="logDatePill">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                <span id="logDateTxt">Today</span>
-                <input type="date" id="fDate" required aria-label="Date" />
-              </label>
-            </div>
-            <div class="field-error" data-for="fDate">Date can't be in the future.</div>
           </div>
 
         </div>
@@ -6720,7 +6720,7 @@
 
   // ===================================================================
   // Log sheet state. The form is a bottom sheet: pick media first, then walk
-  // four short steps (activity, amount, friends, note). The field ids are the
+  // four short steps (activity, note, friends, amount). The field ids are the
   // old form's, so validation and submit are unchanged.
   // ===================================================================
   var LOG_LAST_STEP = 3;
@@ -6728,7 +6728,11 @@
   var logPickAccept_ = null;
   var logFitTimer_ = null;
   var logCatPicked_ = false; // step 1 needs an explicit choice, not the default
-  function logErrorIdFor_(step) { return step === 0 ? "fCategory" : "fAmount"; }
+  function logErrorIdFor_(step) {
+    if (step === 0) return "fCategory";
+    if (step === 1) return document.getElementById("fActivity").value.trim() ? "fName" : "fActivity";
+    return "fAmount";
+  }
   function logDateLabel_() {
     var v = document.getElementById("fDate").value;
     if (!v) return "Pick a date";
@@ -6749,8 +6753,8 @@
   }
   function logStepValid_(step) {
     if (step === 0) return logCatPicked_;
-    if (step === 1) return logAmount_() > 0;
-    if (step === 3) return !!(document.getElementById("fActivity").value.trim() && document.getElementById("fName").value.trim());
+    if (step === 1) return !!(document.getElementById("fActivity").value.trim() && document.getElementById("fName").value.trim());
+    if (step === 3) return logAmount_() > 0;
     return true;
   }
   function logSetSnap_(snap) {
@@ -8317,7 +8321,7 @@
         logGoToStep_(target);
       });
     });
-    // Step 4 pills: the category pill cycles through the three categories;
+    // Note-step pills: the category pill cycles through the three categories;
     // the date pill opens the date picker laid invisibly over it.
     document.getElementById("logCatPill").addEventListener("click", function () {
       var order = ["Spiritual", "Relationship", "Others"];
