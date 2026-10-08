@@ -3185,15 +3185,20 @@
     box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
   }
   [data-theme="dark"] .card.card-countdown,
-  [data-theme="dark"] .card.card-bare,
   [data-theme="dark"] .card.card-plain,
   [data-theme="dark"] .card-countdown,
-  [data-theme="dark"] .card-bare,
   [data-theme="dark"] .card-plain {
     background: transparent;
     border: none;
     box-shadow: none;
     padding: 0;
+  }
+  [data-theme="dark"] .card.card-bare,
+  [data-theme="dark"] .card-bare {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0 12px;
   }
   [data-theme="dark"] .countdown-cell .num-box {
     background: linear-gradient(180deg, #282a2c 0%, #202124 49%, #1e1f20 50%, #17181a 100%);
@@ -3227,12 +3232,14 @@
   [data-theme="dark"] .gallery-category-title {
     color: #e3e3e3;
   }
-  [data-theme="dark"] .gallery-item {
+  [data-theme="dark"] .gallery-item,
+  [data-theme="dark"] .gallery-tile {
     background: #1e1f20;
     border: 1px solid #2d2f31;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
   }
-  [data-theme="dark"] .gallery-item:hover {
+  [data-theme="dark"] .gallery-item:hover,
+  [data-theme="dark"] .gallery-tile:hover {
     border-color: #3c4043;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
   }
