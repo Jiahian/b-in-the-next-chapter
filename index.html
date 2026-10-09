@@ -5,15 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
 <title>B in the Next Chapter!</title>
 <meta name="description" content="Track our group's points toward the shared goal before 31 Dec 2026." />
-<meta name="color-scheme" content="light dark" />
+<meta name="color-scheme" content="light" />
 <meta name="referrer" content="no-referrer" />
 <meta name="theme-color" content="#ffffff" id="metaThemeColor" />
 <script>
   (function () {
     try {
-      // Light unless the person has switched it themselves: the phone's own dark setting is not followed.
+      // Dark mode is switched off for now (the dark CSS and the toggle are kept for later).
+      // Set to true, un-hide .pf-theme and restore color-scheme "light dark" to bring it back.
+      var DARK_MODE_ENABLED = false;
       var saved = localStorage.getItem("bnext_theme");
-      var theme = saved === "dark" ? "dark" : "light";
+      var theme = DARK_MODE_ENABLED && saved === "dark" ? "dark" : "light";
       document.documentElement.setAttribute("data-theme", theme);
       if (theme === "dark") {
         document.documentElement.classList.add("dark-theme");
@@ -234,16 +236,16 @@
   }
   .faq-slide.active { display: block; animation: faqSlideIn 0.25s ease; }
   @keyframes faqSlideIn { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: none; } }
-  .faq-title { margin: 0 0 20px; font-size: 28.8px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; color: var(--faq-ink); }
-  .faq-slide p { margin: 0 0 14.4px; font-size: 15.3px; line-height: 1.55; color: var(--faq-text); }
+  .faq-title { margin: 0 0 24px; font-size: 32px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; color: var(--faq-ink); }
+  .faq-slide p { margin: 0 0 20px; font-size: 16px; line-height: 1.5; color: var(--faq-text); }
   .faq-slide p strong { color: var(--faq-ink); font-weight: 800; }
-  .faq-slide p.faq-lead { font-size: 17.1px; font-weight: 800; color: var(--faq-ink); line-height: 1.4; margin-top: 23.4px; margin-bottom: 0; }
+  .faq-slide p.faq-lead { font-size: 20px; font-weight: 800; color: var(--faq-ink); line-height: 1.4; margin-top: 28px; margin-bottom: 0; }
   .faq-badge {
-    display: flex; align-items: center; justify-content: center; width: 46.8px; height: 46.8px; border-radius: 50%;
-    margin-bottom: 16px; font-size: 19.8px; font-weight: 800; color: var(--faq-ink); background: var(--c, #c4b5fd);
+    display: flex; align-items: center; justify-content: center; width: 52px; height: 52px; border-radius: 50%;
+    margin-bottom: 20px; font-size: 22px; font-weight: 800; color: var(--faq-ink); background: var(--c, #c4b5fd);
   }
-  .faq-sub { margin: -11px 0 20px; font-size: 15.3px; font-weight: 600; color: var(--faq-text); }
-  .faq-tip { margin-top: 20px; background: var(--t, #ffffff); border-radius: 14.4px; padding: 14.4px 16px; font-size: 14.4px; line-height: 1.5; color: var(--faq-text); }
+  .faq-sub { margin: -12px 0 24px; font-size: 16px; font-weight: 600; color: var(--faq-text); }
+  .faq-tip { margin-top: 24px; background: var(--t, #ffffff); border-radius: 16px; padding: 16px 20px; font-size: 16px; line-height: 1.5; color: var(--faq-text); }
   .faq-tip b { color: var(--faq-ink); font-weight: 800; }
   .faq-foot {
     flex: none; width: 100%; max-width: 480px; margin: 0 auto; box-sizing: border-box;
@@ -2412,7 +2414,7 @@
   .post-preview-sheet .thumb.ratio-3-4 .preview-fullphoto-btn { display: inline-flex; }
   .preview-fullphoto-btn[hidden] { display: none !important; }
   /* Our own pull-to-refresh replaces the browser's, which would reload the whole page. */
-  html, body { overscroll-behavior-y: contain; }
+  html { overscroll-behavior-y: contain; }
   .ptr {
     position: fixed; top: 64px; left: 50%; width: 38px; height: 38px; margin-left: -19px;
     border-radius: 50%; z-index: 30; pointer-events: none;
@@ -3840,7 +3842,7 @@
     <button type="button" class="pf-close" id="profileCloseBtn" aria-label="Close profile" title="Close">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
     </button>
-    <div class="pf-theme">
+    <div class="pf-theme" hidden>
       <button type="button" class="theme-toggle-switch" id="themeToggleBtn" role="switch" aria-checked="false" aria-label="Toggle dark mode" title="Toggle dark mode">
       <span class="theme-toggle-slot slot-moon" aria-hidden="true">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="#ffffff" stroke="none">
@@ -4026,22 +4028,22 @@
     <section class="faq-slide" data-slide="1">
       <div class="faq-badge" style="--c:#c4b5fd">1</div>
       <h2 class="faq-title">Spiritual Growth</h2>
-      <p class="faq-sub">(Building Your Spirit-Man)</p>
-      <p><strong>Activities:</strong> Personal devotions, prayer walks, listening to Christian podcasts, audio Bible, or worship sessions.</p>
+      <p class="faq-sub">Building Your Spirit-Man</p>
+      <p><strong>Suggested Activities:</strong> Personal devotions, prayer walks, listening to Christian podcasts, worship sessions or an audio Bible.</p>
       <div class="faq-tip" style="--t:#ede9fe"><b>Tip!</b> If you’re praying or listening to an audio Bible while running/walking, log the distance (km) as Spiritual points!</div>
     </section>
     <section class="faq-slide" data-slide="2">
       <div class="faq-badge" style="--c:#fda4af">2</div>
       <h2 class="faq-title">Relationships</h2>
-      <p class="faq-sub">(Connecting with your spiritual family)</p>
-      <p><strong>Activities:</strong> Catching up over coffee, playing sports, board game nights, or having heart-to-heart chats.</p>
-      <div class="faq-tip" style="--t:#ffe4e6"><b>Tip!</b> Ask how someone's week went, or simply share what have been going on in your week!</div>
+      <p class="faq-sub">Connecting with your spiritual family</p>
+      <p><strong>Suggested Activities:</strong> Catching up over coffee, playing sports together, having board game nights, or heart-to-heart talks.</p>
+      <div class="faq-tip" style="--t:#ffe4e6"><b>Tip!</b> Take initiative and ask how someone's week went, or simply share what have been going on in your week!</div>
     </section>
     <section class="faq-slide" data-slide="3">
       <div class="faq-badge" style="--c:#93c5fd">3</div>
       <h2 class="faq-title">Others</h2>
-      <p class="faq-sub">(Reaching Out to New Friends)</p>
-      <p><strong>Activities:</strong> Building friendships with people outside our CG, inviting new friends to church events, or serving others.</p>
+      <p class="faq-sub">Reaching Out to New Friends</p>
+      <p><strong>Suggested Activities:</strong> Building friendships with people outside our CG, inviting new friends to church events, or praying for the unsaved.</p>
     </section>
     <section class="faq-slide" data-slide="4">
       <h2 class="faq-title">But, but, but...</h2>
