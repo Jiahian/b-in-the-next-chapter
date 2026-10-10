@@ -53,8 +53,8 @@ near the bottom of the file. A few things worth knowing before editing it:
   centered/backdrop-blurred modal cards for it without checking that decision
   first. The **Log form and the Profile panel are the exceptions**:
   - The **Log form** is a bottom sheet (50% while empty; with media each step is
-    sized to its content by `logFitSheet_`, up to 90%), media first, then four
-    steps. It reuses the old form's field ids (`fActivity`, `fAmount`,
+    sized to its content by `logFitSheet_`, up to 90%), media first, then the
+    category/date pills, then three steps (`data-step` 1-3). It reuses the old form's field ids (`fActivity`, `fAmount`,
     `fUnits`, `fName`, `fCategory`, `fDate`, `fMedia`, `submitBtn`), so keep
     those when editing it; the sheet's state lives in `logStep_` and
     `updateLogUi_()`.

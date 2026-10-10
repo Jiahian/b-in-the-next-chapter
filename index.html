@@ -239,7 +239,6 @@
   .faq-title { margin: 0 0 24px; font-size: 32px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; color: var(--faq-ink); }
   .faq-slide p { margin: 0 0 20px; font-size: 16px; line-height: 1.5; color: var(--faq-text); }
   .faq-slide p strong { color: var(--faq-ink); font-weight: 800; }
-  .faq-slide p.faq-lead { font-size: 20px; font-weight: 800; color: var(--faq-ink); line-height: 1.4; margin-top: 28px; margin-bottom: 0; }
   .faq-badge {
     display: flex; align-items: center; justify-content: center; width: 52px; height: 52px; border-radius: 50%;
     margin-bottom: 20px; font-size: 22px; font-weight: 800; color: var(--faq-ink); background: var(--c, #c4b5fd);
@@ -885,7 +884,7 @@
   }
   .log-media-ph { color: var(--text-muted, #64748b); }
   .log-pts {
-    position: absolute; left: 10px; bottom: 10px;
+    position: absolute; right: 10px; bottom: 10px;
     background: var(--badge-bg, #facc15); color: var(--badge-text, #000);
     font-size: 13px; font-weight: 800; padding: 4px 10px; border-radius: 999px;
   }
@@ -911,14 +910,14 @@
   .log-step { display: none; }
   .log-step.active {
     display: flex; flex-direction: column; flex: none;
-    justify-content: flex-start; gap: 12px; padding: 24px 0; animation: logStepIn 0.22s ease;
+    justify-content: flex-start; gap: 12px; padding: 12px 0; animation: logStepIn 0.22s ease;
   }
   .log-step.active > * { flex: none; }
-  /* Friends: the list opens upwards over the preview, so it never pushes the sheet. */
+  /* Friends: chosen friends grow above the search box (under the question); the list is always open below it. */
   .log-step[data-step="2"] { padding-top: 20px; }
-  .log-step[data-step="2"] .tag-friends-pills { margin-top: 16px; row-gap: 8px; }
+  .log-step[data-step="2"] .tag-friends-pills { margin: 0 0 12px; row-gap: 8px; }
   .log-step[data-step="2"] .tag-friends-panel {
-    top: auto; bottom: calc(100% + 6px); max-height: min(240px, 34dvh);
+    display: block; position: static; margin-top: 8px; box-shadow: none; max-height: min(240px, 34dvh);
   }
   #panel-log #fName { height: 72px; min-height: 0; resize: none; }
   #panel-log #fActivity::placeholder { font-size: 13px; }
@@ -929,16 +928,7 @@
   }
   .log-q .opt { font-size: 13px; font-weight: 400; color: var(--text-muted); }
 
-  .log-chip {
-    display: inline-flex; align-items: center; gap: 7px;
-    padding: 9px 14px; margin: 0 8px 8px 0; border-radius: 999px;
-    border: 1.5px solid var(--border, #e2e8f0); background: var(--surface-1);
-    color: var(--text-primary); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
-  }
-  .log-chip.sel { border-color: var(--accent); }
-  #logChips { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 4px; }
-  #logChips .log-chip { margin: 0; justify-content: center; padding: 13px 6px; font-size: 14px; }
-  .log-pills { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .log-pills { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; flex: none;}
   .log-pills .log-pill { justify-content: center; }
   .log-pill {
     position: relative; display: inline-flex; align-items: center; gap: 8px;
@@ -952,7 +942,6 @@
     position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; padding: 0;
     opacity: 0; cursor: pointer; border: none;
   }
-  .log-chip i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
 
   .log-amt-row { display: flex; align-items: center; justify-content: center; gap: 16px; }
   .log-amount { display: flex; align-items: center; gap: 12px; margin: 0; }
@@ -3729,14 +3718,13 @@
               Video
             </button>
           </div>
-          <p class="log-tray-hint" id="fileDropText">Start with a photo or video. Details come next.</p>
+          <p class="log-tray-hint" id="fileDropText">Add a photo or video.</p>
         </div>
         <input type="file" id="fMedia" accept="image/*,video/*,video/mp4,video/quicktime,video/mov,video/webm,video/3gpp,video/3gpp2,video/x-m4v,video/x-matroska,video/avi,video/x-msvideo,.mov,.MOV,.mp4,.MP4,.m4v,.M4V,.webm,.WEBM,.3gp,.3gpp,.mkv,.MKV,.avi,.AVI,.heic,.HEIC,.heif,.HEIF" />
         <div class="field-error" data-for="fMedia">A photo or video is required.</div>
 
         <div class="log-stage-details">
           <div class="log-prog" id="logProg">
-            <button type="button" data-goto="0" aria-label="Activity"></button>
             <button type="button" data-goto="1" aria-label="Note"></button>
             <button type="button" data-goto="2" aria-label="Friends"></button>
             <button type="button" data-goto="3" aria-label="Amount"></button>
@@ -3755,31 +3743,14 @@
             </button>
           </div>
 
-          <div class="log-step active" data-step="0">
-            <p class="log-q">What did you do?</p>
-            <div id="logChips">
-              <button type="button" class="log-chip" data-cat="Spiritual"><i style="background:var(--series-spiritual)"></i>Spiritual</button>
-              <button type="button" class="log-chip" data-cat="Relationship"><i style="background:var(--series-relationship)"></i>Relationship</button>
-              <button type="button" class="log-chip" data-cat="Others"><i style="background:var(--series-others)"></i>Others</button>
-            </div>
-            <select id="fCategory" required style="display:none;">
-              <option value="Spiritual" selected>Spiritual</option>
-              <option value="Relationship">Relationship</option>
-              <option value="Others">Others</option>
-            </select>
-            <div class="field-error" data-for="fCategory">Please choose a category.</div>
-          </div>
-
-          <div class="log-step" data-step="1">
-            <p class="log-q">What made it memorable?</p>
-            <div class="field" style="margin-bottom:0;">
-              <input type="text" id="fActivity" maxlength="200" placeholder="Pray, Exercise, Love a friend..." required />
-              <div class="field-error" data-for="fActivity">Please write an activity name.</div>
-            </div>
-            <div class="field log-grow" style="margin-bottom:0;">
-              <textarea id="fName" class="field-textarea" maxlength="200" placeholder="What went on?" required></textarea>
-              <div class="field-error" data-for="fName">Please describe the activity</div>
-            </div>
+          <select id="fCategory" required style="display:none;">
+            <option value="Spiritual" selected>Spiritual</option>
+            <option value="Relationship">Relationship</option>
+            <option value="Others">Others</option>
+          </select>
+          <div class="field-error" data-for="fDate">Date can't be in the future.</div>
+          
+          <div class="log-step active" data-step="1">
             <div class="log-pills">
               <button type="button" class="log-pill" id="logCatPill" aria-label="Change category"><i id="logCatDot"></i><span id="logCatTxt">Spiritual</span></button>
               <label class="log-pill" id="logDatePill">
@@ -3788,12 +3759,21 @@
                 <input type="date" id="fDate" required aria-label="Date" />
               </label>
             </div>
-            <div class="field-error" data-for="fDate">Date can't be in the future.</div>
+            <!-- <p class="log-q">What made it memorable?</p> -->
+            <div class="field" style="margin-bottom:0;">
+              <input type="text" id="fActivity" maxlength="200" placeholder="Title" required />
+              <div class="field-error" data-for="fActivity">Please write a title for the activity</div>
+            </div>
+            <div class="field log-grow" style="margin-bottom:0;">
+              <textarea id="fName" class="field-textarea" maxlength="200" placeholder="What went on?" required></textarea>
+              <div class="field-error" data-for="fName">Please describe the activity</div>
+            </div>
           </div>
 
           <div class="log-step" data-step="2">
             <p class="log-q">Who was there? <span class="opt">(optional)</span></p>
             <div class="tag-friends" id="tagFriends">
+              <div class="tag-friends-pills" id="tagFriendsPills"></div>
               <div class="tag-friends-search-wrap">
                 <input type="text" class="tag-friends-search" id="tagFriendsSearch" placeholder="Search friends to tag&hellip;" autocomplete="off" />
                 <div class="tag-friends-panel" id="tagFriendsPanel">
@@ -3801,7 +3781,6 @@
                   <div class="tag-friends-list" id="tagFriendsList"></div>
                 </div>
               </div>
-              <div class="tag-friends-pills" id="tagFriendsPills"></div>
             </div>
           </div>
 
@@ -4023,7 +4002,7 @@
       <p>Welcome to our new chapter together! To help us stay intentional in building our faith and deepening our bonds, we’re launching our very own B Zone activity tracker app!</p>
       <p>Our goal is simple: <strong>Hit 1,000 points together by 31 December 2026.</strong></p>
       <p>Whether you are investing in your personal spiritual walk, hanging out with CG members, or making new friends, every intentional effort counts toward our shared milestone.</p>
-      <p class="faq-lead">So how do you Log Your Activities?</p>
+      <p><strong>So how do you Log Your Activities?</strong></p>
     </section>
     <section class="faq-slide" data-slide="1">
       <div class="faq-badge" style="--c:#c4b5fd">1</div>
@@ -4048,7 +4027,7 @@
     <section class="faq-slide" data-slide="4">
       <h2 class="faq-title">But, but, but...</h2>
       <p>There is no hard &amp; fast rules. The activity list is non-exhaustive! Any effort done out of personal initiative to grow, connect, or reach out counts.</p>
-      <p class="faq-lead">Let's stay intentional, cheer each other on, and move together as one. Let the point-clocking begin!</p>
+      <p><strong>Let's stay intentional, cheer each other on, and move together as one. Let the point-clocking begin!</strong></p>
     </section>
   </div>
   <div class="faq-foot"><button type="button" class="faq-gotit" id="faqGotItBtn">Next</button></div>
@@ -6652,6 +6631,7 @@
     if (!wrap || !searchEl) return;
 
     var openPanel = function () {
+      if (cfg.inline) return;
       closeTagFriendsPanels_(cfg.wrapId);
       renderTagFriendsList_(cfg);
       wrap.classList.add("open");
@@ -6659,7 +6639,7 @@
     searchEl.addEventListener("focus", openPanel);
     searchEl.addEventListener("input", function () { renderTagFriendsList_(cfg); });
     searchEl.addEventListener("keydown", function (e) {
-      if (e.key === "Escape") { wrap.classList.remove("open"); searchEl.blur(); }
+      if (e.key === "Escape" && !cfg.inline) { wrap.classList.remove("open"); searchEl.blur(); }
     });
     if (selectAllBtn) {
       selectAllBtn.addEventListener("click", function () {
@@ -6682,6 +6662,7 @@
   });
 
   var LOG_TAG_FRIENDS_CFG = {
+    inline: true, // the Log sheet's list is always open under the search box
     wrapId: "tagFriends", searchId: "tagFriendsSearch",
     pillsId: "tagFriendsPills", listId: "tagFriendsList", selectAllId: "tagFriendsSelectAll",
     getSelected: function () { return state.pendingTaggedFriends; },
@@ -6700,17 +6681,16 @@
   var els = {}; // filled on DOMContentLoaded
 
   // ===================================================================
-  // Log sheet state. The form is a bottom sheet: pick media first, then walk
-  // four short steps (activity, note, friends, amount). The field ids are the
+  // Log sheet state. The form is a bottom sheet: pick media first, set the category
+  // and date pills under it, then walk three short steps (note, friends, amount). The field ids are the
   // old form's, so validation and submit are unchanged.
   // ===================================================================
+  var LOG_FIRST_STEP = 1;
   var LOG_LAST_STEP = 3;
-  var logStep_ = 0;
+  var logStep_ = LOG_FIRST_STEP;
   var logPickAccept_ = null;
   var logFitTimer_ = null;
-  var logCatPicked_ = false; // step 1 needs an explicit choice, not the default
   function logErrorIdFor_(step) {
-    if (step === 0) return "fCategory";
     if (step === 1) return document.getElementById("fActivity").value.trim() ? "fName" : "fActivity";
     return "fAmount";
   }
@@ -6733,7 +6713,6 @@
     return n > 0 ? n : 0;
   }
   function logStepValid_(step) {
-    if (step === 0) return logCatPicked_;
     if (step === 1) return !!(document.getElementById("fActivity").value.trim() && document.getElementById("fName").value.trim());
     if (step === 3) return logAmount_() > 0;
     return true;
@@ -6743,7 +6722,7 @@
     if (sheet) sheet.setAttribute("data-snap", snap);
   }
   function logGoToStep_(n) {
-    logStep_ = Math.max(0, Math.min(LOG_LAST_STEP, n));
+    logStep_ = Math.max(LOG_FIRST_STEP, Math.min(LOG_LAST_STEP, n));
     updateLogUi_();
   }
   function logNext_() {
@@ -6762,6 +6741,7 @@
 
   // Sizes the sheet to this page's content (CSS caps it at 90%) and animates there.
   var logFitKey_ = "";
+  var logFriendsKey_ = "";
   function logFitSheet_() {
     var sheet = document.getElementById("logSheet");
     if (!sheet) return;
@@ -6791,9 +6771,6 @@
     });
 
     var cat = document.getElementById("fCategory").value || "Spiritual";
-    sheet.querySelectorAll("#logChips .log-chip").forEach(function (c) {
-      c.classList.toggle("sel", logCatPicked_ && c.getAttribute("data-cat") === cat);
-    });
     document.getElementById("logCatTxt").textContent = cat;
     document.getElementById("logDateTxt").textContent = logDateLabel_();
 
@@ -6803,7 +6780,7 @@
     });
 
     // Media frame takes the category's colour; the pill and goal bar are live.
-    var catColour = logCatPicked_ ? "var(--series-" + cat.toLowerCase() + ")" : "var(--baseline, #cbd5e1)";
+    var catColour = "var(--series-" + cat.toLowerCase() + ")";
     var media = document.getElementById("logMedia");
     if (media) media.style.setProperty("--log-cat", catColour);
     sheet.style.setProperty("--log-cat", catColour);
@@ -6835,6 +6812,29 @@
       }
     }
 
+    // The friends list is always open on step 2: build it on arrival (and when the people list changes).
+    var friendsKey_ = logStep_ === 2 ? String(otherUsers_().length) : "";
+    if (friendsKey_ !== logFriendsKey_) {
+      logFriendsKey_ = friendsKey_;
+      if (friendsKey_) renderTagFriendsList_(LOG_TAG_FRIENDS_CFG);
+    }
+
+    // Hide each error as soon as its field is filled in.
+    var val_ = function (id) { return document.getElementById(id).value.trim(); };
+    var date_ = document.getElementById("fDate").value;
+    var fieldOk_ = {
+      fMedia: !!state.pendingMedia,
+      fActivity: !!val_("fActivity"),
+      fName: !!val_("fName"),
+      fAmount: logAmount_() > 0,
+      fDate: !!date_ && date_ <= todayISO()
+    };
+    Object.keys(fieldOk_).forEach(function (id) {
+      if (!fieldOk_[id]) return;
+      var err = document.querySelector('#entryForm .field-error[data-for="' + id + '"]');
+      if (err) err.classList.remove("show");
+    });
+
     // Re-fit only when something that changes the page's height changed (not on every keystroke).
     var fitKey = [logHasMedia_(), logStep_, state.pendingTaggedFriends.length,
       document.querySelectorAll("#entryForm .field-error.show").length].join("|");
@@ -6857,9 +6857,9 @@
     vidPrev.removeAttribute("src"); vidPrev.classList.remove("show");
     document.getElementById("logMediaStatus").textContent = "";
     clearErrors_();
-    logStep_ = 0;
-    logCatPicked_ = false;
+    logStep_ = LOG_FIRST_STEP;
     logFitKey_ = "";
+    logFriendsKey_ = "";
     document.getElementById("logSheet").style.height = "";
     logSetSnap_("half");
     if (toCreateMode) {
@@ -8266,16 +8266,7 @@
       handleFileChosen(e.target.files[0]);
     });
 
-    // Steps: chips, stepper, units, progress bar, live updates.
-    document.querySelectorAll("#logChips .log-chip").forEach(function (chip) {
-      chip.addEventListener("click", function () {
-        logCatPicked_ = true;
-        document.getElementById("fCategory").value = chip.getAttribute("data-cat");
-        clearErrors_();
-        updateLogUi_();
-        setTimeout(function () { if (logStep_ === 0) logGoToStep_(1); }, 180);
-      });
-    });
+    // Steps: stepper, units, progress bar, live updates.
     function bumpAmount_(delta) {
       var cur = parseFloat(document.getElementById("fAmount").value);
       if (isNaN(cur)) cur = 0;
@@ -8285,6 +8276,10 @@
       clearErrors_();
       updateLogUi_();
     }
+    document.getElementById("fAmount").addEventListener("input", function (e) {
+      var m = /^(-?\d*\.\d)\d+$/.exec(e.target.value);
+      if (m) e.target.value = m[1];
+    });
     document.getElementById("amtDec").addEventListener("click", function () { bumpAmount_(-0.5); });
     document.getElementById("amtInc").addEventListener("click", function () { bumpAmount_(0.5); });
     document.querySelectorAll("#logUnits button").forEach(function (b) {
@@ -8302,7 +8297,7 @@
         logGoToStep_(target);
       });
     });
-    // Note-step pills: the category pill cycles through the three categories;
+    // Pills under the media: the category pill cycles through the three categories;
     // the date pill opens the date picker laid invisibly over it.
     document.getElementById("logCatPill").addEventListener("click", function () {
       var order = ["Spiritual", "Relationship", "Others"];
