@@ -121,9 +121,9 @@ It'll then open full-screen like a native app. First open still requires signing
 
 ## 9. Telegram notifications (optional)
 
-Posts an AI-written announcement (with the photo and a link back to the post)
-into a Telegram group topic whenever someone logs an activity, plus milestone
-messages. Everything about *what* it says and *when* is editable from your phone
+Posts the photo with a short caption into a Telegram group topic whenever someone
+logs an activity (an AI-written header of who did what and with whom, the
+title and description, then an AI cheer; no link), plus milestone messages. Everything about *what* it says and *when* is editable from your phone
 — no code changes.
 
 **One-time setup:**
@@ -151,7 +151,9 @@ messages. Everything about *what* it says and *when* is editable from your phone
   highest milestone already passed so it doesn't announce an old one), the
   `*_ENABLED` on/off toggles, and `MAX_NOTIFICATION_RETRIES`.
 - **Style-guide Google Doc** — the tone, rules, and example wording sent to the
-  AI. Keep real names out of examples (member names are auto-scrubbed, but a
+  AI. Entry messages use its `HEADER:` / `CHEER:` examples; milestones use the
+  one-line examples; keep the `milestone:` / `highlight:` / `points_update:`
+  fallback lines at the bottom without a bullet prefix. Keep real names out of examples (member names are auto-scrubbed, but a
   non-member name typed here would reach the AI).
 - **NameScrub tab** — name variants/nicknames (mapped to a member's userId) and
   any sensitive words to hide from the AI. Everything sent to Gemini has these

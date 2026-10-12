@@ -61,8 +61,9 @@ near the bottom of the file. A few things worth knowing before editing it:
   - The **Profile panel** is a 90% bottom sheet over a dimmed backdrop (close
     with the back arrow, the backdrop, Esc, or by dragging its handle down).
   - The home screen has no bottom bar: the header is the counter icon, the
-    title and the profile button (right); the light/dark toggle lives in the
-    Profile sheet's header, and Add New is a lone round button.
+    title and the profile button (right); the app is light-only (dark CSS and the
+    toggle stay in the code behind `DARK_MODE_ENABLED`, the toggle is hidden),
+    and Add New is a lone round button.
   - The points total and category breakdown are not on the home page: they are
     the `#pointsOverlay` circular reveal opened from the header counter
     (`#pointsBtn`). The two cards kept their ids (`totalPoints`, `meterFill`,

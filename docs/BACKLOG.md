@@ -8,6 +8,15 @@ Telegram notification feature).
 
 ---
 
+## Dark mode
+
+The dark theme is complete in the code (`[data-theme="dark"]` CSS, the Profile
+sheet toggle) but switched off: set `DARK_MODE_ENABLED = true` in the head
+script and un-hide `.pf-theme` to bring it back. Revisit once the light UI is
+settled.
+
+---
+
 ## Gamification
 
 Turn the points system into something more playful, in a retro 64px pixel-art
