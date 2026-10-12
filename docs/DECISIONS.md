@@ -17,7 +17,7 @@ root) for implementation-level gotchas.
 - Gallery preview, the Log form, and the Profile panel are all full-bleed fullscreen pages (sticky back-button navbar), not modals.
 - Tag-friends control is a searchable input + removable pills.
 - Profile photo upload/crop works but is device-local only — not synced to the backend (see "Known gaps" below).
-- **Telegram notifications**: logging an entry posts an AI-written announcement (with the photo/GIF and a deep link back to the post) to a group topic; milestones post separately. Async queue drained by an every-minute trigger, so the poster's save is never slowed. Real names are scrubbed out of everything sent to Gemini and restored after. All wording/toggles are phone-editable (Settings tab + style-guide Doc + NameScrub tab), no redeploy. Deferred pieces are in [`BACKLOG.md`](BACKLOG.md).
+- **Telegram notifications**: logging an entry posts to a group topic (photo/GIF + a fixed-layout caption: `Poster spent/just logged/clocked in X hrs/km of <gist> [with friends]`, the description in italics, then an AI cheer; Gemini writes only the gist and cheer, no link); milestones post separately. Async queue drained by an every-minute trigger, so the poster's save is never slowed. Real names are scrubbed out of everything sent to Gemini and restored after. All wording/toggles are phone-editable (Settings tab + style-guide Doc + NameScrub tab), no redeploy. Deferred pieces are in [`BACKLOG.md`](BACKLOG.md).
 
 ## Key decisions
 

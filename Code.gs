@@ -22,7 +22,7 @@
 // Bump this on every deploy so you can confirm which code is actually LIVE:
 // open <WEB_APP_URL>?action=ping in a browser — the JSON echoes this string.
 // If it doesn't match what you just pasted, the deployment didn't update.
-var BACKEND_VERSION = '2026-09-26-namemaplog-removed';
+var BACKEND_VERSION = '2026-10-12-entry-msg-format';
 
 var SHEET_NAME = 'Entries';
 var USERS_SHEET_NAME = 'Users';
@@ -307,19 +307,37 @@ function setSettingValue_(sheet, key, value) {
 var STYLE_GUIDE_STARTER_TEXT = [
   'BNext — Notification Style Guide',
   '',
-  'You are the friendly announcer for a private friend-group activity tracker working toward a shared points goal by 31 Dec 2026.',
+  'ROLE: You are the friendly announcer for a private friend group (called Bzone or CG) that logs activities toward a shared points goal by 31 Dec 2026.',
   '',
-  'How to write each announcement:',
-  '- ONE short line, max ~200 characters.',
-  '- Warm, hype, encouraging — like a friend cheering the group on.',
-  '- At most 1-2 emoji. No hashtags.',
-  '- Vary the wording so repeated announcements never feel templated.',
-  '- Output only the message text, nothing else.',
+  'TONE: Warm, hype and encouraging, like a friend cheering the group on.',
   '',
-  'This Doc is edited from your phone; the backend fetches it (cached ~10 min) to steer the AI-written announcements. Add example messages and adjust tone freely — just keep the Fallback lines at the bottom in the same "type: sentence" format.',
+  'RULES (all messages):',
+  '- 1-3 emoji at most. No hashtags.',
+  '- Vary the wording so repeats never feel templated.',
+  '- Say "friends", never "crew".',
+  '- Use only the facts given. Never invent details or names.',
+  '',
+  'ENTRY MESSAGES (type = entry). Write two parts:',
+  '- HEADER: ONE sentence saying who did what. Start with the Person, add a natural verb (spent / clocked in / just logged), the amount and unit, and "with <With>" if friends are listed. Use the Person and With exactly as given. Do NOT describe the activity (the app shows the title and description right below). No emoji.',
+  '- CHEER: 3-8 words of encouragement matching the category (use the title and category), ending with 1-2 emoji. Do not repeat the header or name anyone.',
+  'Examples (for style only, do not copy):',
+  'HEADER: Alice just logged 3 km with Lisa',
+  'CHEER: keep up the grind, body and spirit! 🏃🔥',
+  'HEADER: Bob clocked in 15 km with 3 friends',
+  'CHEER: amazing determination! 💪',
+  'HEADER: Alice spent 1 hour',
+  'CHEER: keep building the faith! 🔥',
+  'HEADER: John just logged 3 hours with Alice and Bob',
+  'CHEER: keep loving others! 🥐',
+  '',
+  'MILESTONE MESSAGES (type = milestone): ONE celebratory line, max ~200 characters, about the whole group.',
+  'Examples (for style only, do not copy):',
+  'Big moment: Bzone just crossed 500 points together! 🎉',
+  'AMAZING NEWS!! We just flew past 100 points together! 🎉🎉',
+  '',
+  'This Doc is edited from your phone; the backend fetches it (cached ~10 min). Activity posts use the HEADER/CHEER parts above; if the AI is unavailable the app builds a plain header itself.',
   '',
   'Fallback sentences (used verbatim if the AI is unavailable — one per type):',
-  'entry: {name} just logged a new activity — go check it out! 🎉',
   'milestone: We just hit {milestone} points together! 🚀',
   'highlight: Highlight of the week 🌟 — {name} nailed it.',
   'points_update: Points update 📊 — keep it going, team!'
@@ -555,7 +573,8 @@ function doPost(e) {
         var e = result.entry;
         var context = {
           entryId: e.entryId, userId: e.userId, activityDesc: e.activityDesc,
-          activityTitle: e.activityTitle, category: e.category, amount: e.amount, units: e.units
+          activityTitle: e.activityTitle, category: e.category, amount: e.amount, units: e.units,
+          taggedFriends: e.tagged_friends || []
         };
         queueNotification_('entry', e.entryId, context, e.mediaUrl, e.mediaType);
       }
@@ -1220,11 +1239,13 @@ function processOneNotification_(sheet, rowIndex, row) {
   var entryId = String(row[notificationIndexOf_('entryId')] || '');
   var driveFileId = extractDriveFileId_(row[notificationIndexOf_('mediaUrl')]);
   var mediaType = String(row[notificationIndexOf_('mediaType')] || '');
-  // Only post-specific announcements link back to a post. A milestone (and a
-  // points_update) is about the group total, not one entry — no link.
-  var deepLink = (type === 'entry' || type === 'highlight') ? buildDeepLink_(entryId, settings.FRONTEND_URL) : '';
+  // Only a highlight links back to a post. Entry messages are self-contained
+  // (no link); a milestone / points_update is about the group total.
+  var deepLink = (type === 'highlight') ? buildDeepLink_(entryId, settings.FRONTEND_URL) : '';
+  // Entry messages are stored as Telegram HTML (italic description).
+  var parseMode = (type === 'entry') ? 'HTML' : '';
   try {
-    var telegramMessageId = sendTelegramMessage_(content, driveFileId, mediaType, deepLink);
+    var telegramMessageId = sendTelegramMessage_(content, driveFileId, mediaType, deepLink, parseMode);
     updateNotificationStatus_(sheet, rowIndex, 'SENT', {
       telegramMessageId: telegramMessageId, sentAt: new Date().toISOString(), lastError: ''
     });
@@ -1323,6 +1344,7 @@ function parseStyleGuide_(text) {
 // paths that must not burn a retry. THROWS only for a genuine network / HTTP /
 // parse failure, which the caller treats as retryable.
 function generateMessageText_(context, type) {
+  if (type === 'entry') return generateEntryMessage_(context);
   var settings = getSettings_();
   var styleGuide = getStyleGuide_();
   var fallback = fillTemplate_(styleGuide.fallbacks[type] || defaultFallback_(type), context);
@@ -1384,6 +1406,129 @@ function generateMessageText_(context, type) {
   var restored = restoreText_(text.trim(), nameMap); // swap real names back in
   Logger.log('[GEMINI 4/4 after restore] ' + JSON.stringify(restored));
   return restored;
+}
+
+// ---------------------------------------------------------------------
+// Entry announcement: a fixed layout. Gemini writes the HEADER sentence (who
+// did what, amount + unit, with friends) and the CHEER; the title and
+// description are pasted in verbatim.
+//   <header>
+//
+//   <b><i>activity title</i></b>
+//   <i>activity description</i>
+//
+//   —<cheer>
+// Returns Telegram HTML. Real names never reach Gemini (placeholder codes in,
+// restored after). If Gemini is unavailable or the header drops the poster's
+// name, the header is built locally from a template.
+// ---------------------------------------------------------------------
+var ENTRY_FALLBACK_PHRASE = 'keep the good times rolling! ✨';
+
+function generateEntryMessage_(context) {
+  var poster = context.userId ? getDisplayName_(context.userId) : 'Someone';
+  var header = '';
+  var phrase = ENTRY_FALLBACK_PHRASE;
+
+  var apiKey = PropertiesService.getScriptProperties().getProperty('GEMINI_API_KEY');
+  if (apiKey) {
+    var nameMap = buildNameScrubMap_();
+    var prompt = buildEntryPrompt_(context, nameMap, getStyleGuide_().guide);
+    Logger.log('[ENTRY PROMPT]\n' + prompt);
+    var text = fetchGeminiText_(prompt, getSettings_(), apiKey);
+    Logger.log('[ENTRY raw response] ' + JSON.stringify(text));
+    var h = /HEADER:\s*(.+)/i.exec(text);
+    var c = /CHEER:\s*(.+)/i.exec(text);
+    if (h && h[1].trim()) header = restoreText_(h[1].trim(), nameMap);
+    if (c && c[1].trim()) phrase = restoreText_(c[1].trim(), nameMap);
+    // The header must name the poster; otherwise it's unusable.
+    if (header && header.toLowerCase().indexOf(poster.toLowerCase()) === -1) header = '';
+  }
+  if (!header) header = fallbackEntryHeader_(context, poster);
+
+  var parts = [escapeHtml_(header)];
+  var body = [];
+  var title = String(context.activityTitle || '').trim();
+  var desc = String(context.activityDesc || '').trim();
+  if (title) body.push('<b><i>' + escapeHtml_(title) + '</i></b>');
+  if (desc) body.push('<i>' + escapeHtml_(desc) + '</i>');
+  if (body.length) parts.push(body.join('\n'));
+  parts.push('—' + escapeHtml_(phrase));
+  return parts.join('\n\n');
+}
+
+// "<Poster> spent/just logged/clocked in X hours|km [with <friends>]"
+function fallbackEntryHeader_(context, poster) {
+  var units = String(context.units || '');
+  var amount = Number(context.amount);
+  var amountText = isNaN(amount) ? '' : String(Math.round(amount * 10) / 10);
+  var unitLabel = (units === 'hours') ? (amount === 1 ? 'hour' : 'hours') : units;
+  var verbs = (units === 'hours') ? ['spent', 'just logged', 'clocked in'] : ['just logged', 'clocked in'];
+  var header = poster + ' ' + verbs[Math.floor(Math.random() * verbs.length)];
+  if (amountText) header += ' ' + amountText + (unitLabel ? ' ' + unitLabel : '');
+  var withText = taggedFriendsText_(context.taggedFriends, context.userId, getDisplayName_);
+  return withText ? header + ' with ' + withText : header;
+}
+
+// "Alice" / "Alice and Bob" / "3 friends"; '' when nobody was tagged.
+// `nameFor` maps a userId to a display name (or a placeholder code).
+function taggedFriendsText_(taggedFriends, ownerId, nameFor) {
+  var ids = (taggedFriends || []).map(String).filter(function (id) { return id && id !== String(ownerId || ''); });
+  if (!ids.length) return '';
+  if (ids.length > 2) return ids.length + ' friends';
+  return ids.map(nameFor).join(' and ');
+}
+
+// Tone, rules and examples come from the style-guide Doc; the facts and the
+// two-line reply format stay in code so parsing never breaks.
+function buildEntryPrompt_(context, nameMap, guide) {
+  var facts = [];
+  if (context.userId) facts.push('Person: ' + tokenForName_(context.userId, nameMap));
+  if (context.amount && context.units) facts.push('Amount: ' + context.amount + ' ' + context.units);
+  var withText = taggedFriendsText_(context.taggedFriends, context.userId,
+    function (id) { return tokenForName_(id, nameMap); });
+  if (withText) facts.push('With: ' + withText);
+  if (context.activityTitle) facts.push('Activity title: ' + scrubText_(context.activityTitle, nameMap));
+  if (context.category) facts.push('Category: ' + context.category);
+  return [
+    scrubText_(guide || '', nameMap),
+    '',
+    'Message type: entry',
+    'Facts:', facts.join('\n'),
+    '',
+    'Reply with EXACTLY two lines and nothing else:',
+    'HEADER: <one sentence: who did what, the amount and unit, and "with <With>" if listed. Use the Person and With exactly as given. Do NOT describe the activity itself.>',
+    'CHEER: <a short closing cheer>',
+    '',
+    'IMPORTANT: People are given placeholder codes like [[P1]]. Refer to people ONLY by their exact code, verbatim. Do not invent names or details.'
+  ].join('\n');
+}
+
+// One Gemini call. Returns the text, or '' for a 429 / safety block / empty
+// candidate (caller uses its fallback). THROWS on a network / HTTP / parse
+// failure so the queue retries.
+function fetchGeminiText_(prompt, settings, apiKey) {
+  var url = 'https://generativelanguage.googleapis.com/v1beta/models/' +
+    encodeURIComponent(settings.GEMINI_MODEL) + ':generateContent?key=' + encodeURIComponent(apiKey);
+  var resp;
+  try {
+    resp = UrlFetchApp.fetch(url, {
+      method: 'post', contentType: 'application/json',
+      payload: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }), muteHttpExceptions: true
+    });
+  } catch (err) {
+    throw new Error('Gemini network error: ' + err);
+  }
+  var code = resp.getResponseCode();
+  var bodyText = resp.getContentText();
+  if (code === 429) { Logger.log('[GEMINI] 429 quota/rate limit — using fallback. ' + bodyText); return ''; }
+  if (code !== 200) throw new Error('Gemini HTTP ' + code + ': ' + bodyText);
+  try { return extractGeminiText_(JSON.parse(bodyText)); } catch (err) {
+    throw new Error('Gemini parse error: ' + err);
+  }
+}
+
+function escapeHtml_(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 function extractGeminiText_(data) {
@@ -1546,7 +1691,7 @@ function defaultFallback_(type) {
 // file itself can't be fetched (missing/invalid id). On a non-200 Telegram
 // response it throws with Telegram's own `description`, so the retry path and
 // the lastError column are actually diagnostic. Returns the sent message id.
-function sendTelegramMessage_(text, driveFileId, mediaType, deepLink) {
+function sendTelegramMessage_(text, driveFileId, mediaType, deepLink, parseMode) {
   var props = PropertiesService.getScriptProperties();
   var token = props.getProperty('TELEGRAM_BOT_TOKEN');
   var chatId = props.getProperty('TELEGRAM_CHAT_ID');
@@ -1577,6 +1722,7 @@ function sendTelegramMessage_(text, driveFileId, mediaType, deepLink) {
     else if (mediaType === 'gif' || contentType === 'image/gif') { method = 'sendAnimation'; field = 'animation'; }
     else { method = 'sendPhoto'; field = 'photo'; }
     var payload = { chat_id: chatId, caption: caption };
+    if (parseMode) payload.parse_mode = parseMode;
     if (topicId) payload.message_thread_id = topicId;
     payload[field] = blob;
     var resp = UrlFetchApp.fetch(apiBase + method, { method: 'post', payload: payload, muteHttpExceptions: true });
@@ -1584,6 +1730,7 @@ function sendTelegramMessage_(text, driveFileId, mediaType, deepLink) {
   }
 
   var textPayload = { chat_id: chatId, text: caption };
+  if (parseMode) textPayload.parse_mode = parseMode;
   if (topicId) textPayload.message_thread_id = topicId;
   var resp2 = UrlFetchApp.fetch(apiBase + 'sendMessage', { method: 'post', payload: textPayload, muteHttpExceptions: true });
   return parseTelegramResponse_(resp2);
