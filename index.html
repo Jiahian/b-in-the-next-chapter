@@ -67,12 +67,15 @@
     --series-spiritual: #8b5cf6;
     --series-relationship: #f43f5e;
     --series-others: #3b82f6;
+    --series-bffun: #f59e0b;
     --cat-spiritual-bg: #f5f3ff;
     --cat-spiritual-border: rgba(139, 92, 246, 0.2);
     --cat-relationship-bg: #fff1f2;
     --cat-relationship-border: rgba(244, 63, 94, 0.2);
     --cat-others-bg: #eff6ff;
     --cat-others-border: rgba(59, 130, 246, 0.2);
+    --cat-bffun-bg: #fffbeb;
+    --cat-bffun-border: rgba(245, 158, 11, 0.25);
     --seq-track: #e2e8f0;
     --seq-fill: #10b981;
     --accent: #4f46e5;
@@ -115,12 +118,15 @@
     --series-spiritual: #c58af9;
     --series-relationship: #f28b82;
     --series-others: #8ab4f8;
+    --series-bffun: #fbbf24;
     --cat-spiritual-bg: rgba(197, 138, 249, 0.16);
     --cat-spiritual-border: rgba(197, 138, 249, 0.3);
     --cat-relationship-bg: rgba(242, 139, 130, 0.16);
     --cat-relationship-border: rgba(242, 139, 130, 0.3);
     --cat-others-bg: rgba(138, 180, 248, 0.16);
     --cat-others-border: rgba(138, 180, 248, 0.3);
+    --cat-bffun-bg: rgba(251, 191, 36, 0.16);
+    --cat-bffun-border: rgba(251, 191, 36, 0.3);
     --seq-track: #303134;
     --seq-fill: #81c995;
     --accent: #8ab4f8;
@@ -717,7 +723,7 @@
   #pointsOverlay .progress-headline .value { font-size: 54px; letter-spacing: -0.03em; }
   .gauge-sub { font-size: 12px; font-weight: 700; color: var(--pts-muted); margin-top: 6px; }
   /* every size here is 76.5% of the first design (85% x 90%): width, padding, type, bar height */
-  .cat-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6.3px; width: 76.5%; margin: 0 auto; }
+  .cat-cols { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6.3px; width: 92%; margin: 0 auto; }
   .cat-col { background: rgba(255, 255, 255, 0.13); border-radius: 10.8px; padding: 9px 6.3px 7.7px; text-align: center; }
   .cat-name { font-size: 9.2px; font-weight: 700; color: #e0e7ff; }
   .cat-val { font-size: 15.3px; font-weight: 800; margin: 3.1px 0 6.1px; color: #ffffff; font-variant-numeric: tabular-nums; }
@@ -726,6 +732,7 @@
   .cat-bar-fill[data-cat="spiritual"] { background: #c4b5fd; }
   .cat-bar-fill[data-cat="relationship"] { background: #fda4af; }
   .cat-bar-fill[data-cat="others"] { background: #93c5fd; }
+  .cat-bar-fill[data-cat="bffun"] { background: #fcd34d; }
   .cat-share { font-size: 9.2px; font-weight: 700; color: var(--pts-muted); margin-top: 6.1px; }
 
   /* the pieces fade up in turn; the bars fill once it has opened */
@@ -743,6 +750,7 @@
   #pointsOverlay.open .cat-bar-fill { transition: height 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.9s; }
   #pointsOverlay.open .cat-col:nth-child(2) .cat-bar-fill { transition-delay: 1s; }
   #pointsOverlay.open .cat-col:nth-child(3) .cat-bar-fill { transition-delay: 1.1s; }
+  #pointsOverlay.open .cat-col:nth-child(4) .cat-bar-fill { transition-delay: 1.2s; }
   @media (prefers-reduced-motion: reduce) {
     .points-overlay, .points-overlay *, .points-close, .pb-fill { transition-duration: 0.01s !important; transition-delay: 0s !important; }
   }
@@ -934,7 +942,7 @@
     color: var(--text-primary); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
   }
   .log-chip.sel { border-color: var(--accent); }
-  #logChips { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 4px; }
+  #logChips { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 4px; }
   #logChips .log-chip { margin: 0; justify-content: center; padding: 13px 6px; font-size: 14px; }
   .log-pills { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .log-pills .log-pill { justify-content: center; }
@@ -971,6 +979,13 @@
     font: inherit; font-size: 13px; font-weight: 600; color: var(--text-secondary);
   }
   .log-units button.on { background: var(--surface-1); color: var(--text-primary); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15); }
+  .log-fixed {
+    display: none; text-align: center; font-size: 14px; color: var(--text-secondary);
+    padding: 14px 12px; border-radius: 12px; background: color-mix(in srgb, var(--text-muted, #94a3b8) 3.5%, transparent);
+  }
+  .log-fixed b { color: var(--text-primary); font-weight: 800; }
+  .log-step[data-step="3"].is-fixed .log-fixed { display: block; }
+  .log-step[data-step="3"].is-fixed .log-amt-row { display: none; }
   .log-goal { margin-top: 10px; }
   .log-goal-row { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--text-muted); margin-bottom: 5px; }
   .log-goal-row b { color: var(--text-primary); font-weight: 700; }
@@ -2200,6 +2215,7 @@
   .tile-dot.cat-spiritual { background: #c084fc; }
   .tile-dot.cat-relationship { background: #fb7185; }
   .tile-dot.cat-others { background: #93c5fd; }
+  .tile-dot.cat-bffun { background: #fbbf24; }
   .tile-people { display: flex; margin-top: 6px; }
   .tile-avatar {
     width: 20px; height: 20px; border-radius: 50%;
@@ -3138,6 +3154,11 @@
     background: var(--cat-others-bg) !important;
     border: 1px solid var(--cat-others-border) !important;
   }
+  .meta-cat.cat-bffun {
+    color: var(--series-bffun) !important;
+    background: var(--cat-bffun-bg) !important;
+    border: 1px solid var(--cat-bffun-border) !important;
+  }
 
   /* ===================================================================
      Google Dark Mode Specific Styling
@@ -3752,11 +3773,13 @@
               <button type="button" class="log-chip" data-cat="Spiritual"><i style="background:var(--series-spiritual)"></i>Spiritual</button>
               <button type="button" class="log-chip" data-cat="Relationship"><i style="background:var(--series-relationship)"></i>Relationship</button>
               <button type="button" class="log-chip" data-cat="Others"><i style="background:var(--series-others)"></i>Others</button>
+              <button type="button" class="log-chip" data-cat="BF Fun"><i style="background:var(--series-bffun)"></i>BF Fun</button>
             </div>
             <select id="fCategory" required style="display:none;">
               <option value="Spiritual" selected>Spiritual</option>
               <option value="Relationship">Relationship</option>
               <option value="Others">Others</option>
+              <option value="BF Fun">BF Fun</option>
             </select>
             <div class="field-error" data-for="fCategory">Please choose a category.</div>
           </div>
@@ -3800,6 +3823,7 @@
             <p class="log-q">
               Amount to log
             </p>
+            <div class="log-fixed" id="logFixed">BF Fun is a fixed <b>3 pts</b> &mdash; no hours or km needed.</div>
             <div class="log-amt-row">
               <div class="log-amount">
                 <button type="button" class="step-btn" id="amtDec" aria-label="Less">&minus;</button>
@@ -3814,6 +3838,7 @@
             <select id="fUnits" required style="display:none;">
               <option value="hours" selected>Hours (hrs)</option>
               <option value="km">Kilometres (km)</option>
+              <option value="pts">Points (pts)</option>
             </select>
             <div class="field-error" data-for="fAmount" style="text-align:center;">Enter an amount greater than 0.</div>
             <div class="log-goal">
@@ -4199,6 +4224,7 @@
                 <option value="Spiritual">Spiritual</option>
                 <option value="Relationship">Relationship</option>
                 <option value="Others">Others</option>
+                <option value="BF Fun">BF Fun</option>
               </select>
             </div>
             <div class="field-error" data-for="editCategory">Please choose a category.</div>
@@ -4221,6 +4247,7 @@
               <select id="editUnits" required>
                 <option value="hours">Hours (hrs)</option>
                 <option value="km">Kilometres (km)</option>
+                <option value="pts">Points (pts)</option>
               </select>
             </div>
           </div>
@@ -4457,12 +4484,17 @@
   var DEADLINE_ISO = "2026-12-31T23:59:59+08:00"; // Asia/Singapore
   var POLL_INTERVAL_MS = 20000;
 
-  var CATEGORIES = ["Spiritual", "Relationship", "Others"];
+  var CATEGORIES = ["Spiritual", "Relationship", "Others", "BF Fun"];
   var CATEGORY_COLORS = {
     Spiritual: getCss_("--series-spiritual"),
     Relationship: getCss_("--series-relationship"),
-    Others: getCss_("--series-others")
+    Others: getCss_("--series-others"),
+    "BF Fun": getCss_("--series-bffun")
   };
+  // BF Fun is not measured in hours or km: every post is worth a flat 3 pts.
+  var BF_FUN = "BF Fun";
+  var BF_FUN_POINTS = 3;
+  function catKey_(c) { return String(c || "").toLowerCase().replace(/[^a-z0-9]/g, ""); }
   function getCss_(name) {
     return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
   }
@@ -4962,7 +4994,7 @@
       col.innerHTML =
         '<div class="cat-name">' + c + '</div>' +
         '<div class="cat-val">' + formatNum_(v) + '</div>' +
-        '<div class="cat-bar"><div class="cat-bar-fill" data-cat="' + c.toLowerCase() + '" style="height:' + shareExact + '%"></div></div>' +
+        '<div class="cat-bar"><div class="cat-bar-fill" data-cat="' + catKey_(c) + '" style="height:' + shareExact + '%"></div></div>' +
         '<div class="cat-share">' + Math.round(shareExact) + '%</div>';
       legendList.appendChild(col);
     });
@@ -4988,7 +5020,7 @@
     activeSubmenu: null, // null | 'month' | 'category' | 'area'
     selectedOption: {
       type: "default", // 'default' | 'month' | 'category' | 'area'
-      value: "Default"  // 'Default' | 'All Months' | 'Jan'..'Dec' | 'Spiritual' | 'Relationship' | 'Others'
+      value: "Default"  // 'Default' | 'All Months' | 'Jan'..'Dec' | 'Spiritual' | 'Relationship' | 'Others' | 'BF Fun'
     }
   };
 
@@ -4997,7 +5029,7 @@
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
   ];
 
-  var CATEGORIES_LIST = ["Spiritual", "Relationship", "Others"];
+  var CATEGORIES_LIST = ["Spiritual", "Relationship", "Others", "BF Fun"];
   var AREAS_LIST = CATEGORIES_LIST;
 
   var MONTH_NUM_MAP = {
@@ -5311,7 +5343,7 @@
     var item = document.createElement("div");
     item.className = "gallery-item gallery-tile";
     var catKey = String(entry.category || "others").toLowerCase().replace(/[^a-z0-9]/g, "");
-    var catClass = "cat-" + (catKey === "spiritual" || catKey === "relationship" ? catKey : "others");
+    var catClass = "cat-" + (catKey === "spiritual" || catKey === "relationship" || catKey === "bffun" ? catKey : "others");
     var imgSrc = escapeHtml_(driveImageUrl(entry.driveFileId));
     var altText = escapeHtml_(entry.activityTitle || "Activity");
 
@@ -5391,7 +5423,10 @@
         } else if (filterVal === "Relationship") {
           if (cat.toLowerCase() !== "relationship") return false;
         } else if (filterVal === "Others") {
-          if (cat.toLowerCase() === "spiritual" || cat.toLowerCase() === "relationship") return false;
+          var lc = cat.toLowerCase();
+          if (lc === "spiritual" || lc === "relationship" || lc === "bf fun") return false;
+        } else if (filterVal === "BF Fun") {
+          if (cat.toLowerCase() !== "bf fun") return false;
         }
       }
       return true;
@@ -5534,7 +5569,7 @@
 
     // Area badge & color class
     var catKey = String(entry.category || "others").toLowerCase().replace(/[^a-z0-9]/g, "");
-    var catClass = "cat-" + (catKey === "spiritual" || catKey === "relationship" ? catKey : "others");
+    var catClass = "cat-" + (catKey === "spiritual" || catKey === "relationship" || catKey === "bffun" ? catKey : "others");
     var areaBadge = document.getElementById("previewAreaBadge");
     if (areaBadge) {
       areaBadge.className = "meta-cat " + catClass;
@@ -5836,6 +5871,7 @@
     document.getElementById("editAmount").value = entry.amount || "";
     var unitVal = (entry.units && entry.units.toLowerCase().indexOf("km") !== -1) ? "km" : "hours";
     document.getElementById("editUnits").value = unitVal;
+    syncEditFixedAmount_();
 
     // Reset media box ratio based on entry hint if present
     var isExplicitPortrait = (entry.aspectRatio === "3:4" || entry.aspectRatio === "portrait");
@@ -6438,6 +6474,21 @@
     });
   }
 
+  // BF Fun is a flat 3 pts, so the Amount/Units fields lock to it (and unlock again on another category).
+  function syncEditFixedAmount_() {
+    var amt = document.getElementById("editAmount"), units = document.getElementById("editUnits");
+    var fixed = document.getElementById("editCategory").value === BF_FUN;
+    if (fixed) {
+      amt.value = BF_FUN_POINTS;
+      units.value = "pts";
+    } else if (units.value === "pts") {
+      amt.value = "";
+      units.value = "hours";
+    }
+    amt.disabled = fixed;
+    units.disabled = fixed;
+  }
+
   function submitEditActivityForm(e) {
     e.preventDefault();
     if (!state.editingEntry) return;
@@ -6450,6 +6501,7 @@
     var amountRaw = document.getElementById("editAmount").value;
     var amount = Math.round(parseFloat(amountRaw) * 10) / 10;
     var units = document.getElementById("editUnits").value;
+    if (category === BF_FUN) { amount = BF_FUN_POINTS; units = "pts"; }
 
     var valid = true;
     if (!activity) { showEditError_("editActivityName"); valid = false; }
@@ -6782,6 +6834,18 @@
     });
 
     var cat = document.getElementById("fCategory").value || "Spiritual";
+    // BF Fun has no amount to enter: lock it to its flat points; leaving it clears them again.
+    var amtEl = document.getElementById("fAmount"), unitsEl = document.getElementById("fUnits");
+    var isBf = cat === BF_FUN && logCatPicked_;
+    if (isBf) {
+      amtEl.value = BF_FUN_POINTS;
+      unitsEl.value = "pts";
+    } else if (unitsEl.value === "pts") {
+      amtEl.value = "";
+      unitsEl.value = "hours";
+    }
+    var amtStep = sheet.querySelector('.log-step[data-step="3"]');
+    if (amtStep) amtStep.classList.toggle("is-fixed", isBf);
     sheet.querySelectorAll("#logChips .log-chip").forEach(function (c) {
       c.classList.toggle("sel", logCatPicked_ && c.getAttribute("data-cat") === cat);
     });
@@ -6794,7 +6858,7 @@
     });
 
     // Media frame takes the category's colour; the pill and goal bar are live.
-    var catColour = logCatPicked_ ? "var(--series-" + cat.toLowerCase() + ")" : "var(--baseline, #cbd5e1)";
+    var catColour = logCatPicked_ ? "var(--series-" + catKey_(cat) + ")" : "var(--baseline, #cbd5e1)";
     var media = document.getElementById("logMedia");
     if (media) media.style.setProperty("--log-cat", catColour);
     sheet.style.setProperty("--log-cat", catColour);
@@ -6988,6 +7052,7 @@
     var amountRaw = document.getElementById("fAmount").value;
     var amount = Math.round(parseFloat(amountRaw) * 10) / 10;
     var units = document.getElementById("fUnits").value;
+    if (category === BF_FUN) { amount = BF_FUN_POINTS; units = "pts"; }
 
     var valid = true;
     if (!name) { showError_("fName"); valid = false; }
@@ -8296,7 +8361,7 @@
     // Note-step pills: the category pill cycles through the three categories;
     // the date pill opens the date picker laid invisibly over it.
     document.getElementById("logCatPill").addEventListener("click", function () {
-      var order = ["Spiritual", "Relationship", "Others"];
+      var order = CATEGORIES;
       var sel = document.getElementById("fCategory");
       sel.value = order[(order.indexOf(sel.value) + 1) % order.length];
       updateLogUi_();
@@ -8824,6 +8889,7 @@
 
     var editActivityForm = document.getElementById("editActivityForm");
     if (editActivityForm) editActivityForm.addEventListener("submit", submitEditActivityForm);
+    document.getElementById("editCategory").addEventListener("change", syncEditFixedAmount_);
 
     var editTopCloseBtn = document.getElementById("editTopCloseBtn");
     if (editTopCloseBtn) editTopCloseBtn.addEventListener("click", closeEditModal);

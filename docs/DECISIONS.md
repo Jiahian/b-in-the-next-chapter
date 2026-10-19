@@ -190,6 +190,8 @@ permanently corrupted** — see "Known gaps" below.
 - [ ] **Real end-to-end pass with the actual friend group** now that sign-in is live: confirm everyone's email is in the Allowlist, everyone can sign in and set a display name, and the app feels normal day-to-day (not just single-account testing).
 - [ ] **Backlog scoping** — the gamification direction and the deferred notification enhancements are worth revisiting; the identity/counter groundwork they need (stable `userId`, per-user counters) is already in place. See [`BACKLOG.md`](BACKLOG.md).
 
+- **BF Fun category (4th category)**: a flat 3 pts per post, not hours/km. Stored as `category: 'BF Fun'`, `amount: 3`, `units: 'pts'`; `Code.gs` `validateEntryFields_` forces those values server-side whatever the client sends, so it needs a manual Apps Script redeploy to take effect. The Log sheet's amount step and the Edit form lock to 3 pts for it. Per-user counters still file BF Fun posts under `othersPostCount` (no new Users column was added). The FAQ slides were not changed.
+
 ## Stress-test findings
 
 - **Video upload ceiling**: load testing showed a 15MB video took ~44s and a 40MB video failed outright (hung, never completed). **Resolved** — a hard 20MB client-side limit is enforced before any upload/GIF-conversion attempt.
