@@ -1741,7 +1741,7 @@
     align-items: center;
     justify-content: center;
     height: 34px;
-    padding: 0 16px;
+    padding: 0 20px;
     font-size: 12px;
     font-weight: 700;
     letter-spacing: -0.01em;
@@ -1771,6 +1771,12 @@
     width: 34px;
     height: 34px;
     padding: 0;
+  }
+  /* A chosen filter shows as a slim pill — the same height and type as the Default / Month / Cat. buttons — not the full-height icon circle. */
+  .filter-capsule-idle-btn:not(.is-icon-btn) {
+    height: 24px;
+    padding: 0 14px;
+    font-size: 11px;
   }
   .filter-capsule-row {
     display: flex;
@@ -5045,19 +5051,14 @@
   };
 
   function getCapsulePillWidth(text) {
-    var isMobile = (window.innerWidth <= 480);
-    var isNarrow = (window.innerWidth <= 360);
-    if (!text || text === "Default") return (isMobile ? 25.5 : 34);
+    if (!text || text === "Default") return 34;
     var canvas = getCapsulePillWidth._canvas || (getCapsulePillWidth._canvas = document.createElement("canvas"));
     var ctx = canvas.getContext("2d");
-    ctx.font = isNarrow
-      ? "700 9px 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif"
-      : (isMobile
-        ? "700 9.5px 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif"
-        : "700 11px 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif");
+    // Same font as the chosen-filter pill, so the pill is sized to the text it really holds.
+    ctx.font = "700 11px 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
     var textWidth = ctx.measureText(text).width;
-    var pad = isNarrow ? 14 : (isMobile ? 16 : 22);
-    return Math.max(isMobile ? 25.5 : 34, Math.ceil(textWidth + pad));
+    // The button's own 14px of padding each side, plus a little spare.
+    return Math.max(34, Math.ceil(textWidth + 32));
   }
 
   function applyCapsuleFilter(type, value) {
