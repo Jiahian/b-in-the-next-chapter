@@ -102,8 +102,8 @@ whoever owns the backend.
 
 ### 6.3 Points by category — bar chart
 
-- Shown in the points reveal (§6.2) as three side-by-side columns, one per category (Spiritual / Relationship / Others): the category name, its point total, a vertical bar, and its share of all points as a percentage.
-- Each bar's height is the category's **share of the total points** (so the three always show how the group's points split), while the progress toward the 1,000-point goal is the bar above them.
+- Shown in the points reveal (§6.2) as four side-by-side columns, one per category (Spiritual / Relationship / Others / BF Fun): the category name, its point total, a vertical bar, and its share of all points as a percentage.
+- Each bar's height is the category's **share of the total points** (so the four always show how the group's points split), while the progress toward the 1,000-point goal is the bar above them.
 - Labeled with name, point total and percentage in every column (not colour-only, for accessibility) — no separate legend needed.
 - Updates as entries are submitted, edited, or deleted.
 
@@ -128,7 +128,7 @@ whoever owns the backend.
 |---|---|---|
 | Activity name | Free text | Required. |
 | What went on? | Free text | Required. A short narrative/description, not the logger's name — who logged it is the signed-in account, shown automatically (§6.7), not typed here. |
-| Category (Area) | Dropdown | Required. Options: Spiritual, Relationship, Others. |
+| Category (Area) | Dropdown | Required. Options: Spiritual, Relationship, Others, BF Fun. BF Fun is a fixed 3 pts (no hours/km; stored as units `pts`). |
 | Date | Date picker | Required. Defaults to today. Cannot be a future date. |
 | Amount | Number | Required. Up to 1 decimal place. Must be greater than 0. |
 | Units | Dropdown | Required. Options: km, hours. |
@@ -227,7 +227,7 @@ redeploy.
 |---|---|---|
 | entryId | string | Generated on create; used for edit/delete lookups |
 | name | string | The "What went on?" narrative/description — *not* who logged it |
-| category | enum | Spiritual \| Relationship \| Others |
+| category | enum | Spiritual \| Relationship \| Others \| BF Fun |
 | activity | string | Free text |
 | date | date | ≤ today |
 | amount | number | 1 decimal place, > 0; also the point value |
@@ -274,7 +274,7 @@ Total points = SUM(amount) across all entries where `deleted = false`. Category 
 ## 10. Assumptions & open questions
 
 - **Points = amount.** The brief doesn't define a separate points value distinct from the logged amount/units, so this PRD assumes 1 unit logged (1 km or 1 hour) = 1 point. *Still open: should km and hours convert to points differently (e.g., weighted), or should there be a separate "points" field independent of the measured amount?*
-- **Target = 1,000 points**, categories fixed at Spiritual / Relationship / Others for v1 (not user-editable) — both confirmed, built and live.
+- **Target = 1,000 points**, categories fixed at Spiritual / Relationship / Others / BF Fun (not user-editable) — both confirmed, built and live.
 - **Edit/delete restricted to the owner.** Entries logged before this system existed have no owner on record and stay open to anyone, so nothing old is stranded.
 - **Privacy**: gallery and totals are only visible to signed-in, allowlisted accounts.
 - **Sync interval**: 20 seconds (`POLL_INTERVAL_MS` in `index.html`).

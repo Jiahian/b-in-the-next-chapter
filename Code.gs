@@ -22,14 +22,18 @@
 // Bump this on every deploy so you can confirm which code is actually LIVE:
 // open <WEB_APP_URL>?action=ping in a browser — the JSON echoes this string.
 // If it doesn't match what you just pasted, the deployment didn't update.
-var BACKEND_VERSION = '2026-10-12-entry-msg-format';
+var BACKEND_VERSION = '2026-10-19-BF-fun';
 
 var SHEET_NAME = 'Entries';
 var USERS_SHEET_NAME = 'Users';
 var ALLOWLIST_SHEET_NAME = 'Allowlist';
 var DRIVE_FOLDER_NAME = 'BNext - Media';
-var CATEGORIES = ['Spiritual', 'Relationship', 'Others'];
+var CATEGORIES = ['Spiritual', 'Relationship', 'Others', 'BF Fun'];
 var UNITS = ['km', 'hours'];
+// BF Fun isn't measured in hours or km: every entry is a flat BF_FUN_POINTS, stored with units 'pts'.
+var BF_FUN_CATEGORY = 'BF Fun';
+var BF_FUN_POINTS = 3;
+var BF_FUN_UNITS = 'pts';
 
 // Column order — also the row-write order. Keep in sync with index.html.
 // 'userId' (Google's stable 'sub' claim) was added after launch — legacy
@@ -1775,6 +1779,8 @@ function validateEntryFields_(body, requireMedia) {
   var date = String(body.date || '').trim();
   var amount = Math.round(Number(body.amount) * 10) / 10;
   var units = String(body.units || '').trim();
+  // The server decides BF Fun's points, whatever the client sent.
+  if (category === BF_FUN_CATEGORY) { amount = BF_FUN_POINTS; units = BF_FUN_UNITS; }
 
   if (!activityDesc) return { error: 'Please describe what went on' };
   if (CATEGORIES.indexOf(category) === -1) return { error: 'Invalid category' };
@@ -1782,7 +1788,7 @@ function validateEntryFields_(body, requireMedia) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return { error: 'Invalid date format' };
   if (date > todayString_()) return { error: 'Date cannot be in the future' };
   if (!(amount > 0)) return { error: 'Amount must be greater than 0' };
-  if (UNITS.indexOf(units) === -1) return { error: 'Invalid units' };
+  if (category !== BF_FUN_CATEGORY && UNITS.indexOf(units) === -1) return { error: 'Invalid units' };
   if (requireMedia && !body.media) return { error: 'Photo/video is required' };
 
   return { value: { activityDesc: activityDesc, category: category, activityTitle: activityTitle, date: date, amount: amount, units: units } };
