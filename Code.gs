@@ -62,7 +62,7 @@ var USER_HEADERS = [
   'postCount', 'spiritualPostCount', 'relationshipPostCount', 'othersPostCount',
   'currentDailyStreak', 'longestDailyStreak', 'lastEntryDate',
   'currentWeeklyStreak', 'longestWeeklyStreak', 'lastEntryWeek',
-  'taggedInCount', 'groupActivityPostCount'
+  'taggedInCount', 'groupActivityPostCount', 'BfPostCount'
 ];
 
 // 'name' here is just an admin-facing label for tracking who's who in the
@@ -963,7 +963,7 @@ var COUNTER_FIELDS = [
   'postCount', 'spiritualPostCount', 'relationshipPostCount', 'othersPostCount',
   'currentDailyStreak', 'longestDailyStreak', 'lastEntryDate',
   'currentWeeklyStreak', 'longestWeeklyStreak', 'lastEntryWeek',
-  'taggedInCount', 'groupActivityPostCount'
+  'taggedInCount', 'groupActivityPostCount', 'BfPostCount'
 ];
 
 // Days since the Unix epoch for a plain 'YYYY-MM-DD' calendar date. Parsed
@@ -995,7 +995,7 @@ function runStreaks_(nums) {
 }
 
 function computeCountersForUser_(entries, userId) {
-  var owned = 0, spiritual = 0, relationship = 0, others = 0;
+  var owned = 0, spiritual = 0, relationship = 0, others = 0, bf = 0;
   var taggedInCount = 0, groupActivityPostCount = 0;
   var daySet = {};
   for (var i = 0; i < entries.length; i++) {
@@ -1011,6 +1011,7 @@ function computeCountersForUser_(entries, userId) {
       var cat = String(e.category || '').toLowerCase();
       if (cat === 'spiritual') spiritual++;
       else if (cat === 'relationship') relationship++;
+      else if (cat === 'bf fun') bf++;
       else others++;
       if ((e.tagged_friends || []).length > 0) groupActivityPostCount++;
     } else {
@@ -1052,7 +1053,8 @@ function computeCountersForUser_(entries, userId) {
     longestWeeklyStreak: weekly.longest,
     lastEntryWeek: lastDate ? weekIndexSinceEpoch_(lastDate) : '',
     taggedInCount: taggedInCount,
-    groupActivityPostCount: groupActivityPostCount
+    groupActivityPostCount: groupActivityPostCount,
+    BfPostCount: bf
   };
 }
 
@@ -1066,7 +1068,7 @@ function findUserRowByUserId_(sheet, userId) {
   return -1;
 }
 
-// Writes the 12 counter columns (contiguous at the tail of USER_HEADERS) in
+// Writes the counter columns (contiguous at the tail of USER_HEADERS) in
 // one setValues call.
 function writeUserCounters_(sheet, rowIndex, counters) {
   var startCol = userIndexOf_('postCount') + 1;
@@ -1469,6 +1471,7 @@ function fallbackEntryHeader_(context, poster) {
   var verbs = (units === 'hours') ? ['spent', 'just logged', 'clocked in'] : ['just logged', 'clocked in'];
   var header = poster + ' ' + verbs[Math.floor(Math.random() * verbs.length)];
   if (amountText) header += ' ' + amountText + (unitLabel ? ' ' + unitLabel : '');
+  if (String(context.category || '') === BF_FUN_CATEGORY) header += ' for BF';
   var withText = taggedFriendsText_(context.taggedFriends, context.userId, getDisplayName_);
   return withText ? header + ' with ' + withText : header;
 }
@@ -1500,7 +1503,7 @@ function buildEntryPrompt_(context, nameMap, guide) {
     'Facts:', facts.join('\n'),
     '',
     'Reply with EXACTLY two lines and nothing else:',
-    'HEADER: <one sentence: who did what, the amount and unit, and "with <With>" if listed. Use the Person and With exactly as given. Do NOT describe the activity itself.>',
+    'HEADER: <one sentence: who did what, the amount and unit, and "with <With>" if listed. If the Category is "BF Fun", add "for BF" right after the amount and unit (e.g. "... just logged 3 pts for BF"). Use the Person and With exactly as given. Do NOT describe the activity itself.>',
     'CHEER: <a short closing cheer>',
     '',
     'IMPORTANT: People are given placeholder codes like [[P1]]. Refer to people ONLY by their exact code, verbatim. Do not invent names or details.'
