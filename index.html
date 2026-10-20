@@ -2186,6 +2186,7 @@
   .gallery-tile {
     border-radius: 14px;
     background: #ffffff;
+    touch-action: manipulation; -webkit-user-select: none; user-select: none;
   }
   .gallery-tile .pts-pill { right: auto; bottom: auto; top: 8px; left: auto; right: 8px; font-size: 11px; padding: 3px 9px; }
   .tile-info {
@@ -2408,7 +2409,7 @@
   }
   .preview-fullphoto-btn {
     display: none;
-    position: absolute; right: 10px; bottom: 12px; z-index: 3;
+    position: absolute; left: 10px; bottom: 12px; z-index: 3;
     align-items: center; gap: 5px;
     background: rgba(15, 23, 42, 0.55);
     -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
@@ -2417,6 +2418,63 @@
     padding: 4px 10px; cursor: pointer;
   }
   .post-preview-sheet .thumb.ratio-3-4 .preview-fullphoto-btn { display: inline-flex; }
+
+  /* Likes: double-tap the photo for a heart pop; the counter sits bottom-right of the image. */
+  .post-preview-sheet .thumb { touch-action: manipulation; -webkit-user-select: none; user-select: none; }
+  .like-pop {
+    position: absolute; left: 50%; top: 50%; z-index: 6; pointer-events: none;
+    font-size: 70px; line-height: 1; opacity: 0;
+    transform: translate(-50%, -50%) scale(0.3);
+    filter: drop-shadow(0 4px 14px rgba(15, 23, 42, 0.35));
+  }
+  .like-pop.go { animation: likePop 0.85s ease-out; }
+  .like-pop.tile-pop { font-size: 42px; }
+  .like-pop svg, .like-fizz svg { display: block; width: 1em; height: 1em; }
+  /* Fizz: small hearts that bubble up around the photo on every like (more of them on a rapid streak). */
+  .like-fizz {
+    position: absolute; left: var(--x); top: 105%; z-index: 5; pointer-events: none;
+    font-size: var(--s); line-height: 1; opacity: 0;
+    animation: likeFizz var(--d) cubic-bezier(0.3, 0.1, 0.5, 1) var(--delay) forwards;
+  }
+  /* From just under the bottom edge to just past the top, fading the whole way. */
+  @keyframes likeFizz {
+    0%   { top: 105%; opacity: 0; transform: translate(-50%, -50%) scale(0.7); }
+    8%   { opacity: 0.95; }
+    100% { top: -6%; opacity: 0; transform: translate(calc(-50% + var(--dx)), -50%) scale(1); }
+  }
+  @keyframes likePop {
+    0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
+    18%  { opacity: 1; transform: translate(-50%, -50%) scale(1.18); }
+    32%  { transform: translate(-50%, -50%) scale(0.96); }
+    62%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -58%) scale(1.08); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .like-pop.go { animation: likeFade 0.85s linear; }
+    @keyframes likeFade { 0%, 60% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1); } }
+  }
+  .preview-like-count {
+    display: none; position: absolute; right: 10px; bottom: 12px; z-index: 4;
+    align-items: center; gap: 5px;
+    background: rgba(15, 23, 42, 0.55);
+    -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+    color: #ffffff; border: none; border-radius: 999px;
+    font: inherit; font-size: 12px; font-weight: 700;
+    padding: 4px 10px; pointer-events: none;
+  }
+  .preview-like-count.show { display: inline-flex; }
+  .preview-like-count svg, .tile-likes svg { fill: none; stroke: currentColor; }
+  .preview-like-count.mine svg, .tile-likes.mine svg { fill: #ef4444; stroke: #ef4444; }
+  .preview-like-count.bump { animation: likeBump 0.3s ease-out; }
+  @keyframes likeBump { 40% { transform: scale(1.18); } }
+  .tile-likes {
+    display: none; position: absolute; right: 8px; bottom: 8px; z-index: 2;
+    align-items: center; gap: 4px; pointer-events: none;
+    background: rgba(15, 23, 42, 0.55);
+    -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+    color: #ffffff; border-radius: 999px; font-size: 11px; font-weight: 700; padding: 3px 8px;
+  }
+  .tile-likes.show { display: inline-flex; }
   .preview-fullphoto-btn[hidden] { display: none !important; }
   /* Our own pull-to-refresh replaces the browser's, which would reload the whole page. */
   html { overscroll-behavior-y: contain; }
@@ -3657,6 +3715,7 @@
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><linearGradient id="likeGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ef233c"/><stop offset="1" stop-color="#ff7eb6"/></linearGradient></defs></svg>
 
 <header class="app-header">
   <div class="header-inner">
@@ -4112,6 +4171,12 @@
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6"></path><path d="M9 21H3v-6"></path><path d="M21 3l-7 7"></path><path d="M3 21l7-7"></path></svg>
         <span>Full photo</span>
       </button>
+
+      <span class="like-pop" id="previewLikePop" aria-hidden="true"><svg viewBox="0 0 24 24" fill="url(#likeGrad)"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg></span>
+      <span class="preview-like-count" id="previewLikeBtn" role="img" aria-label="Likes">
+        <svg width="14" height="14" viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+        <span id="previewLikeNum">0</span>
+      </span>
     </div>
 
     <div class="meta">
@@ -4515,6 +4580,7 @@
   var state = {
     entries: [],
     users: [],
+    likes: {}, // server truth: { entryId: { userId: count } }; taps not yet confirmed are added on top (see likeCounts_)
     loaded: false,
     editingId: null,
     pendingMedia: null, // {data, filename, mimeType}
@@ -5334,9 +5400,161 @@
     }).join("");
   }
 
+  // ----- Likes. Double-tap a photo in the post to like it (as many times as you like); the
+  // counter bottom-right shows the total and opens the list of who liked it. Taps show at once
+  // and are sent in one batch shortly after the last tap, so a flurry is a single request.
+  var LIKE_HEART_SVG_ = '<svg width="%S%" height="%S%" viewBox="0 0 24 24" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>';
+  var LIKE_SEND_DELAY_MS = 700;
+  var likeUnsent_ = {};   // entryId -> my taps not yet sent
+  var likeUnconfirmed_ = {}; // entryId -> my taps sent or waiting, not yet in state.likes
+  var likeTimers_ = {};
+  // The second tap of a double tap on a gallery tile lands on the post that tap just opened;
+  // taps on the photo are ignored for a moment after opening so it can't open the full photo.
+  var previewOpenedAt_ = 0;
+  var PREVIEW_TAP_GUARD_MS = 600;
+
+  function myUserId_() { return (profile && profile.userId) || ""; }
+
+  // Per-person counts for a post: what the server has, plus my own unconfirmed taps.
+  function likeCounts_(entryId) {
+    var out = {};
+    var server = (state.likes && state.likes[entryId]) || {};
+    Object.keys(server).forEach(function (uid) { out[uid] = server[uid]; });
+    var extra = likeUnconfirmed_[entryId] || 0;
+    if (extra > 0 && myUserId_()) out[myUserId_()] = (out[myUserId_()] || 0) + extra;
+    return out;
+  }
+  function likeTotal_(entryId) {
+    var c = likeCounts_(entryId);
+    return Object.keys(c).reduce(function (sum, uid) { return sum + c[uid]; }, 0);
+  }
+  function likeIsMine_(entryId) { return !!likeCounts_(entryId)[myUserId_()]; }
+
+  function tileLikesHtml_(entryId) {
+    var total = likeTotal_(entryId);
+    return '<span class="tile-likes' + (total ? ' show' : '') + (likeIsMine_(entryId) ? ' mine' : '') + '">' +
+      LIKE_HEART_SVG_.replace(/%S%/g, "11") + '<b>' + total + '</b></span>';
+  }
+
+  function refreshLikesUi_(entryId, bump) {
+    var total = likeTotal_(entryId);
+    var mine = likeIsMine_(entryId);
+    Array.prototype.forEach.call(document.querySelectorAll('.gallery-item[data-entry-id="' + entryId + '"] .tile-likes'), function (el) {
+      el.classList.toggle("show", total > 0);
+      el.classList.toggle("mine", mine);
+      el.querySelector("b").textContent = total;
+    });
+    var cur = state.previewingEntry;
+    if (cur && cur.entryId === entryId) {
+      var btn = document.getElementById("previewLikeBtn");
+      if (btn) {
+        btn.classList.toggle("show", total > 0);
+        btn.classList.toggle("mine", mine);
+        document.getElementById("previewLikeNum").textContent = total;
+        btn.setAttribute("aria-label", total + (total === 1 ? " like" : " likes"));
+        if (bump) {
+          btn.classList.remove("bump");
+          void btn.offsetWidth;
+          btn.classList.add("bump");
+        }
+      }
+    }
+  }
+  function refreshAllLikesUi_() {
+    Array.prototype.forEach.call(document.querySelectorAll(".gallery-item[data-entry-id]"), function (el) {
+      refreshLikesUi_(el.getAttribute("data-entry-id"), false);
+    });
+    if (state.previewingEntry) refreshLikesUi_(state.previewingEntry.entryId, false);
+  }
+
+  function playLikePop_(heart) {
+    if (!heart) return;
+    heart.classList.remove("go");
+    void heart.offsetWidth;
+    heart.classList.add("go");
+  }
+  // A burst of small hearts bubbling up inside a photo. A rapid streak of likes makes it bigger.
+  var LIKE_GRAD_HEART_ = '<svg viewBox="0 0 24 24" fill="url(#likeGrad)"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>';
+  // The first like of a streak is a single heart popping in the middle of the photo. Likes that
+  // follow within a moment (rapid taps) are fizz instead: small hearts rising from the bottom of
+  // the photo like bubbles in a soft drink, fading as they go, more of them the longer the streak.
+  var LIKE_STREAK_GAP_MS = 1200;
+  var LIKE_FIZZ_MAX = 8;
+  var likeStreaks_ = {}; // entryId -> { n, at }
+  function spawnLikeFizz_(container, count) {
+    for (var i = 0; i < count; i++) {
+      var h = document.createElement("span");
+      var dur = 2000 + Math.random() * 1300;
+      var delay = Math.random() * 600;
+      h.className = "like-fizz";
+      h.setAttribute("aria-hidden", "true");
+      h.innerHTML = LIKE_GRAD_HEART_;
+      h.style.setProperty("--x", (6 + Math.random() * 88).toFixed(1) + "%");
+      h.style.setProperty("--s", (11 + Math.random() * 11).toFixed(0) + "px");
+      h.style.setProperty("--dx", (Math.random() * 30 - 15).toFixed(0) + "px");
+      h.style.setProperty("--d", dur.toFixed(0) + "ms");
+      h.style.setProperty("--delay", delay.toFixed(0) + "ms");
+      container.appendChild(h);
+      (function (el) { setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, dur + delay + 80); })(h);
+    }
+  }
+  // popEl: the heart to pop (the post has its own); a tile gets a throwaway one on its photo.
+  // Returns the tap's place in its streak: only the first (1) counts as a like, the rest are for show.
+  function playLikeEffect_(entryId, container, popEl) {
+    if (!container) return 1;
+    var now = Date.now();
+    var st = likeStreaks_[entryId];
+    var n = (st && now - st.at < LIKE_STREAK_GAP_MS) ? st.n + 1 : 1;
+    likeStreaks_[entryId] = { n: n, at: now };
+    if (n > 1 && previewMotionOk_()) {
+      spawnLikeFizz_(container, Math.min(n * 2, LIKE_FIZZ_MAX));
+      return n;
+    }
+    if (!popEl) {
+      popEl = document.createElement("span");
+      popEl.className = "like-pop tile-pop";
+      popEl.setAttribute("aria-hidden", "true");
+      popEl.innerHTML = LIKE_GRAD_HEART_;
+      container.appendChild(popEl);
+      setTimeout(function () { if (popEl.parentNode) popEl.parentNode.removeChild(popEl); }, 900);
+    }
+    playLikePop_(popEl);
+    return n;
+  }
+
+  function likeEntry_(entry) {
+    if (!isConfigured || !myUserId_()) return;
+    var id = entry.entryId;
+    likeUnsent_[id] = (likeUnsent_[id] || 0) + 1;
+    likeUnconfirmed_[id] = (likeUnconfirmed_[id] || 0) + 1;
+    refreshLikesUi_(id, true);
+    clearTimeout(likeTimers_[id]);
+    likeTimers_[id] = setTimeout(function () { sendLikes_(id); }, LIKE_SEND_DELAY_MS);
+  }
+  function sendLikes_(entryId) {
+    var n = likeUnsent_[entryId] || 0;
+    if (!n) return;
+    likeUnsent_[entryId] = 0;
+    var settle = function () { likeUnconfirmed_[entryId] = Math.max(0, (likeUnconfirmed_[entryId] || 0) - n); };
+    apiWrite({ action: "like", entryId: entryId, delta: n }).then(function (res) {
+      settle();
+      if (res && res.ok) {
+        state.likes[entryId] = res.likes || {};
+      } else if (!handleAuthError_(res || {})) {
+        showToast((res && res.error) || "Couldn't save your like.", true);
+      }
+      refreshLikesUi_(entryId, false);
+    }).catch(function () {
+      settle();
+      showToast("Couldn't save your like. Check your connection.", true);
+      refreshLikesUi_(entryId, false);
+    });
+  }
+
   function createGalleryItemEl(entry, onClick) {
     var item = document.createElement("div");
     item.className = "gallery-item gallery-tile";
+    item.setAttribute("data-entry-id", entry.entryId);
     var catKey = String(entry.category || "others").toLowerCase().replace(/[^a-z0-9]/g, "");
     var catClass = "cat-" + (catKey === "spiritual" || catKey === "relationship" || catKey === "bffun" ? catKey : "others");
     var imgSrc = escapeHtml_(driveImageUrl(entry.driveFileId));
@@ -5363,6 +5581,7 @@
       '<div class="thumb ' + initialRatioClass + '">' +
         mediaHtml +
         '<span class="pts-pill">+' + formatNum_(entry.amount) + ' pts</span>' +
+        tileLikesHtml_(entry.entryId) +
       '</div>' +
       '<div class="tile-info">' +
         '<div class="tile-title">' + altText + '</div>' +
@@ -5390,8 +5609,22 @@
       }
     }
 
+    // A double tap on a tile likes the post; a single tap opens it, after a moment to tell them apart.
+    var lastTapAt = 0, openTimer = null;
     item.addEventListener("click", function () {
-      (onClick || openPreviewModal)(entry, item);
+      var now = Date.now();
+      if (now - lastTapAt < 300) {
+        lastTapAt = 0;
+        clearTimeout(openTimer);
+        openTimer = null;
+        if (playLikeEffect_(entry.entryId, item.querySelector(".thumb"), null) === 1) likeEntry_(entry);
+        return;
+      }
+      lastTapAt = now;
+      openTimer = setTimeout(function () {
+        openTimer = null;
+        (onClick || openPreviewModal)(entry, item);
+      }, 280);
     });
     return item;
   }
@@ -5548,6 +5781,8 @@
     if (menuWrapper) menuWrapper.style.display = canEdit ? "" : "none";
 
     renderPreviewPeople_(entry);
+    refreshLikesUi_(entry.entryId, false);
+    previewOpenedAt_ = Date.now();
 
     var posterAvatarEl = document.getElementById("previewNavbarPosterAvatar");
     var posterNameEl = document.getElementById("previewNavbarPosterName");
@@ -7265,6 +7500,7 @@
       });
       state.entries = backendEntries;
       state.users = res.users || [];
+      state.likes = res.likes || {};
       state.loaded = true;
       var totals = computeTotals(state.entries);
       renderProgress(totals, { suppressCelebration: isFirstLoad });
@@ -7276,6 +7512,9 @@
         renderFilterCapsule();
         renderGallery();
       }
+      // Likes change without touching an entry's updatedAt, so they refresh in place
+      // (rebuilding the gallery would flash every image).
+      refreshAllLikesUi_();
       // Deep link (?entry=<id>) from a notification: open that post once, on
       // the first successful load only — the flag stops the 20s poll (or a
       // retry after an earlier failure) from reopening it.
@@ -8638,25 +8877,46 @@
     });
     bindPreviewSheetDrag_();
 
-    // Tapping the photo opens it uncovered, full screen; tap or Esc to close.
+    // Tapping the photo opens it uncovered, full screen; tap or Esc to close. A second tap within
+    // a moment is a double tap instead: it likes the post, so the viewer waits briefly to see.
     var photoViewer = document.getElementById("photoViewer");
     var previewMediaBox = document.getElementById("previewMediaBox");
     if (photoViewer && previewMediaBox) {
-      previewMediaBox.addEventListener("click", function (e) {
-        if (e.target.closest(".preview-top-actions")) return;
+      var openFullPhoto_ = function () {
         var entry = state.previewingEntry;
         if (!entry || entry.mediaType === "video") return;
         var src = document.getElementById("previewMediaImg").src;
         if (!src || src.indexOf("data:image/gif") === 0) return;
         document.getElementById("photoViewerImg").src = src;
         photoViewer.classList.add("show");
+      };
+      var lastTapAt_ = 0, singleTapTimer_ = null;
+      previewMediaBox.addEventListener("click", function (e) {
+        if (e.target.closest(".preview-top-actions, .preview-fullphoto-btn")) return;
+        var entry = state.previewingEntry;
+        if (!entry) return;
+        var now = Date.now();
+        if (now - previewOpenedAt_ < PREVIEW_TAP_GUARD_MS) { lastTapAt_ = 0; return; }
+        if (now - lastTapAt_ < 300) {
+          lastTapAt_ = 0;
+          clearTimeout(singleTapTimer_);
+          singleTapTimer_ = null;
+          if (playLikeEffect_(entry.entryId, previewMediaBox, document.getElementById("previewLikePop")) === 1) likeEntry_(entry);
+          return;
+        }
+        lastTapAt_ = now;
+        if (entry.mediaType === "video") return;
+        singleTapTimer_ = setTimeout(function () { singleTapTimer_ = null; openFullPhoto_(); }, 280);
       });
+      var fullBtn = document.getElementById("previewFullPhotoBtn");
+      if (fullBtn) fullBtn.addEventListener("click", openFullPhoto_);
       photoViewer.addEventListener("click", function () { photoViewer.classList.remove("show"); });
     }
 
     var postPreviewOverlay = document.getElementById("postPreviewOverlay");
     if (postPreviewOverlay) {
       postPreviewOverlay.addEventListener("click", function (e) {
+        if (Date.now() - previewOpenedAt_ < PREVIEW_TAP_GUARD_MS) return; // 2nd tap of a tile double tap
         if (e.target === this || e.target.id === "previewBackdrop") closePreviewModal();
       });
     }

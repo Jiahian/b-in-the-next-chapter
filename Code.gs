@@ -22,10 +22,11 @@
 // Bump this on every deploy so you can confirm which code is actually LIVE:
 // open <WEB_APP_URL>?action=ping in a browser — the JSON echoes this string.
 // If it doesn't match what you just pasted, the deployment didn't update.
-var BACKEND_VERSION = '2026-10-19-BF-fun';
+var BACKEND_VERSION = '2026-10-20-likes';
 
 var SHEET_NAME = 'Entries';
 var USERS_SHEET_NAME = 'Users';
+var LIKES_SHEET_NAME = 'Likes';
 var ALLOWLIST_SHEET_NAME = 'Allowlist';
 var DRIVE_FOLDER_NAME = 'BNext - Media';
 var CATEGORIES = ['Spiritual', 'Relationship', 'Others', 'BF Fun'];
@@ -64,6 +65,13 @@ var USER_HEADERS = [
   'currentWeeklyStreak', 'longestWeeklyStreak', 'lastEntryWeek',
   'taggedInCount', 'groupActivityPostCount', 'BfPostCount'
 ];
+
+// One row per (entryId, userId) with that person's running like count: a
+// person can like a post as many times as they like, so it is a counter rather
+// than a join row per tap. Mirrors a Firestore subcollection of {userId: count}.
+var LIKES_HEADERS = ['entryId', 'userId', 'count', 'updatedAt'];
+// Taps are batched client-side; this just stops one request from adding an absurd amount.
+var MAX_LIKES_PER_REQUEST = 100;
 
 // 'name' here is just an admin-facing label for tracking who's who in the
 // Allowlist tab — unrelated to the display name a user picks for their own
@@ -131,12 +139,14 @@ function setup() {
   var sheet = getSheet_();
   var usersSheet = getUsersSheet_();
   var allowlistSheet = getAllowlistSheet_();
+  var likesSheet = getLikesSheet_();
   var settingsSheet = getSettingsSheet_();
   var notificationsSheet = getNotificationsSheet_();
   var nameScrubSheet = getNameScrubSheet_();
   var folder = getFolder_();
   forcePlainTextColumns_(sheet, ['userId', 'tagged_friends', 'date'], HEADERS);
   forcePlainTextColumns_(usersSheet, ['userId', 'lastEntryDate'], USER_HEADERS);
+  forcePlainTextColumns_(likesSheet, ['entryId', 'userId'], LIKES_HEADERS);
   forcePlainTextColumns_(notificationsSheet, ['telegramMessageId'], NOTIFICATION_HEADERS);
   // userId column here is a member's ~21-digit id — keep it plain text so it
   // can be matched against Users, and 'variant' too (a variant could be digits).
@@ -144,6 +154,7 @@ function setup() {
   var doc = getOrCreateStyleGuideDoc_();
   Logger.log('Sheet ready: ' + sheet.getParent().getUrl());
   Logger.log('Users sheet ready (tab: ' + usersSheet.getName() + ').');
+  Logger.log('Likes sheet ready (tab: ' + likesSheet.getName() + ') — one row per post and person, with their like count.');
   Logger.log('Allowlist sheet ready (tab: ' + allowlistSheet.getName() + ') — add one approved person per row (name, email), under the header.');
   Logger.log('Settings sheet ready (tab: ' + settingsSheet.getName() + ') — phone-editable tunables, defaults seeded.');
   Logger.log('Notifications sheet ready (tab: ' + notificationsSheet.getName() + ') — send queue + delivery log.');
@@ -170,6 +181,16 @@ function getUsersSheet_() {
     sheet = ss.insertSheet(USERS_SHEET_NAME);
   }
   ensureHeaders_(sheet, USER_HEADERS);
+  return sheet;
+}
+
+function getLikesSheet_() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(LIKES_SHEET_NAME);
+  if (!sheet) {
+    sheet = ss.insertSheet(LIKES_SHEET_NAME);
+  }
+  ensureHeaders_(sheet, LIKES_HEADERS);
   return sheet;
 }
 
@@ -514,7 +535,7 @@ function doGet(e) {
     if (action === 'list') {
       var auth = requireAuth_(e.parameter.idToken);
       if (!auth.ok) return jsonOutput_({ ok: false, code: auth.code, error: auth.error });
-      return jsonOutput_({ ok: true, entries: listEntries_(), users: listUsers_() });
+      return jsonOutput_({ ok: true, entries: listEntries_(), users: listUsers_(), likes: listLikes_() });
     }
     if (action === 'profile') {
       var authP = requireAuth_(e.parameter.idToken);
@@ -552,6 +573,7 @@ function doPost(e) {
     else if (action === 'update') result = updateEntry_(body, auth);
     else if (action === 'delete') result = deleteEntry_(body, auth);
     else if (action === 'setUsername') result = upsertUserProfile_(auth, body.username);
+    else if (action === 'like') result = addLikes_(body, auth);
     else result = { ok: false, error: 'Unknown action: ' + action };
   } catch (err) {
     result = { ok: false, error: String(err) };
@@ -679,6 +701,65 @@ function listUsers_() {
   if (lastRow < 2) return [];
   var values = sheet.getRange(2, 1, lastRow - 1, USER_HEADERS.length).getValues();
   return values.map(rowToUser_).filter(function (u) { return u.userId; });
+}
+
+// Every post's likes as { entryId: { userId: count } }. Ids are coerced with
+// String() on read, the same defence as rowToEntry_ (a digit-only cell can
+// come back as a Number).
+function listLikes_() {
+  var sheet = getLikesSheet_();
+  var lastRow = sheet.getLastRow();
+  var likes = {};
+  if (lastRow < 2) return likes;
+  var values = sheet.getRange(2, 1, lastRow - 1, LIKES_HEADERS.length).getValues();
+  values.forEach(function (row) {
+    var entryId = String(row[0] || '');
+    var userId = String(row[1] || '');
+    var count = Math.floor(Number(row[2]) || 0);
+    if (!entryId || !userId || count < 1) return;
+    if (!likes[entryId]) likes[entryId] = {};
+    likes[entryId][userId] = count;
+  });
+  return likes;
+}
+
+// Adds body.delta likes (1..MAX_LIKES_PER_REQUEST) from the caller to a post.
+// Runs inside doPost's script lock. The row is pre-formatted as plain text and
+// written to that exact range (never appendRow) — see forcePlainTextRow_.
+function addLikes_(body, auth) {
+  var entryId = String(body.entryId || '');
+  if (!entryId) return { ok: false, error: 'Missing entryId' };
+  var delta = Math.floor(Number(body.delta) || 0);
+  if (delta < 1) return { ok: false, error: 'Nothing to add' };
+  delta = Math.min(delta, MAX_LIKES_PER_REQUEST);
+
+  var entrySheet = getSheet_();
+  var entryRow = findRowByEntryId_(entrySheet, entryId);
+  if (entryRow === -1) return { ok: false, error: 'Entry not found' };
+  var deletedCell = entrySheet.getRange(entryRow, indexOf_('deleted') + 1).getValue();
+  if (deletedCell === true || deletedCell === 'TRUE') return { ok: false, error: 'Entry not found' };
+
+  var sheet = getLikesSheet_();
+  var lastRow = sheet.getLastRow();
+  var rowIndex = -1;
+  var current = 0;
+  if (lastRow >= 2) {
+    var values = sheet.getRange(2, 1, lastRow - 1, 3).getValues();
+    for (var i = 0; i < values.length; i++) {
+      if (String(values[i][0]) === entryId && String(values[i][1]) === auth.userId) {
+        rowIndex = i + 2;
+        current = Math.floor(Number(values[i][2]) || 0);
+        break;
+      }
+    }
+  }
+  var now = new Date().toISOString();
+  if (rowIndex === -1) rowIndex = Math.max(lastRow, 1) + 1;
+  forcePlainTextRow_(sheet, rowIndex, ['entryId', 'userId'], LIKES_HEADERS);
+  sheet.getRange(rowIndex, 1, 1, LIKES_HEADERS.length).setValues([[entryId, auth.userId, current + delta, now]]);
+
+  var all = listLikes_();
+  return { ok: true, entryId: entryId, likes: all[entryId] || {} };
 }
 
 function rowToUser_(row) {

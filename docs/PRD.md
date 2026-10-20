@@ -112,6 +112,7 @@ whoever owns the backend.
 - **Masonry collage view** by default — thumbnails of varying aspect ratios tiled together without subheaders; an alternate grouped-by-month view is available via the filter control.
 - A single **filter capsule** offers both filter dimensions (month, category), usable together, through one unified control.
 - Tapping a thumbnail opens a **fullscreen preview page** with the full photo/video and its details: who logged it, activity name, category, date, and amount + units. A sticky navbar with a back button sits at the top; the details scroll independently underneath it. Date and amount are shown on one line, joined by " · " (e.g. "4 Sep 2026 · 5 km").
+- **Likes**: double-tapping a gallery tile (or the photo inside the post) likes it — a heart pops up in the middle of the image and a heart counter appears at its bottom right (hidden at 0; red once you've liked it). A person can like a post as many times as they like, but a run of rapid taps counts as one like (the first double tap); the extra taps just make hearts bubble up from the bottom of the image. A new run after a short pause counts again. It shows only the total (not who liked), and isn't tappable. Each tile in the gallery shows the same heart and total at the bottom right of its image, and gets the same heart pop when double-tapped; a single tap on a tile opens the post after a brief pause (about 0.3s) so it can tell the two apart. Not available on video posts that play in an embedded player (the player swallows the taps). The "Full photo" pill sits at the bottom left of portrait photos.
 - Each entry can be **edited** (opens the entry form pre-filled, including the option to replace the media) or **deleted** (behind a confirmation modal, since deletes also remove the underlying Drive file and are not recoverable) — only by the entry's own owner (see §6.7).
 - **Who was there** (§6.8): every card shows overlapping avatar initials (poster first, then tagged friends, capped at 3 circles) plus a one-line summary — just the poster's name if no one's tagged, "X and Y were there" for one tag, "X and N friends were there" for more. The expanded preview reveals everyone involved, no cap, each with their avatar and name.
 - **Resize/crop**: from the edit flow, an uploaded photo can be re-cropped (zoom, pan, 3:4/4:3 aspect ratio) via an in-browser canvas tool. This is **destructive** — cropping replaces the currently-stored photo; the pre-crop original is not preserved, so cropping again later crops the already-cropped version, not the original upload. Deliberate simplicity trade-off (§10) — revisit only if this causes real user frustration, since fixing it non-destructively means storing two files per cropped entry.
@@ -248,6 +249,15 @@ redeploy.
 > the mechanics if you're touching a write path.
 
 Total points = SUM(amount) across all entries where `deleted = false`. Category totals = SUM(amount) grouped by category, same filter.
+
+**Like — one row per post and person, in the Sheet's "Likes" tab**
+
+| Field | Type | Notes |
+|---|---|---|
+| entryId | string | The post that was liked |
+| userId | string | Who liked it (plain text, see the note above) |
+| count | number | How many times that person has liked the post (unlimited) |
+| updatedAt | timestamp | Set on each batch of likes |
 
 **User — one row per person who's signed in, in the Sheet's "Users" tab**
 
