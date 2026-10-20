@@ -1451,6 +1451,13 @@ function generateEntryMessage_(context) {
   }
   if (!header) header = fallbackEntryHeader_(context, poster);
 
+  // BF Fun always ends with exactly "for BF": strip any "for BF" / "for BF Fun"
+  // the model or the style-guide example may have added, then re-append once.
+  if (String(context.category || '') === BF_FUN_CATEGORY) {
+    header = header.replace(/\s*\bfor\s+BF(\s+Fun)?\b/ig, ' ').replace(/\s{2,}/g, ' ').trim();
+    header += ' for BF';
+  }
+
   var parts = [escapeHtml_(header)];
   var body = [];
   var title = String(context.activityTitle || '').trim();
@@ -1471,7 +1478,6 @@ function fallbackEntryHeader_(context, poster) {
   var verbs = (units === 'hours') ? ['spent', 'just logged', 'clocked in'] : ['just logged', 'clocked in'];
   var header = poster + ' ' + verbs[Math.floor(Math.random() * verbs.length)];
   if (amountText) header += ' ' + amountText + (unitLabel ? ' ' + unitLabel : '');
-  if (String(context.category || '') === BF_FUN_CATEGORY) header += ' for BF';
   var withText = taggedFriendsText_(context.taggedFriends, context.userId, getDisplayName_);
   return withText ? header + ' with ' + withText : header;
 }
@@ -1503,7 +1509,7 @@ function buildEntryPrompt_(context, nameMap, guide) {
     'Facts:', facts.join('\n'),
     '',
     'Reply with EXACTLY two lines and nothing else:',
-    'HEADER: <one sentence: who did what, the amount and unit, and "with <With>" if listed. If the Category is "BF Fun", add "for BF" right after the amount and unit (e.g. "... just logged 3 pts for BF"). Use the Person and With exactly as given. Do NOT describe the activity itself.>',
+    'HEADER: <one sentence: who did what, the amount and unit, and "with <With>" if listed. Use the Person and With exactly as given. Do NOT describe the activity itself, name the category, or add any "for ..." text — a "for BF" suffix is appended automatically when needed.>',
     'CHEER: <a short closing cheer>',
     '',
     'IMPORTANT: People are given placeholder codes like [[P1]]. Refer to people ONLY by their exact code, verbatim. Do not invent names or details.'
