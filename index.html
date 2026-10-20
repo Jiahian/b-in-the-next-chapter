@@ -2408,7 +2408,7 @@
   }
   .preview-fullphoto-btn {
     display: none;
-    position: absolute; right: 10px; bottom: 12px; z-index: 3;
+    position: absolute; left: 10px; bottom: 12px; z-index: 3;
     align-items: center; gap: 5px;
     background: rgba(15, 23, 42, 0.55);
     -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
@@ -2417,6 +2417,60 @@
     padding: 4px 10px; cursor: pointer;
   }
   .post-preview-sheet .thumb.ratio-3-4 .preview-fullphoto-btn { display: inline-flex; }
+
+  /* Likes: double-tap the photo for a heart pop; the counter sits bottom-right of the image. */
+  .post-preview-sheet .thumb { touch-action: manipulation; -webkit-user-select: none; user-select: none; }
+  .like-pop {
+    position: absolute; left: 50%; top: 50%; z-index: 6; pointer-events: none;
+    font-size: 88px; line-height: 1; opacity: 0;
+    transform: translate(-50%, -50%) scale(0.3);
+    filter: drop-shadow(0 4px 14px rgba(15, 23, 42, 0.35));
+  }
+  .like-pop.go { animation: likePop 0.85s ease-out; }
+  @keyframes likePop {
+    0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
+    18%  { opacity: 1; transform: translate(-50%, -50%) scale(1.18); }
+    32%  { transform: translate(-50%, -50%) scale(0.96); }
+    62%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -58%) scale(1.08); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .like-pop.go { animation: likeFade 0.85s linear; }
+    @keyframes likeFade { 0%, 60% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1); } }
+  }
+  .preview-like-count {
+    display: none; position: absolute; right: 10px; bottom: 12px; z-index: 4;
+    align-items: center; gap: 5px;
+    background: rgba(15, 23, 42, 0.55);
+    -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+    color: #ffffff; border: none; border-radius: 999px;
+    font: inherit; font-size: 12px; font-weight: 700;
+    padding: 4px 10px; cursor: pointer;
+  }
+  .preview-like-count.show { display: inline-flex; }
+  .preview-like-count svg, .tile-likes svg { fill: none; stroke: currentColor; }
+  .preview-like-count.mine svg, .tile-likes.mine svg { fill: #ef4444; stroke: #ef4444; }
+  .preview-like-count.bump { animation: likeBump 0.3s ease-out; }
+  @keyframes likeBump { 40% { transform: scale(1.18); } }
+  .likers-pop {
+    display: none; position: absolute; right: 10px; bottom: 48px; z-index: 7;
+    min-width: 160px; max-width: 70%; max-height: 55%; overflow-y: auto;
+    background: var(--surface-1, #ffffff); color: var(--text-primary);
+    border-radius: 14px; padding: 6px 4px; box-shadow: 0 6px 24px rgba(15, 23, 42, 0.28);
+    cursor: default;
+  }
+  .likers-pop.show { display: block; }
+  .likers-row { display: flex; align-items: center; gap: 8px; padding: 6px 10px; font-size: 13px; font-weight: 600; }
+  .likers-row .likers-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .likers-row .likers-n { margin-left: auto; padding-left: 10px; color: #ef4444; font-weight: 700; }
+  .tile-likes {
+    display: none; position: absolute; right: 8px; bottom: 8px; z-index: 2;
+    align-items: center; gap: 4px; pointer-events: none;
+    background: rgba(15, 23, 42, 0.55);
+    -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+    color: #ffffff; border-radius: 999px; font-size: 11px; font-weight: 700; padding: 3px 8px;
+  }
+  .tile-likes.show { display: inline-flex; }
   .preview-fullphoto-btn[hidden] { display: none !important; }
   /* Our own pull-to-refresh replaces the browser's, which would reload the whole page. */
   html { overscroll-behavior-y: contain; }
@@ -4112,6 +4166,13 @@
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6"></path><path d="M9 21H3v-6"></path><path d="M21 3l-7 7"></path><path d="M3 21l7-7"></path></svg>
         <span>Full photo</span>
       </button>
+
+      <span class="like-pop" id="previewLikePop" aria-hidden="true">&#10084;&#65039;</span>
+      <div class="likers-pop" id="previewLikersPop" role="dialog" aria-label="Who liked this"></div>
+      <button type="button" class="preview-like-count" id="previewLikeBtn" aria-label="Likes">
+        <svg width="14" height="14" viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+        <span id="previewLikeNum">0</span>
+      </button>
     </div>
 
     <div class="meta">
@@ -4515,6 +4576,7 @@
   var state = {
     entries: [],
     users: [],
+    likes: {}, // server truth: { entryId: { userId: count } }; taps not yet confirmed are added on top (see likeCounts_)
     loaded: false,
     editingId: null,
     pendingMedia: null, // {data, filename, mimeType}
@@ -5334,9 +5396,139 @@
     }).join("");
   }
 
+  // ----- Likes. Double-tap a photo in the post to like it (as many times as you like); the
+  // counter bottom-right shows the total and opens the list of who liked it. Taps show at once
+  // and are sent in one batch shortly after the last tap, so a flurry is a single request.
+  var LIKE_HEART_SVG_ = '<svg width="%S%" height="%S%" viewBox="0 0 24 24" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>';
+  var LIKE_SEND_DELAY_MS = 700;
+  var likeUnsent_ = {};   // entryId -> my taps not yet sent
+  var likeUnconfirmed_ = {}; // entryId -> my taps sent or waiting, not yet in state.likes
+  var likeTimers_ = {};
+
+  function myUserId_() { return (profile && profile.userId) || ""; }
+
+  // Per-person counts for a post: what the server has, plus my own unconfirmed taps.
+  function likeCounts_(entryId) {
+    var out = {};
+    var server = (state.likes && state.likes[entryId]) || {};
+    Object.keys(server).forEach(function (uid) { out[uid] = server[uid]; });
+    var extra = likeUnconfirmed_[entryId] || 0;
+    if (extra > 0 && myUserId_()) out[myUserId_()] = (out[myUserId_()] || 0) + extra;
+    return out;
+  }
+  function likeTotal_(entryId) {
+    var c = likeCounts_(entryId);
+    return Object.keys(c).reduce(function (sum, uid) { return sum + c[uid]; }, 0);
+  }
+  function likeIsMine_(entryId) { return !!likeCounts_(entryId)[myUserId_()]; }
+
+  function tileLikesHtml_(entryId) {
+    var total = likeTotal_(entryId);
+    return '<span class="tile-likes' + (total ? ' show' : '') + (likeIsMine_(entryId) ? ' mine' : '') + '">' +
+      LIKE_HEART_SVG_.replace(/%S%/g, "11") + '<b>' + total + '</b></span>';
+  }
+
+  function refreshLikesUi_(entryId, bump) {
+    var total = likeTotal_(entryId);
+    var mine = likeIsMine_(entryId);
+    Array.prototype.forEach.call(document.querySelectorAll('.gallery-item[data-entry-id="' + entryId + '"] .tile-likes'), function (el) {
+      el.classList.toggle("show", total > 0);
+      el.classList.toggle("mine", mine);
+      el.querySelector("b").textContent = total;
+    });
+    var cur = state.previewingEntry;
+    if (cur && cur.entryId === entryId) {
+      var btn = document.getElementById("previewLikeBtn");
+      if (btn) {
+        btn.classList.toggle("show", total > 0);
+        btn.classList.toggle("mine", mine);
+        document.getElementById("previewLikeNum").textContent = total;
+        btn.setAttribute("aria-label", total + (total === 1 ? " like" : " likes") + ", see who liked");
+        if (bump) {
+          btn.classList.remove("bump");
+          void btn.offsetWidth;
+          btn.classList.add("bump");
+        }
+      }
+      var pop = document.getElementById("previewLikersPop");
+      if (pop && pop.classList.contains("show")) renderLikersPop_(entryId);
+    }
+  }
+  function refreshAllLikesUi_() {
+    Array.prototype.forEach.call(document.querySelectorAll(".gallery-item[data-entry-id]"), function (el) {
+      refreshLikesUi_(el.getAttribute("data-entry-id"), false);
+    });
+    if (state.previewingEntry) refreshLikesUi_(state.previewingEntry.entryId, false);
+  }
+
+  function renderLikersPop_(entryId) {
+    var pop = document.getElementById("previewLikersPop");
+    if (!pop) return;
+    var counts = likeCounts_(entryId);
+    var ids = Object.keys(counts).sort(function (a, b) { return counts[b] - counts[a]; });
+    pop.innerHTML = ids.map(function (id) {
+      return '<div class="likers-row">' +
+        '<span class="preview-person-avatar">' + escapeHtml_(userInitial_(id)) + '</span>' +
+        '<span class="likers-name">' + escapeHtml_(userDisplayName_(id)) + '</span>' +
+        '<span class="likers-n">&times;' + counts[id] + '</span>' +
+      '</div>';
+    }).join("");
+  }
+  function closeLikersPop_() {
+    var pop = document.getElementById("previewLikersPop");
+    if (pop) pop.classList.remove("show");
+  }
+  function toggleLikersPop_() {
+    var entry = state.previewingEntry;
+    var pop = document.getElementById("previewLikersPop");
+    if (!entry || !pop) return;
+    if (pop.classList.contains("show")) { closeLikersPop_(); return; }
+    renderLikersPop_(entry.entryId);
+    pop.classList.add("show");
+  }
+
+  function playLikePop_() {
+    var heart = document.getElementById("previewLikePop");
+    if (!heart) return;
+    heart.classList.remove("go");
+    void heart.offsetWidth;
+    heart.classList.add("go");
+  }
+
+  function likeEntry_(entry) {
+    if (!isConfigured || !myUserId_()) return;
+    var id = entry.entryId;
+    playLikePop_();
+    likeUnsent_[id] = (likeUnsent_[id] || 0) + 1;
+    likeUnconfirmed_[id] = (likeUnconfirmed_[id] || 0) + 1;
+    refreshLikesUi_(id, true);
+    clearTimeout(likeTimers_[id]);
+    likeTimers_[id] = setTimeout(function () { sendLikes_(id); }, LIKE_SEND_DELAY_MS);
+  }
+  function sendLikes_(entryId) {
+    var n = likeUnsent_[entryId] || 0;
+    if (!n) return;
+    likeUnsent_[entryId] = 0;
+    var settle = function () { likeUnconfirmed_[entryId] = Math.max(0, (likeUnconfirmed_[entryId] || 0) - n); };
+    apiWrite({ action: "like", entryId: entryId, delta: n }).then(function (res) {
+      settle();
+      if (res && res.ok) {
+        state.likes[entryId] = res.likes || {};
+      } else if (!handleAuthError_(res || {})) {
+        showToast((res && res.error) || "Couldn't save your like.", true);
+      }
+      refreshLikesUi_(entryId, false);
+    }).catch(function () {
+      settle();
+      showToast("Couldn't save your like. Check your connection.", true);
+      refreshLikesUi_(entryId, false);
+    });
+  }
+
   function createGalleryItemEl(entry, onClick) {
     var item = document.createElement("div");
     item.className = "gallery-item gallery-tile";
+    item.setAttribute("data-entry-id", entry.entryId);
     var catKey = String(entry.category || "others").toLowerCase().replace(/[^a-z0-9]/g, "");
     var catClass = "cat-" + (catKey === "spiritual" || catKey === "relationship" || catKey === "bffun" ? catKey : "others");
     var imgSrc = escapeHtml_(driveImageUrl(entry.driveFileId));
@@ -5363,6 +5555,7 @@
       '<div class="thumb ' + initialRatioClass + '">' +
         mediaHtml +
         '<span class="pts-pill">+' + formatNum_(entry.amount) + ' pts</span>' +
+        tileLikesHtml_(entry.entryId) +
       '</div>' +
       '<div class="tile-info">' +
         '<div class="tile-title">' + altText + '</div>' +
@@ -5548,6 +5741,8 @@
     if (menuWrapper) menuWrapper.style.display = canEdit ? "" : "none";
 
     renderPreviewPeople_(entry);
+    closeLikersPop_();
+    refreshLikesUi_(entry.entryId, false);
 
     var posterAvatarEl = document.getElementById("previewNavbarPosterAvatar");
     var posterNameEl = document.getElementById("previewNavbarPosterName");
@@ -7265,6 +7460,7 @@
       });
       state.entries = backendEntries;
       state.users = res.users || [];
+      state.likes = res.likes || {};
       state.loaded = true;
       var totals = computeTotals(state.entries);
       renderProgress(totals, { suppressCelebration: isFirstLoad });
@@ -7276,6 +7472,9 @@
         renderFilterCapsule();
         renderGallery();
       }
+      // Likes change without touching an entry's updatedAt, so they refresh in place
+      // (rebuilding the gallery would flash every image).
+      refreshAllLikesUi_();
       // Deep link (?entry=<id>) from a notification: open that post once, on
       // the first successful load only — the flag stops the 20s poll (or a
       // retry after an earlier failure) from reopening it.
@@ -8638,19 +8837,41 @@
     });
     bindPreviewSheetDrag_();
 
-    // Tapping the photo opens it uncovered, full screen; tap or Esc to close.
+    // Tapping the photo opens it uncovered, full screen; tap or Esc to close. A second tap within
+    // a moment is a double tap instead: it likes the post, so the viewer waits briefly to see.
     var photoViewer = document.getElementById("photoViewer");
     var previewMediaBox = document.getElementById("previewMediaBox");
     if (photoViewer && previewMediaBox) {
-      previewMediaBox.addEventListener("click", function (e) {
-        if (e.target.closest(".preview-top-actions")) return;
+      var openFullPhoto_ = function () {
         var entry = state.previewingEntry;
         if (!entry || entry.mediaType === "video") return;
         var src = document.getElementById("previewMediaImg").src;
         if (!src || src.indexOf("data:image/gif") === 0) return;
         document.getElementById("photoViewerImg").src = src;
         photoViewer.classList.add("show");
+      };
+      var lastTapAt_ = 0, singleTapTimer_ = null;
+      previewMediaBox.addEventListener("click", function (e) {
+        if (e.target.closest(".preview-top-actions, .preview-like-count, .likers-pop, .preview-fullphoto-btn")) return;
+        var entry = state.previewingEntry;
+        if (!entry) return;
+        var now = Date.now();
+        if (now - lastTapAt_ < 300) {
+          lastTapAt_ = 0;
+          clearTimeout(singleTapTimer_);
+          singleTapTimer_ = null;
+          likeEntry_(entry);
+          return;
+        }
+        lastTapAt_ = now;
+        closeLikersPop_();
+        if (entry.mediaType === "video") return;
+        singleTapTimer_ = setTimeout(function () { singleTapTimer_ = null; openFullPhoto_(); }, 280);
       });
+      var fullBtn = document.getElementById("previewFullPhotoBtn");
+      if (fullBtn) fullBtn.addEventListener("click", openFullPhoto_);
+      var likeBtn = document.getElementById("previewLikeBtn");
+      if (likeBtn) likeBtn.addEventListener("click", toggleLikersPop_);
       photoViewer.addEventListener("click", function () { photoViewer.classList.remove("show"); });
     }
 
