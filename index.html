@@ -2186,6 +2186,7 @@
   .gallery-tile {
     border-radius: 14px;
     background: #ffffff;
+    touch-action: manipulation; -webkit-user-select: none; user-select: none;
   }
   .gallery-tile .pts-pill { right: auto; bottom: auto; top: 8px; left: auto; right: 8px; font-size: 11px; padding: 3px 9px; }
   .tile-info {
@@ -2422,11 +2423,25 @@
   .post-preview-sheet .thumb { touch-action: manipulation; -webkit-user-select: none; user-select: none; }
   .like-pop {
     position: absolute; left: 50%; top: 50%; z-index: 6; pointer-events: none;
-    font-size: 88px; line-height: 1; opacity: 0;
+    font-size: 70px; line-height: 1; opacity: 0;
     transform: translate(-50%, -50%) scale(0.3);
     filter: drop-shadow(0 4px 14px rgba(15, 23, 42, 0.35));
   }
   .like-pop.go { animation: likePop 0.85s ease-out; }
+  .like-pop.tile-pop { font-size: 42px; }
+  .like-pop svg, .like-fizz svg { display: block; width: 1em; height: 1em; }
+  /* Fizz: small hearts that bubble up around the photo on every like (more of them on a rapid streak). */
+  .like-fizz {
+    position: absolute; left: var(--x); top: 105%; z-index: 5; pointer-events: none;
+    font-size: var(--s); line-height: 1; opacity: 0;
+    animation: likeFizz var(--d) cubic-bezier(0.3, 0.1, 0.5, 1) var(--delay) forwards;
+  }
+  /* From just under the bottom edge to just past the top, fading the whole way. */
+  @keyframes likeFizz {
+    0%   { top: 105%; opacity: 0; transform: translate(-50%, -50%) scale(0.7); }
+    8%   { opacity: 0.95; }
+    100% { top: -6%; opacity: 0; transform: translate(calc(-50% + var(--dx)), -50%) scale(1); }
+  }
   @keyframes likePop {
     0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
     18%  { opacity: 1; transform: translate(-50%, -50%) scale(1.18); }
@@ -3711,6 +3726,7 @@
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><linearGradient id="likeGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ef233c"/><stop offset="1" stop-color="#ff7eb6"/></linearGradient></defs></svg>
 
 <header class="app-header">
   <div class="header-inner">
@@ -4167,7 +4183,7 @@
         <span>Full photo</span>
       </button>
 
-      <span class="like-pop" id="previewLikePop" aria-hidden="true">&#10084;&#65039;</span>
+      <span class="like-pop" id="previewLikePop" aria-hidden="true"><svg viewBox="0 0 24 24" fill="url(#likeGrad)"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg></span>
       <div class="likers-pop" id="previewLikersPop" role="dialog" aria-label="Who liked this"></div>
       <button type="button" class="preview-like-count" id="previewLikeBtn" aria-label="Likes">
         <svg width="14" height="14" viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
@@ -5491,18 +5507,64 @@
     pop.classList.add("show");
   }
 
-  function playLikePop_() {
-    var heart = document.getElementById("previewLikePop");
+  function playLikePop_(heart) {
     if (!heart) return;
     heart.classList.remove("go");
     void heart.offsetWidth;
     heart.classList.add("go");
   }
+  // A burst of small hearts bubbling up inside a photo. A rapid streak of likes makes it bigger.
+  var LIKE_GRAD_HEART_ = '<svg viewBox="0 0 24 24" fill="url(#likeGrad)"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>';
+  // The first like of a streak is a single heart popping in the middle of the photo. Likes that
+  // follow within a moment (rapid taps) are fizz instead: small hearts rising from the bottom of
+  // the photo like bubbles in a soft drink, fading as they go, more of them the longer the streak.
+  var LIKE_STREAK_GAP_MS = 1200;
+  var LIKE_FIZZ_MAX = 8;
+  var likeStreaks_ = {}; // entryId -> { n, at }
+  function spawnLikeFizz_(container, count) {
+    for (var i = 0; i < count; i++) {
+      var h = document.createElement("span");
+      var dur = 2000 + Math.random() * 1300;
+      var delay = Math.random() * 600;
+      h.className = "like-fizz";
+      h.setAttribute("aria-hidden", "true");
+      h.innerHTML = LIKE_GRAD_HEART_;
+      h.style.setProperty("--x", (6 + Math.random() * 88).toFixed(1) + "%");
+      h.style.setProperty("--s", (11 + Math.random() * 11).toFixed(0) + "px");
+      h.style.setProperty("--dx", (Math.random() * 30 - 15).toFixed(0) + "px");
+      h.style.setProperty("--d", dur.toFixed(0) + "ms");
+      h.style.setProperty("--delay", delay.toFixed(0) + "ms");
+      container.appendChild(h);
+      (function (el) { setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, dur + delay + 80); })(h);
+    }
+  }
+  // popEl: the heart to pop (the post has its own); a tile gets a throwaway one on its photo.
+  // Returns the tap's place in its streak: only the first (1) counts as a like, the rest are for show.
+  function playLikeEffect_(entryId, container, popEl) {
+    if (!container) return 1;
+    var now = Date.now();
+    var st = likeStreaks_[entryId];
+    var n = (st && now - st.at < LIKE_STREAK_GAP_MS) ? st.n + 1 : 1;
+    likeStreaks_[entryId] = { n: n, at: now };
+    if (n > 1 && previewMotionOk_()) {
+      spawnLikeFizz_(container, Math.min(n * 2, LIKE_FIZZ_MAX));
+      return n;
+    }
+    if (!popEl) {
+      popEl = document.createElement("span");
+      popEl.className = "like-pop tile-pop";
+      popEl.setAttribute("aria-hidden", "true");
+      popEl.innerHTML = LIKE_GRAD_HEART_;
+      container.appendChild(popEl);
+      setTimeout(function () { if (popEl.parentNode) popEl.parentNode.removeChild(popEl); }, 900);
+    }
+    playLikePop_(popEl);
+    return n;
+  }
 
   function likeEntry_(entry) {
     if (!isConfigured || !myUserId_()) return;
     var id = entry.entryId;
-    playLikePop_();
     likeUnsent_[id] = (likeUnsent_[id] || 0) + 1;
     likeUnconfirmed_[id] = (likeUnconfirmed_[id] || 0) + 1;
     refreshLikesUi_(id, true);
@@ -5587,8 +5649,22 @@
       }
     }
 
+    // A double tap on a tile likes the post; a single tap opens it, after a moment to tell them apart.
+    var lastTapAt = 0, openTimer = null;
     item.addEventListener("click", function () {
-      (onClick || openPreviewModal)(entry, item);
+      var now = Date.now();
+      if (now - lastTapAt < 300) {
+        lastTapAt = 0;
+        clearTimeout(openTimer);
+        openTimer = null;
+        if (playLikeEffect_(entry.entryId, item.querySelector(".thumb"), null) === 1) likeEntry_(entry);
+        return;
+      }
+      lastTapAt = now;
+      openTimer = setTimeout(function () {
+        openTimer = null;
+        (onClick || openPreviewModal)(entry, item);
+      }, 280);
     });
     return item;
   }
@@ -8866,7 +8942,7 @@
           lastTapAt_ = 0;
           clearTimeout(singleTapTimer_);
           singleTapTimer_ = null;
-          likeEntry_(entry);
+          if (playLikeEffect_(entry.entryId, previewMediaBox, document.getElementById("previewLikePop")) === 1) likeEntry_(entry);
           return;
         }
         lastTapAt_ = now;
