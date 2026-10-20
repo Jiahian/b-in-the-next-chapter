@@ -5404,6 +5404,10 @@
   var likeUnsent_ = {};   // entryId -> my taps not yet sent
   var likeUnconfirmed_ = {}; // entryId -> my taps sent or waiting, not yet in state.likes
   var likeTimers_ = {};
+  // The second tap of a double tap on a gallery tile lands on the post that tap just opened;
+  // taps on the photo are ignored for a moment after opening so it can't open the full photo.
+  var previewOpenedAt_ = 0;
+  var PREVIEW_TAP_GUARD_MS = 600;
 
   function myUserId_() { return (profile && profile.userId) || ""; }
 
@@ -5743,6 +5747,7 @@
     renderPreviewPeople_(entry);
     closeLikersPop_();
     refreshLikesUi_(entry.entryId, false);
+    previewOpenedAt_ = Date.now();
 
     var posterAvatarEl = document.getElementById("previewNavbarPosterAvatar");
     var posterNameEl = document.getElementById("previewNavbarPosterName");
@@ -8856,6 +8861,7 @@
         var entry = state.previewingEntry;
         if (!entry) return;
         var now = Date.now();
+        if (now - previewOpenedAt_ < PREVIEW_TAP_GUARD_MS) { lastTapAt_ = 0; return; }
         if (now - lastTapAt_ < 300) {
           lastTapAt_ = 0;
           clearTimeout(singleTapTimer_);
@@ -8878,6 +8884,7 @@
     var postPreviewOverlay = document.getElementById("postPreviewOverlay");
     if (postPreviewOverlay) {
       postPreviewOverlay.addEventListener("click", function (e) {
+        if (Date.now() - previewOpenedAt_ < PREVIEW_TAP_GUARD_MS) return; // 2nd tap of a tile double tap
         if (e.target === this || e.target.id === "previewBackdrop") closePreviewModal();
       });
     }
